@@ -1,0 +1,14 @@
+{
+  "name": "@cintamani/kerr-capacity",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "cargo build",
+    "check": "cargo check --all-targets",
+    "test": "cargo test --all-targets",
+    "run:smoke": "cargo run -- run configs/smoke.toml --output output/smoke",
+    "run:linear-control": "cargo run -- run configs/linear-control.toml --output output/linear-control",
+    "cross-check": "cargo run -- cross-check configs/smoke.toml"
+  }
+}

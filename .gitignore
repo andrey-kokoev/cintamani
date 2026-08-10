@@ -1,5 +1,6 @@
 **/target/
 **/artifacts/
+**/output/
 **/data/
 *.checkpoint
 node_modules/

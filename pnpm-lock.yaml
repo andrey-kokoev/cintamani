@@ -8,4 +8,6 @@ importers:
 
   .: {}
 
+  packages/kerr-capacity: {}
+
   packages/vrc-mnist: {}
