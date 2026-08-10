@@ -1,5 +1,6 @@
 use crate::config::Config;
 use anyhow::{Result, bail};
+use nalgebra::{DMatrix, SymmetricEigen};
 use rand::{SeedableRng, rngs::StdRng, seq::SliceRandom};
 use serde::Serialize;
 
@@ -10,7 +11,10 @@ pub struct TargetCapacity {
     pub maximum_lag: usize,
     pub interacting_lags: usize,
     pub raw_held_out_capacity: f64,
-    pub permutation_threshold: f64,
+    pub positive_null_mean: f64,
+    pub target_permutation_threshold: f64,
+    pub familywise_permutation_threshold: f64,
+    pub familywise_significant: bool,
     pub corrected_capacity: f64,
 }
 
@@ -18,8 +22,29 @@ pub struct TargetCapacity {
 pub struct GroupCapacity {
     pub group: usize,
     pub target_count: usize,
+    pub significant_target_count: usize,
     pub raw_positive_capacity: f64,
     pub corrected_capacity: f64,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct RankAtTolerance {
+    pub relative_singular_tolerance: f64,
+    pub rank: usize,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct ObservationSpectrum {
+    pub training_feature_means: Vec<f64>,
+    pub training_feature_scales: Vec<f64>,
+    pub relative_feature_scales: Vec<f64>,
+    pub normalized_singular_values: Vec<f64>,
+    pub relative_singular_values: Vec<f64>,
+    pub chosen_relative_tolerance: f64,
+    pub effective_rank: usize,
+    pub stable_rank: f64,
+    pub participation_ratio: f64,
+    pub rank_profile: Vec<RankAtTolerance>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -32,7 +57,8 @@ pub struct CapacityAnalysis {
     pub test_samples: usize,
     pub declared_observation_dimension: usize,
     pub effective_observation_rank: usize,
-    pub global_permutation_threshold: f64,
+    pub observation_spectrum: ObservationSpectrum,
+    pub familywise_permutation_threshold: f64,
     pub total_positive_raw_capacity: f64,
     pub total_corrected_capacity: f64,
 }
@@ -50,7 +76,7 @@ struct TargetDefinition {
 struct PreparedFeatures {
     rows: Vec<Vec<f64>>,
     train_samples: usize,
-    rank: usize,
+    spectrum: ObservationSpectrum,
 }
 
 pub fn analyze(
@@ -65,12 +91,6 @@ pub fn analyze(
         bail!("capacity analysis requires observations");
     }
     let dimension = observations[0].len();
-    if dimension != config.observation_dimension() {
-        bail!(
-            "observation width {dimension} does not match declared dimension {}",
-            config.observation_dimension()
-        );
-    }
     if observations
         .iter()
         .any(|row| row.len() != dimension || row.iter().any(|value| !value.is_finite()))
@@ -81,46 +101,78 @@ pub fn analyze(
         bail!("input stream contains non-finite values");
     }
 
-    let features = prepare_features(observations, config.max_lag, config.train_fraction)?;
+    let features = prepare_features(
+        observations,
+        config.max_lag,
+        config.train_fraction,
+        config.rank_relative_tolerance,
+    )?;
     let definitions = enumerate_targets(config.max_lag, config.max_degree);
-    let mut provisional = Vec::with_capacity(definitions.len());
-    let mut null_scores = Vec::with_capacity(definitions.len() * config.null_trials);
+    let target_values: Vec<_> = definitions
+        .iter()
+        .map(|definition| evaluate_target(inputs, config.max_lag, &definition.degrees))
+        .collect();
+    let ridge_factor = ridge_factor(&features.rows, features.train_samples, config.ridge)?;
+    let raw_scores: Vec<_> = target_values
+        .iter()
+        .map(|target| {
+            held_out_capacity(
+                &features.rows,
+                target,
+                features.train_samples,
+                &ridge_factor,
+            )
+        })
+        .collect::<Result<_>>()?;
+
+    let mut null_by_target = vec![Vec::with_capacity(config.null_trials); definitions.len()];
+    let mut maximum_null_scores = Vec::with_capacity(config.null_trials);
     let mut rng = StdRng::seed_from_u64(config.seed ^ 0xe703_7ed1_a0b4_28db);
+    let mut permutation: Vec<_> = (0..features.rows.len()).collect();
 
-    for definition in definitions {
-        let target = evaluate_target(inputs, config.max_lag, &definition.degrees);
-        let raw = held_out_capacity(
-            &features.rows,
-            &target,
-            features.train_samples,
-            config.ridge,
-        )?;
-
-        for _ in 0..config.null_trials {
-            let mut permuted = target.clone();
-            permuted.shuffle(&mut rng);
+    for _ in 0..config.null_trials {
+        permutation.shuffle(&mut rng);
+        let mut maximum: f64 = 0.0;
+        for (target_index, target) in target_values.iter().enumerate() {
+            let permuted: Vec<_> = permutation.iter().map(|&index| target[index]).collect();
             let null = held_out_capacity(
                 &features.rows,
                 &permuted,
                 features.train_samples,
-                config.ridge,
+                &ridge_factor,
             )?;
-            null_scores.push(null.max(0.0));
+            let positive_null = null.max(0.0);
+            null_by_target[target_index].push(positive_null);
+            maximum = maximum.max(positive_null);
         }
-        provisional.push((definition, raw));
+        maximum_null_scores.push(maximum);
     }
 
-    let threshold = empirical_quantile(&mut null_scores, config.null_quantile);
-    let targets: Vec<_> = provisional
+    let familywise_threshold = empirical_quantile(&mut maximum_null_scores, config.null_quantile);
+    let targets: Vec<_> = definitions
         .into_iter()
-        .map(|(definition, raw)| TargetCapacity {
-            target: definition.label,
-            total_degree: definition.total_degree,
-            maximum_lag: definition.maximum_lag,
-            interacting_lags: definition.interacting_lags,
-            raw_held_out_capacity: raw,
-            permutation_threshold: threshold,
-            corrected_capacity: (raw - threshold).clamp(0.0, 1.0),
+        .zip(raw_scores)
+        .zip(null_by_target)
+        .map(|((definition, raw), mut null_scores)| {
+            let positive_null_mean = null_scores.iter().sum::<f64>() / null_scores.len() as f64;
+            let target_threshold = empirical_quantile(&mut null_scores, config.null_quantile);
+            let significant = raw > familywise_threshold;
+            TargetCapacity {
+                target: definition.label,
+                total_degree: definition.total_degree,
+                maximum_lag: definition.maximum_lag,
+                interacting_lags: definition.interacting_lags,
+                raw_held_out_capacity: raw,
+                positive_null_mean,
+                target_permutation_threshold: target_threshold,
+                familywise_permutation_threshold: familywise_threshold,
+                familywise_significant: significant,
+                corrected_capacity: if significant {
+                    (raw - target_threshold).clamp(0.0, 1.0)
+                } else {
+                    0.0
+                },
+            }
         })
         .collect();
 
@@ -140,8 +192,9 @@ pub fn analyze(
         train_samples: features.train_samples,
         test_samples: features.rows.len() - features.train_samples,
         declared_observation_dimension: dimension,
-        effective_observation_rank: features.rank,
-        global_permutation_threshold: threshold,
+        effective_observation_rank: features.spectrum.effective_rank,
+        observation_spectrum: features.spectrum,
+        familywise_permutation_threshold: familywise_threshold,
         total_positive_raw_capacity,
         total_corrected_capacity,
     })
@@ -151,6 +204,7 @@ fn prepare_features(
     observations: &[Vec<f64>],
     max_lag: usize,
     train_fraction: f64,
+    rank_relative_tolerance: f64,
 ) -> Result<PreparedFeatures> {
     if observations.len() <= max_lag + 2 {
         bail!("not enough observations after lag alignment");
@@ -194,11 +248,19 @@ fn prepare_features(
             };
         }
     }
-    let rank = numerical_rank(&rows[..train_samples]);
+    let mut spectrum = observation_spectrum(&rows[..train_samples], rank_relative_tolerance);
+    let maximum_scale = scales.iter().copied().fold(0.0, f64::max);
+    spectrum.training_feature_means = means;
+    spectrum.relative_feature_scales = if maximum_scale > 0.0 {
+        scales.iter().map(|scale| scale / maximum_scale).collect()
+    } else {
+        vec![0.0; scales.len()]
+    };
+    spectrum.training_feature_scales = scales;
     Ok(PreparedFeatures {
         rows,
         train_samples,
-        rank,
+        spectrum,
     })
 }
 
@@ -206,14 +268,13 @@ fn held_out_capacity(
     features: &[Vec<f64>],
     target: &[f64],
     train_samples: usize,
-    ridge: f64,
+    ridge_factor: &[Vec<f64>],
 ) -> Result<f64> {
     if features.len() != target.len() {
         bail!("feature and target lengths differ");
     }
     let dimension = features[0].len();
     let target_mean = target[..train_samples].iter().sum::<f64>() / train_samples as f64;
-    let mut gram = vec![vec![0.0; dimension]; dimension];
     let mut cross = vec![0.0; dimension];
 
     for (row, &target_value) in features[..train_samples]
@@ -221,22 +282,15 @@ fn held_out_capacity(
         .zip(&target[..train_samples])
     {
         let centered_target = target_value - target_mean;
-        for ((cross_value, gram_row), &left_value) in cross.iter_mut().zip(&mut gram).zip(row) {
+        for (cross_value, &left_value) in cross.iter_mut().zip(row) {
             *cross_value += left_value * centered_target;
-            for (entry, &right_value) in gram_row.iter_mut().zip(row) {
-                *entry += left_value * right_value;
-            }
         }
     }
     let normalization = 1.0 / train_samples as f64;
-    for (left, (cross_value, gram_row)) in cross.iter_mut().zip(&mut gram).enumerate() {
+    for cross_value in &mut cross {
         *cross_value *= normalization;
-        for entry in gram_row.iter_mut() {
-            *entry *= normalization;
-        }
-        gram_row[left] += ridge;
     }
-    let weights = cholesky_solve(&gram, &cross)?;
+    let weights = cholesky_solve(ridge_factor, &cross)?;
 
     let mut model_error = 0.0;
     let mut baseline_error = 0.0;
@@ -260,9 +314,29 @@ fn held_out_capacity(
     Ok((1.0 - model_error / baseline_error).min(1.0))
 }
 
-fn cholesky_solve(matrix: &[Vec<f64>], rhs: &[f64]) -> Result<Vec<f64>> {
+fn ridge_factor(features: &[Vec<f64>], train_samples: usize, ridge: f64) -> Result<Vec<Vec<f64>>> {
+    let dimension = features[0].len();
+    let mut gram = vec![vec![0.0; dimension]; dimension];
+    for row in &features[..train_samples] {
+        for (gram_row, &left_value) in gram.iter_mut().zip(row) {
+            for (entry, &right_value) in gram_row.iter_mut().zip(row) {
+                *entry += left_value * right_value;
+            }
+        }
+    }
+    let normalization = 1.0 / train_samples as f64;
+    for (index, gram_row) in gram.iter_mut().enumerate() {
+        for entry in gram_row.iter_mut() {
+            *entry *= normalization;
+        }
+        gram_row[index] += ridge;
+    }
+    cholesky_factor(&gram)
+}
+
+fn cholesky_factor(matrix: &[Vec<f64>]) -> Result<Vec<Vec<f64>>> {
     let n = matrix.len();
-    if rhs.len() != n || matrix.iter().any(|row| row.len() != n) {
+    if matrix.iter().any(|row| row.len() != n) {
         bail!("linear system is not square");
     }
     let mut lower = vec![vec![0.0; n]; n];
@@ -282,7 +356,14 @@ fn cholesky_solve(matrix: &[Vec<f64>], rhs: &[f64]) -> Result<Vec<f64>> {
             }
         }
     }
+    Ok(lower)
+}
 
+fn cholesky_solve(lower: &[Vec<f64>], rhs: &[f64]) -> Result<Vec<f64>> {
+    let n = lower.len();
+    if rhs.len() != n || lower.iter().any(|row| row.len() != n) {
+        bail!("Cholesky factor and right-hand side dimensions differ");
+    }
     let mut forward = vec![0.0; n];
     for row in 0..n {
         let previous: f64 = (0..row)
@@ -300,61 +381,93 @@ fn cholesky_solve(matrix: &[Vec<f64>], rhs: &[f64]) -> Result<Vec<f64>> {
     Ok(solution)
 }
 
-fn numerical_rank(rows: &[Vec<f64>]) -> usize {
+fn observation_spectrum(rows: &[Vec<f64>], chosen_tolerance: f64) -> ObservationSpectrum {
     if rows.is_empty() || rows[0].is_empty() {
-        return 0;
+        return ObservationSpectrum {
+            training_feature_means: Vec::new(),
+            training_feature_scales: Vec::new(),
+            relative_feature_scales: Vec::new(),
+            normalized_singular_values: Vec::new(),
+            relative_singular_values: Vec::new(),
+            chosen_relative_tolerance: chosen_tolerance,
+            effective_rank: 0,
+            stable_rank: 0.0,
+            participation_ratio: 0.0,
+            rank_profile: Vec::new(),
+        };
     }
     let dimension = rows[0].len();
-    let mut gram = vec![vec![0.0; dimension]; dimension];
+    let mut covariance = DMatrix::zeros(dimension, dimension);
     for row in rows {
         for left in 0..dimension {
             for right in 0..dimension {
-                gram[left][right] += row[left] * row[right];
+                covariance[(left, right)] += row[left] * row[right];
             }
         }
     }
-    let normalization = 1.0 / rows.len() as f64;
-    for row in &mut gram {
-        for value in row {
-            *value *= normalization;
-        }
-    }
-    let largest = gram
+    covariance /= rows.len() as f64;
+    let eigenvalues = SymmetricEigen::new(covariance).eigenvalues;
+    let mut singular_values: Vec<_> = eigenvalues
         .iter()
-        .flatten()
-        .map(|value| value.abs())
-        .fold(0.0, f64::max);
-    if largest == 0.0 {
-        return 0;
+        .map(|&eigenvalue| eigenvalue.max(0.0).sqrt())
+        .collect();
+    singular_values.sort_by(|left, right| right.total_cmp(left));
+    let largest = singular_values.first().copied().unwrap_or(0.0);
+    let relative_singular_values: Vec<_> = if largest > 0.0 {
+        singular_values
+            .iter()
+            .map(|value| value / largest)
+            .collect()
+    } else {
+        vec![0.0; singular_values.len()]
+    };
+    let rank_at = |tolerance: f64| {
+        relative_singular_values
+            .iter()
+            .filter(|&&value| value > tolerance)
+            .count()
+    };
+    let sum_squares: f64 = singular_values.iter().map(|value| value.powi(2)).sum();
+    let sum_fourth: f64 = singular_values.iter().map(|value| value.powi(4)).sum();
+    let stable_rank = if largest > 0.0 {
+        sum_squares / largest.powi(2)
+    } else {
+        0.0
+    };
+    let participation_ratio = if sum_fourth > 0.0 {
+        sum_squares.powi(2) / sum_fourth
+    } else {
+        0.0
+    };
+    let mut tolerances = vec![1e-3, 1e-6, 1e-9];
+    if !tolerances
+        .iter()
+        .any(|value| f64::abs(*value - chosen_tolerance) < f64::EPSILON)
+    {
+        tolerances.push(chosen_tolerance);
     }
-    let tolerance = largest * dimension as f64 * 1e-10;
+    tolerances.sort_by(|left, right| right.total_cmp(left));
+    let rank_profile = tolerances
+        .iter()
+        .map(|&relative_singular_tolerance| RankAtTolerance {
+            relative_singular_tolerance,
+            rank: rank_at(relative_singular_tolerance),
+        })
+        .collect();
+    let effective_rank = rank_at(chosen_tolerance);
 
-    let mut rank = 0;
-    for column in 0..dimension {
-        let Some((pivot, pivot_value)) = (rank..dimension)
-            .map(|row| (row, gram[row][column].abs()))
-            .max_by(|left, right| left.1.total_cmp(&right.1))
-        else {
-            break;
-        };
-        if pivot_value <= tolerance {
-            continue;
-        }
-        gram.swap(rank, pivot);
-        let divisor = gram[rank][column];
-        let pivot_tail = gram[rank][column..].to_vec();
-        for candidate in gram.iter_mut().skip(rank + 1) {
-            let factor = candidate[column] / divisor;
-            for (entry, &pivot_entry) in candidate[column..].iter_mut().zip(&pivot_tail) {
-                *entry -= factor * pivot_entry;
-            }
-        }
-        rank += 1;
-        if rank == dimension {
-            break;
-        }
+    ObservationSpectrum {
+        training_feature_means: Vec::new(),
+        training_feature_scales: Vec::new(),
+        relative_feature_scales: Vec::new(),
+        normalized_singular_values: singular_values,
+        relative_singular_values,
+        chosen_relative_tolerance: chosen_tolerance,
+        effective_rank,
+        stable_rank,
+        participation_ratio,
+        rank_profile,
     }
-    rank
 }
 
 fn enumerate_targets(max_lag: usize, max_degree: usize) -> Vec<TargetDefinition> {
@@ -469,6 +582,10 @@ fn aggregate(
                 Some(GroupCapacity {
                     group,
                     target_count: members.len(),
+                    significant_target_count: members
+                        .iter()
+                        .filter(|target| target.familywise_significant)
+                        .count(),
                     raw_positive_capacity: members
                         .iter()
                         .map(|target| target.raw_held_out_capacity.max(0.0))
@@ -515,8 +632,9 @@ mod tests {
             max_lag: 2,
             train_fraction: 0.7,
             ridge: 1e-8,
-            null_trials: 12,
-            null_quantile: 0.99,
+            null_trials: 20,
+            null_quantile: 0.95,
+            rank_relative_tolerance: 1e-6,
             save_samples: false,
         }
     }
@@ -577,12 +695,36 @@ mod tests {
         let first = analyze(&inputs, &observations, &configuration).unwrap();
         let second = analyze(&inputs, &observations, &configuration).unwrap();
         assert_eq!(
-            first.global_permutation_threshold,
-            second.global_permutation_threshold
+            first.familywise_permutation_threshold,
+            second.familywise_permutation_threshold
         );
         assert_eq!(
             first.total_corrected_capacity,
             second.total_corrected_capacity
+        );
+    }
+
+    #[test]
+    fn singular_spectrum_exposes_tolerance_sensitive_direction() {
+        let observations: Vec<_> = (0..400)
+            .map(|index| {
+                let primary = (index as f64 * 0.173).sin();
+                let perturbation = (index as f64 * 0.397).cos();
+                vec![primary, primary + 1e-5 * perturbation]
+            })
+            .collect();
+        let prepared = prepare_features(&observations, 0, 0.7, 1e-3).unwrap();
+        assert_eq!(prepared.spectrum.effective_rank, 1);
+        assert!(prepared.spectrum.stable_rank < 1.01);
+        assert_eq!(
+            prepared
+                .spectrum
+                .rank_profile
+                .iter()
+                .find(|entry| entry.relative_singular_tolerance == 1e-9)
+                .unwrap()
+                .rank,
+            2
         );
     }
 }

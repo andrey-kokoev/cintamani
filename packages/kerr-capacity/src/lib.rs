@@ -1,5 +1,7 @@
 pub mod capacity;
 pub mod config;
+pub mod controls;
+pub mod database;
 pub mod dynamics;
 pub mod experiment;
 pub mod report;

@@ -46,6 +46,7 @@ pub struct Config {
     pub ridge: f64,
     pub null_trials: usize,
     pub null_quantile: f64,
+    pub rank_relative_tolerance: f64,
     pub save_samples: bool,
 }
 
@@ -119,11 +120,23 @@ impl Config {
         if !self.ridge.is_finite() || self.ridge <= 0.0 {
             bail!("ridge must be finite and positive");
         }
-        if self.null_trials == 0 {
-            bail!("null_trials must be positive");
+        if self.null_trials < 2 {
+            bail!("null_trials must be at least two");
         }
-        if !(0.5..=1.0).contains(&self.null_quantile) {
-            bail!("null_quantile must be in [0.5, 1.0]");
+        if !(0.5..1.0).contains(&self.null_quantile) {
+            bail!("null_quantile must be in [0.5, 1.0)");
+        }
+        let minimum_trials = (1.0 / (1.0 - self.null_quantile)).ceil() as usize;
+        if self.null_trials < minimum_trials {
+            bail!(
+                "null_trials must be at least {minimum_trials} to resolve null_quantile {}",
+                self.null_quantile
+            );
+        }
+        if !self.rank_relative_tolerance.is_finite()
+            || !(0.0..1.0).contains(&self.rank_relative_tolerance)
+        {
+            bail!("rank_relative_tolerance must be finite and in (0, 1)");
         }
         Ok(())
     }
@@ -171,8 +184,9 @@ mod tests {
             max_lag: 2,
             train_fraction: 0.7,
             ridge: 1e-6,
-            null_trials: 2,
+            null_trials: 20,
             null_quantile: 0.95,
+            rank_relative_tolerance: 1e-6,
             save_samples: false,
         }
     }
@@ -193,5 +207,22 @@ mod tests {
         assert_eq!(config.observation_dimension(), 10);
         config.observation = Observation::Both;
         assert_eq!(config.observation_dimension(), 15);
+    }
+
+    #[test]
+    fn null_quantile_requires_enough_permutations() {
+        let mut config = valid();
+        config.null_quantile = 0.99;
+        config.null_trials = 99;
+        assert!(config.validate().is_err());
+        config.null_trials = 100;
+        config.validate().unwrap();
+    }
+
+    #[test]
+    fn committed_configs_parse_and_validate() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        Config::load(root.join("configs/smoke.toml")).unwrap();
+        Config::load(root.join("configs/linear-control.toml")).unwrap();
     }
 }

@@ -381,8 +381,9 @@ mod tests {
             max_lag: 2,
             train_fraction: 0.7,
             ridge: 1e-6,
-            null_trials: 2,
+            null_trials: 20,
             null_quantile: 0.95,
+            rank_relative_tolerance: 1e-6,
             save_samples: false,
         }
     }

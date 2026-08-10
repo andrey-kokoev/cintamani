@@ -9,9 +9,11 @@ license = "Apache-2.0"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 csv = "1"
+nalgebra = { version = "0.34", default-features = false, features = ["std"] }
 num-complex = "0.4"
 rand = { version = "0.9", features = ["std_rng"] }
 rand_distr = "0.5"
+rusqlite = { version = "0.40.2", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.9"

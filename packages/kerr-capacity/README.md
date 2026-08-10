@@ -24,9 +24,11 @@ Two independently coded cubic operators are available:
 
 The capacity estimator uses products of probability-normalized Legendre polynomials of an i.i.d.
 uniform input history. It standardizes observations on the training partition only, fits a fixed
-ridge readout, scores on a later held-out partition, and subtracts a seeded global permutation-null
-quantile. It reports the unaltered empirical total and checks it against the numerical rank of the
-training observation matrix; it never clamps the total to make the bound pass.
+ridge readout, and scores on a later held-out partition. Joint row permutations preserve the target
+family while breaking its relation to observations. A target must pass a family-wise maximum-null
+threshold before its target-specific null threshold is subtracted. The report includes the complete
+singular spectrum, stable rank, participation ratio, and ranks at explicit relative tolerances. It
+never clamps the capacity total to make the observation-rank bound pass.
 
 ## Commands
 
@@ -38,6 +40,8 @@ pnpm --filter @cintamani/kerr-capacity test
 pnpm --filter @cintamani/kerr-capacity cross-check
 pnpm --filter @cintamani/kerr-capacity run:smoke
 pnpm --filter @cintamani/kerr-capacity run:linear-control
+pnpm --filter @cintamani/kerr-capacity controls
+pnpm --filter @cintamani/kerr-capacity db-check
 ```
 
 Or run an arbitrary configuration from this directory:
@@ -46,9 +50,18 @@ Or run an arbitrary configuration from this directory:
 cargo run --release -- run configs/smoke.toml --output output/smoke
 ```
 
-Each run writes `config.json`, `summary.json`, target-level `capacities.csv`, grouped capacity CSVs,
-and `report.md`. Setting `save_samples = true` also writes the input, state diagnostics, and every
-declared observation to `samples.csv`.
+Each run writes a normalized relational snapshot to `results.sqlite`; this is the canonical result
+artifact. JSON, target-level and grouped CSVs, singular diagnostics, and `report.md` remain derived
+inspection exports. Setting `save_samples = true` also writes the input, state diagnostics, and
+every declared observation to `samples.csv`.
+
+The `controls` command runs Kerr/Kerr-disabled intensity and quadrature pairs, a pump-only case,
+direct linear and square-law input controls, and matched seed/split sensitivity checks. Its SQLite,
+CSV, JSON, singular-spectrum, raw-feature-scale, and Markdown products are written under
+`output/controls`. The SQLite schema relates configurations, cases, resources, targets, spectra,
+sensitivity rows, and replication decisions. The cross-seed summary admits a target only when it
+passes the family-wise gate in every seed, then charges its minimum corrected capacity across those
+seeds.
 
 ## Deliberate perimeter
 

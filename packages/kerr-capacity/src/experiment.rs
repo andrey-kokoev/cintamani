@@ -3,7 +3,7 @@ use crate::{
     config::{Backend, Config, Observation},
     dynamics::{KerrSystem, ResourceUsage, Simulation},
 };
-use anyhow::Result;
+use anyhow::{Result, bail};
 use num_complex::Complex64;
 use serde::Serialize;
 
@@ -17,13 +17,17 @@ pub struct Summary {
     pub observation: Observation,
     pub declared_observation_dimension: usize,
     pub effective_observation_rank: usize,
+    pub observation_stable_rank: f64,
+    pub observation_participation_ratio: f64,
+    pub rank_relative_tolerance: f64,
     pub warmup_symbols: usize,
     pub recorded_symbols: usize,
     pub aligned_samples: usize,
     pub train_samples: usize,
     pub test_samples: usize,
     pub target_count: usize,
-    pub global_permutation_threshold: f64,
+    pub significant_target_count: usize,
+    pub familywise_permutation_threshold: f64,
     pub total_positive_raw_capacity: f64,
     pub total_corrected_capacity: f64,
     pub linear_corrected_capacity: f64,
@@ -53,6 +57,9 @@ pub fn run(config: &Config) -> Result<ExperimentResult> {
     config.validate()?;
     let system = KerrSystem::new(config);
     let simulation = system.simulate()?;
+    if simulation.observations.first().map(Vec::len) != Some(config.observation_dimension()) {
+        bail!("simulator observation width does not match the configured interface");
+    }
     let capacity = capacity::analyze(&simulation.inputs, &simulation.observations, config)?;
     let total = capacity.total_corrected_capacity;
     let effective_rank = capacity.effective_observation_rank;
@@ -85,13 +92,21 @@ pub fn run(config: &Config) -> Result<ExperimentResult> {
         observation: config.observation,
         declared_observation_dimension: capacity.declared_observation_dimension,
         effective_observation_rank: effective_rank,
+        observation_stable_rank: capacity.observation_spectrum.stable_rank,
+        observation_participation_ratio: capacity.observation_spectrum.participation_ratio,
+        rank_relative_tolerance: capacity.observation_spectrum.chosen_relative_tolerance,
         warmup_symbols: config.warmup_symbols,
         recorded_symbols: config.sample_symbols,
         aligned_samples: capacity.aligned_samples,
         train_samples: capacity.train_samples,
         test_samples: capacity.test_samples,
         target_count: capacity.targets.len(),
-        global_permutation_threshold: capacity.global_permutation_threshold,
+        significant_target_count: capacity
+            .targets
+            .iter()
+            .filter(|target| target.familywise_significant)
+            .count(),
+        familywise_permutation_threshold: capacity.familywise_permutation_threshold,
         total_positive_raw_capacity: capacity.total_positive_raw_capacity,
         total_corrected_capacity: total,
         linear_corrected_capacity: linear,
@@ -183,8 +198,9 @@ mod tests {
             max_lag: 2,
             train_fraction: 0.7,
             ridge: 1e-6,
-            null_trials: 2,
+            null_trials: 20,
             null_quantile: 0.95,
+            rank_relative_tolerance: 1e-6,
             save_samples: false,
         }
     }
