@@ -1,0 +1,41 @@
+{
+  "beyond_training_horizon_gain_8_to_32": 0.00028205128205130436,
+  "confidence_amplification_total": 1122893,
+  "controls_complete": true,
+  "decision": "reject",
+  "easy_gain_mean": 0.0013333333333333298,
+  "entropy_limit_cycle_period": null,
+  "evaluation_recurrences": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "feed_forward_t8_accuracy_mean": 0.19833333333333333,
+  "frozen_substrate": {
+    "connectivity_radius": 1,
+    "coupling_scale": 2.0,
+    "gamma": 0.03,
+    "input_injection": 0.5,
+    "nonlinear_strength": 0.5,
+    "transmission": 0.98
+  },
+  "hard_recoverable_gain_mean": -0.0036944444444444446,
+  "linear_t32_accuracy_mean": 0.09166666666666667,
+  "net_corrections": -129,
+  "seeds": [
+    20260809,
+    20260810,
+    20260811
+  ],
+  "training_recurrences": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "unshared_t8_accuracy_mean": 0.07,
+  "wrong_to_correct_total": 276
+}

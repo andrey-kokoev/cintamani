@@ -1,0 +1,16 @@
+{
+  "name": "@cintamani/vrc-mnist",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "cargo build",
+    "check": "cargo check --all-targets",
+    "test": "cargo test --all-targets",
+    "gpu-info": "cargo run --quiet -- gpu-info",
+    "smoke": "cargo run --quiet -- smoke configs/clean.toml",
+    "smoke:train": "cargo run --quiet -- train configs/smoke.toml",
+    "smoke:eval": "cargo run --quiet -- eval artifacts/smoke_train/model.mpk --config configs/smoke.toml --recurrences 1,2,3,4",
+    "smoke:baseline": "cargo run --quiet -- train-feed-forward configs/smoke.toml --stages 2 && cargo run --quiet -- eval-feed-forward artifacts/smoke_train_feed_forward_t2/model.mpk --config configs/smoke.toml --stages 2"
+  }
+}

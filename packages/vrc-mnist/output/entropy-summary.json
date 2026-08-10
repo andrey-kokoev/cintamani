@@ -1,0 +1,124 @@
+{
+  "substrate": "simulated-vrc-smoke",
+  "configuration": {
+    "parameter_count": 72,
+    "states_per_parameter": 256,
+    "raw_bits": 576.0,
+    "effective_bits": 564.48,
+    "reliability_assumption": 0.98
+  },
+  "transient_state": {
+    "state_dimension": 128,
+    "leading_singular_estimates": [
+      0.09101756386615723,
+      0.08586627867146522,
+      0.08504282786306609,
+      0.0847036962047895,
+      0.08337647308051979,
+      0.08164443996664986,
+      0.08151759468773588,
+      0.08122726019564043,
+      0.0800723702569989,
+      0.07912182615544147,
+      0.07903279549239499,
+      0.07627638072056578,
+      0.07540433071366182,
+      0.07162750968726977,
+      0.07149245267694193,
+      0.06562497995412186
+    ],
+    "effective_rank": 15.95164969600419,
+    "condition_number": 1.3869347301863895,
+    "state_capacity_bits_proxy": 11.334220246255581,
+    "raw_volumetric_modes": 227781549184.45007
+  },
+  "recurrent_dynamics": {
+    "rows": [
+      {
+        "recurrence": 1,
+        "state_norm": 0.008229354995085942,
+        "perturbation_distance": 7.437171231632575e-7,
+        "perturbation_survival": 0.07437171231632574,
+        "trajectory_divergence": -2.5986796202436175,
+        "jacobian_max_gain": 0.0907509944842824,
+        "jacobian_effective_rank": 15.956111595170492,
+        "contraction_expansion": 0.07437171231632574
+      },
+      {
+        "recurrence": 2,
+        "state_norm": 0.007350054310432018,
+        "perturbation_distance": 8.227509982913628e-8,
+        "perturbation_survival": 0.008227509982913628,
+        "trajectory_divergence": -2.4001359318941082,
+        "jacobian_max_gain": 0.09075098510541331,
+        "jacobian_effective_rank": 15.957674796724444,
+        "contraction_expansion": 0.008227509982913628
+      },
+      {
+        "recurrence": 4,
+        "state_norm": 0.007475104618370881,
+        "perturbation_distance": 2.007305312456425e-9,
+        "perturbation_survival": 0.00020073053124564249,
+        "trajectory_divergence": -2.1283867974841755,
+        "jacobian_max_gain": 0.0941076068891528,
+        "jacobian_effective_rank": 15.94859656388711,
+        "contraction_expansion": 0.00020073053124564249
+      },
+      {
+        "recurrence": 8,
+        "state_norm": 0.007481149291953708,
+        "perturbation_distance": 2.257830603754447e-12,
+        "perturbation_survival": 2.257830603754447e-7,
+        "trajectory_divergence": -1.9129614010657232,
+        "jacobian_max_gain": 0.09410760692165322,
+        "jacobian_effective_rank": 15.953605212170825,
+        "contraction_expansion": 2.257830603754447e-7
+      },
+      {
+        "recurrence": 16,
+        "state_norm": 0.007481166631998734,
+        "perturbation_distance": 1.3562435158151327e-17,
+        "perturbation_survival": 1.3562435158151326e-12,
+        "trajectory_divergence": -1.7078938974124467,
+        "jacobian_max_gain": 0.09410760692171209,
+        "jacobian_effective_rank": 15.951111966206698,
+        "contraction_expansion": 1.3562435158151326e-12
+      },
+      {
+        "recurrence": 32,
+        "state_norm": 0.007481166632152049,
+        "perturbation_distance": 0.0,
+        "perturbation_survival": 0.0,
+        "trajectory_divergence": -22.137388079133252,
+        "jacobian_max_gain": 0.09000724967911918,
+        "jacobian_effective_rank": 15.957534536333112,
+        "contraction_expansion": 0.0
+      }
+    ],
+    "jacobian_singular_estimates": [
+      0.09410759092795133,
+      0.09075093553524248,
+      0.08639961520443812,
+      0.08575088689361646,
+      0.08282110562097052,
+      0.08259853523659898,
+      0.08164528032934097,
+      0.07967016636296059,
+      0.07893934200903692,
+      0.07777963872101204,
+      0.07715042965274964,
+      0.075817157582723,
+      0.07413612931277985,
+      0.07255277486553871,
+      0.07151847039956641,
+      0.06959387975356728
+    ],
+    "apparent_attractor_count": 5,
+    "limit_cycle_period": 1
+  },
+  "observed_failure_modes": [
+    "rapid collapse of distinguishable perturbations",
+    "early limit cycle detected"
+  ],
+  "recommendation": "reject"
+}

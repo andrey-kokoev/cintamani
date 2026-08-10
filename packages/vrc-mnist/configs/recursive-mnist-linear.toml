@@ -1,0 +1,21 @@
+name = "recursive_mnist_linear"
+seed = 20260809
+output_dir = "artifacts"
+depth = 1
+kernel_size = 3
+alpha = 0.0
+transmission = 0.98
+q_injection = 0.5
+nonlinear = false
+residual_gamma = 0.03
+coupling_scale = 2.0
+train_recurrences = [1, 2, 4, 8]
+eval_recurrences = [1, 2, 4, 8, 16, 32]
+epochs = 3
+batch_size = 128
+max_train_samples = 5000
+max_eval_samples = 1000
+learning_rate = 0.001
+intermediate_loss_weight = 0.05
+corruption = { kind = "training_mixture", severity = [0.10, 0.25, 0.40] }
+held_out_corruption = { kind = "vertical_strip", severity = 0.25 }

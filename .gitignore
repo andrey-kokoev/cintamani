@@ -1,0 +1,6 @@
+**/target/
+**/artifacts/
+**/data/
+*.checkpoint
+node_modules/
+.pnpm-store/

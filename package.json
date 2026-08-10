@@ -1,0 +1,12 @@
+{
+  "name": "cintamani",
+  "version": "0.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.9.0",
+  "scripts": {
+    "build": "pnpm --recursive run build",
+    "check": "pnpm --recursive run check",
+    "test": "pnpm --recursive run test"
+  }
+}

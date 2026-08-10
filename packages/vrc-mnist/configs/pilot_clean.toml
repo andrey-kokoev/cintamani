@@ -1,0 +1,18 @@
+name = "pilot_clean"
+seed = 20260809
+output_dir = "artifacts"
+depth = 3
+kernel_size = 3
+alpha = 0.15
+transmission = 0.995
+q_injection = 0.10
+nonlinear = true
+train_recurrences = [1, 2, 4, 8]
+eval_recurrences = [1, 2, 3, 4, 8, 16]
+epochs = 3
+batch_size = 128
+max_train_samples = 5000
+max_eval_samples = 2000
+learning_rate = 0.001
+intermediate_loss_weight = 0.05
+corruption = { kind = "clean" }
