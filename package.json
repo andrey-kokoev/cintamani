@@ -7,6 +7,10 @@
   "scripts": {
     "build": "pnpm --recursive run build",
     "check": "pnpm --recursive run check",
-    "test": "pnpm --recursive run test"
+    "test": "pnpm --recursive run test",
+    "domain:init": "pnpm --filter @cintamani/domain domain:init",
+    "domain:rebuild": "pnpm --filter @cintamani/domain domain:rebuild",
+    "domain:check": "pnpm --filter @cintamani/domain domain:check",
+    "domain:list": "pnpm --filter @cintamani/domain domain:list"
   }
 }

@@ -1,0 +1,286 @@
+{
+  "record_id": "admission-ledger-13",
+  "schema_version": 1,
+  "admitted_at": "2026-08-10",
+  "description": "Ledger 13 attribution controls and three-seed capacity-estimator calibration.",
+  "siege_cell_decisions": [
+    {
+      "decision_id": "decision-intensity-r2",
+      "cell_id": "cell-kerr-abstract-intensity",
+      "revision": 2,
+      "decided_at": "2026-08-10",
+      "status": "tested-local",
+      "rationale": "Ledger 13 replicated the absence of Kerr intensity advantage across three paired seeds and attributed dominant degree-two capacity to square-law observation.",
+      "decision_scope": "Three paired normalized noiseless seeds at one dynamical point; no broad obstruction follows."
+    },
+    {
+      "decision_id": "decision-quadrature-r1",
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "revision": 1,
+      "decided_at": "2026-08-10",
+      "status": "tested-local",
+      "rationale": "Ledger 13 identified a small replicated Kerr-associated lag-three/four linear-memory lead requiring a predeclared detector-noise attack.",
+      "decision_scope": "Local normalized noiseless lead only; detector noise, readout amplification, and physical observability remained unresolved."
+    }
+  ],
+  "conjectures": [
+    {
+      "conjecture_id": "conjecture-kerr-quadrature-linear-memory-lead",
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "label": "Kerr quadrature linear-memory lead",
+      "statement": "At detector-observation-noise standard deviation 1e-8 at the frozen normalized point, the Kerr lag-three and lag-four linear targets will remain family-wise significant across seeds 20260810-20260812, and every matched Kerr-minus-disabled corrected-capacity delta will remain positive.",
+      "version": 1
+    }
+  ],
+  "conjecture_dispositions": [
+    {
+      "disposition_id": "disposition-quadrature-lead-r1",
+      "conjecture_id": "conjecture-kerr-quadrature-linear-memory-lead",
+      "revision": 1,
+      "decided_at": "2026-08-10",
+      "status": "open",
+      "rationale": "Ledger 13 retained the noiseless quadrature lead specifically for a predeclared normalized detector-noise falsification attempt.",
+      "decision_scope": "Pre-test local normalized-model conjecture; not nonlinear computation, detector calibration, material validation, or Conjecture 5."
+    }
+  ],
+  "falsification_criteria": [
+    {
+      "criterion_id": "criterion-l14-lag3-survival",
+      "conjecture_id": "conjecture-kerr-quadrature-linear-memory-lead",
+      "description": "At detector-noise std 1e-8, the Kerr lag-three target must be family-wise significant in every seed and every matched Kerr-minus-disabled delta must be positive.",
+      "metric": "lag-three cross-seed signed lower-envelope corrected-capacity delta",
+      "comparator": "all-seeds-positive",
+      "threshold_value": 0.0,
+      "threshold_text": "Kerr significance 3/3 and positive paired delta 3/3",
+      "units": "corrected-capacity",
+      "predeclared": true
+    },
+    {
+      "criterion_id": "criterion-l14-lag4-survival",
+      "conjecture_id": "conjecture-kerr-quadrature-linear-memory-lead",
+      "description": "At detector-noise std 1e-8, the Kerr lag-four target must be family-wise significant in every seed and every matched Kerr-minus-disabled delta must be positive.",
+      "metric": "lag-four cross-seed signed lower-envelope corrected-capacity delta",
+      "comparator": "all-seeds-positive",
+      "threshold_value": 0.0,
+      "threshold_text": "Kerr significance 3/3 and positive paired delta 3/3",
+      "units": "corrected-capacity",
+      "predeclared": true
+    }
+  ],
+  "protocols": [
+    {
+      "protocol_id": "protocol-ledger13-attribution",
+      "name": "Ledger 13 attribution and estimator calibration",
+      "version": 1,
+      "config_uri": null,
+      "config_sha256": null,
+      "config_hash_status": "unavailable",
+      "predeclared": true,
+      "seed_count": 3,
+      "null_trials": 512,
+      "null_quantile": 0.99,
+      "decision_scope": "Eight-case normalized attribution suite, three seeds, joint-family permutations, and correlated split-sensitivity checks."
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "run-ledger13-attribution",
+      "protocol_id": "protocol-ledger13-attribution",
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "code_commit": "89bdd85b881a1e4a91041d797df962588c71da35",
+      "run_status": "completed",
+      "epistemic_status": "normalized-calibration-suite",
+      "summary": "Intensity readout showed no Kerr advantage; coherent quadrature showed a small positive three-seed linear-memory difference at lags three and four. No nonlinear target replicated. Weak Kerr feature scales left physical observability unresolved."
+    }
+  ],
+  "gate_results": [
+    {
+      "gate_result_id": "gate-l13-quadrature-paired-positive",
+      "run_id": "run-ledger13-attribution",
+      "criterion_id": null,
+      "gate_name": "quadrature-paired-capacity-positive-across-seeds",
+      "evidence_polarity": "survives-test",
+      "passed": true,
+      "metric_value": 0.015012,
+      "metric_text": "total-capacity delta range [0.015012, 0.020287] across 3 seeds",
+      "units": "corrected-capacity-delta",
+      "seed_pass_count": 3,
+      "seed_required_count": 3,
+      "decision_scope": "Matched Kerr-minus-disabled quadrature comparison at one normalized dynamical point.",
+      "limitation": "The replicated targets were linear; detector noise and readout amplification were not yet charged."
+    },
+    {
+      "gate_result_id": "gate-l13-replicated-nonlinear",
+      "run_id": "run-ledger13-attribution",
+      "criterion_id": null,
+      "gate_name": "replicated-nonlinear-delayed-capacity",
+      "evidence_polarity": "falsifies",
+      "passed": false,
+      "metric_value": 0.0,
+      "metric_text": null,
+      "units": "corrected-capacity",
+      "seed_pass_count": 0,
+      "seed_required_count": 3,
+      "decision_scope": "Degree-two or degree-three quadrature targets required to survive all three seeds.",
+      "limitation": "Three seeds at one normalized noiseless point; no broad impossibility follows."
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison_id": "comparison-l13-kerr-disabled-quadrature",
+      "run_id": "run-ledger13-attribution",
+      "baseline_run_id": null,
+      "control_relationship": "Matched Kerr-disabled quadrature condition within each seed",
+      "metric": "corrected total capacity, Kerr minus disabled",
+      "evidence_polarity": "survives-test",
+      "minimum_delta": 0.015012,
+      "maximum_delta": 0.020287,
+      "mean_delta": 0.017792,
+      "units": "corrected-capacity",
+      "decision_scope": "Three paired seeds at one normalized noiseless point."
+    },
+    {
+      "comparison_id": "comparison-l13-kerr-disabled-intensity",
+      "run_id": "run-ledger13-attribution",
+      "baseline_run_id": null,
+      "control_relationship": "Matched Kerr-disabled intensity condition within each seed",
+      "metric": "corrected total capacity, Kerr minus disabled",
+      "evidence_polarity": "falsifies",
+      "minimum_delta": -0.008197,
+      "maximum_delta": -0.000522,
+      "mean_delta": null,
+      "units": "corrected-capacity",
+      "decision_scope": "Three paired seeds at one normalized noiseless point."
+    }
+  ],
+  "ledger_links": [
+    {
+      "ledger_link_id": "link-l13-run",
+      "ledger_number": 13,
+      "ledger_title": "Attribution Controls and Capacity-Estimator Calibration",
+      "ledger_path": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md",
+      "ledger_sha256": "EC1B111DAF4D50E8BEB3AAD339937AC19DB4A4774F88C499FB2B8C8ECF5A54D8",
+      "relation": "records-run",
+      "admitted_claim": "The attribution and estimator-calibration suite completed.",
+      "run_id": "run-ledger13-attribution",
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l13-quadrature-cell",
+      "ledger_number": 13,
+      "ledger_title": "Attribution Controls and Capacity-Estimator Calibration",
+      "ledger_path": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md",
+      "ledger_sha256": "EC1B111DAF4D50E8BEB3AAD339937AC19DB4A4774F88C499FB2B8C8ECF5A54D8",
+      "relation": "identifies-cell-lead",
+      "admitted_claim": "The quadrature cell exposed a small replicated linear-memory lead.",
+      "run_id": null,
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l13-intensity-cell",
+      "ledger_number": 13,
+      "ledger_title": "Attribution Controls and Capacity-Estimator Calibration",
+      "ledger_path": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md",
+      "ledger_sha256": "EC1B111DAF4D50E8BEB3AAD339937AC19DB4A4774F88C499FB2B8C8ECF5A54D8",
+      "relation": "updates-cell-decision",
+      "admitted_claim": "Three-seed attribution controls retained the intensity cell as tested-local with no Kerr advantage.",
+      "run_id": null,
+      "cell_id": "cell-kerr-abstract-intensity",
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l13-conjecture",
+      "ledger_number": 13,
+      "ledger_title": "Attribution Controls and Capacity-Estimator Calibration",
+      "ledger_path": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md",
+      "ledger_sha256": "EC1B111DAF4D50E8BEB3AAD339937AC19DB4A4774F88C499FB2B8C8ECF5A54D8",
+      "relation": "motivates-local-conjecture",
+      "admitted_claim": "The lag-three/four quadrature result was retained as a local lead for severe noise testing.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": "conjecture-kerr-quadrature-linear-memory-lead",
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l13-nonlinear-gate",
+      "ledger_number": 13,
+      "ledger_title": "Attribution Controls and Capacity-Estimator Calibration",
+      "ledger_path": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md",
+      "ledger_sha256": "EC1B111DAF4D50E8BEB3AAD339937AC19DB4A4774F88C499FB2B8C8ECF5A54D8",
+      "relation": "reports-gate",
+      "admitted_claim": "No nonlinear target replicated across all three seeds.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": "gate-l13-replicated-nonlinear",
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l13-quadrature-comparison",
+      "ledger_number": 13,
+      "ledger_title": "Attribution Controls and Capacity-Estimator Calibration",
+      "ledger_path": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md",
+      "ledger_sha256": "EC1B111DAF4D50E8BEB3AAD339937AC19DB4A4774F88C499FB2B8C8ECF5A54D8",
+      "relation": "reports-comparison",
+      "admitted_claim": "Quadrature Kerr-minus-disabled total-capacity differences were positive in all three seeds.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": "comparison-l13-kerr-disabled-quadrature"
+    },
+    {
+      "ledger_link_id": "link-l13-quadrature-gate",
+      "ledger_number": 13,
+      "ledger_title": "Attribution Controls and Capacity-Estimator Calibration",
+      "ledger_path": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md",
+      "ledger_sha256": "EC1B111DAF4D50E8BEB3AAD339937AC19DB4A4774F88C499FB2B8C8ECF5A54D8",
+      "relation": "reports-gate",
+      "admitted_claim": "The paired quadrature total-capacity difference stayed positive across three seeds.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": "gate-l13-quadrature-paired-positive",
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l13-intensity-comparison",
+      "ledger_number": 13,
+      "ledger_title": "Attribution Controls and Capacity-Estimator Calibration",
+      "ledger_path": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md",
+      "ledger_sha256": "EC1B111DAF4D50E8BEB3AAD339937AC19DB4A4774F88C499FB2B8C8ECF5A54D8",
+      "relation": "reports-comparison",
+      "admitted_claim": "The intensity interface showed no Kerr capacity advantage across three seeds.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": "comparison-l13-kerr-disabled-intensity"
+    }
+  ]
+}

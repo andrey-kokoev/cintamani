@@ -1,0 +1,373 @@
+{
+  "record_id": "admission-ledger-14",
+  "schema_version": 1,
+  "admitted_at": "2026-08-10",
+  "description": "Ledger 14 predeclared normalized detector-observation-noise survival gate and artifact identity.",
+  "siege_cell_decisions": [
+    {
+      "decision_id": "decision-quadrature-r2",
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "revision": 2,
+      "decided_at": "2026-08-10",
+      "status": "advanced-local-lead",
+      "rationale": "Ledger 14 found that both declared delayed linear targets survived the predeclared 1e-8 normalized observation-noise gate with positive paired lower envelopes.",
+      "decision_scope": "Advance only the replicated normalized Kerr quadrature linear-memory lead to bounded siege; no nonlinear, detector-physical, material, or device claim."
+    }
+  ],
+  "parameter_regions": [
+    {
+      "region_id": "region-ledger14-decision-point",
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "name": "Ledger 14 predeclared detector-noise decision point",
+      "region_kind": "frozen-singleton",
+      "predeclared": true,
+      "decision_scope": "Registry projection of the principal siege axes at the 1e-8 decision floor; the hash-addressed frozen TOML is authoritative for the complete protocol."
+    }
+  ],
+  "parameter_region_values": [
+    {
+      "region_id": "region-ledger14-decision-point",
+      "parameter_id": "kerr-strength",
+      "lower_value": 0.35,
+      "upper_value": 0.35,
+      "exact_text": "0.35",
+      "units": "normalized-angular-frequency"
+    },
+    {
+      "region_id": "region-ledger14-decision-point",
+      "parameter_id": "pump-amplitude",
+      "lower_value": 1.25,
+      "upper_value": 1.25,
+      "exact_text": "1.25",
+      "units": "normalized-field-amplitude"
+    },
+    {
+      "region_id": "region-ledger14-decision-point",
+      "parameter_id": "detuning",
+      "lower_value": 1.4,
+      "upper_value": 1.4,
+      "exact_text": "1.4",
+      "units": "normalized-angular-frequency"
+    },
+    {
+      "region_id": "region-ledger14-decision-point",
+      "parameter_id": "dispersion",
+      "lower_value": -0.02,
+      "upper_value": -0.02,
+      "exact_text": "-0.02",
+      "units": "normalized-angular-frequency-per-mode-squared"
+    },
+    {
+      "region_id": "region-ledger14-decision-point",
+      "parameter_id": "symbol-duration",
+      "lower_value": 0.08,
+      "upper_value": 0.08,
+      "exact_text": "0.02 x 4",
+      "units": "normalized-time"
+    },
+    {
+      "region_id": "region-ledger14-decision-point",
+      "parameter_id": "input-scale",
+      "lower_value": 0.16,
+      "upper_value": 0.16,
+      "exact_text": "0.16",
+      "units": "normalized-field-amplitude"
+    },
+    {
+      "region_id": "region-ledger14-decision-point",
+      "parameter_id": "detector-noise-std",
+      "lower_value": 1e-8,
+      "upper_value": 1e-8,
+      "exact_text": "1e-8 predeclared decision floor",
+      "units": "normalized-real-quadrature"
+    }
+  ],
+  "conjecture_dispositions": [
+    {
+      "disposition_id": "disposition-quadrature-lead-r2",
+      "conjecture_id": "conjecture-kerr-quadrature-linear-memory-lead",
+      "revision": 2,
+      "decided_at": "2026-08-10",
+      "status": "survived-local-gate",
+      "rationale": "The predeclared normalized detector-observation-noise gate survived while no nonlinear target replicated.",
+      "decision_scope": "Local normalized-model survival only; not nonlinear computation, a connected region, detector calibration, material validation, or Conjecture 5."
+    }
+  ],
+  "protocols": [
+    {
+      "protocol_id": "protocol-ledger14-detector-noise",
+      "name": "Ledger 14 normalized detector-observation-noise gate",
+      "version": 1,
+      "config_uri": "packages/kerr-capacity/configs/detector-noise-frozen.toml",
+      "config_sha256": "0FE78BE388B69D8EA2404C8D68E9FB5D171E487C81DB339A6689F4AD6C571BDB",
+      "config_hash_status": "recorded",
+      "predeclared": true,
+      "seed_count": 3,
+      "null_trials": 512,
+      "null_quantile": 0.99,
+      "decision_scope": "Matched Kerr/Kerr-disabled quadrature sweep over noise std 0, 1e-10, 1e-9, 1e-8, and descriptive 1e-7; the predeclared decision floor is 1e-8."
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "run-ledger14-detector-noise",
+      "protocol_id": "protocol-ledger14-detector-noise",
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "code_commit": "9272aee31657397ab7e7967e690e83ec2857bac5",
+      "run_status": "completed",
+      "epistemic_status": "normalized-noise-suite",
+      "summary": "At normalized observation-noise std 1e-8, Kerr lag-three and lag-four targets were FWER-significant in 3/3 seeds and their paired lower-envelope advantages were +0.003779 and +0.014251. Noise-aware dimension was 12 versus noiseless rank 14; raw-equivalent gate-target weight norms were about 1.24e6 to 4.94e6. No nonlinear target replicated."
+    }
+  ],
+  "evidence_artifacts": [
+    {
+      "artifact_id": "artifact-ledger14-results-sqlite",
+      "run_id": "run-ledger14-detector-noise",
+      "artifact_kind": "sqlite-detailed-results",
+      "artifact_uri": "packages/kerr-capacity/output/detector-noise-frozen/results.sqlite",
+      "expected_sha256": "4A1A403E23737CCFBA169B1F15198865BC37AB288102A5A8427F3D43749F6315",
+      "canonical_detail": true,
+      "detail_row_count": 1650,
+      "description": "Ignored per-run canonical detail database. Registry stores only its identity, expected hash, availability, and summary links; it does not duplicate target rows."
+    }
+  ],
+  "gate_results": [
+    {
+      "gate_result_id": "gate-l14-lag3-survival",
+      "run_id": "run-ledger14-detector-noise",
+      "criterion_id": "criterion-l14-lag3-survival",
+      "gate_name": "lag-three-normalized-noise-survival",
+      "evidence_polarity": "survives-test",
+      "passed": true,
+      "metric_value": 0.003779114380916937,
+      "metric_text": "Kerr significant 3/3; disabled significant 3/3; paired delta positive 3/3",
+      "units": "corrected-capacity-delta",
+      "seed_pass_count": 3,
+      "seed_required_count": 3,
+      "decision_scope": "Predeclared 1e-8 normalized observation-noise floor at the frozen point.",
+      "limitation": "The earned claim is positive Kerr advantage, not unique existence of lag-three memory; the control is also significant 3/3."
+    },
+    {
+      "gate_result_id": "gate-l14-lag4-survival",
+      "run_id": "run-ledger14-detector-noise",
+      "criterion_id": "criterion-l14-lag4-survival",
+      "gate_name": "lag-four-normalized-noise-survival",
+      "evidence_polarity": "survives-test",
+      "passed": true,
+      "metric_value": 0.014251203363338294,
+      "metric_text": "Kerr significant 3/3; disabled significant 1/3; paired delta positive 3/3",
+      "units": "corrected-capacity-delta",
+      "seed_pass_count": 3,
+      "seed_required_count": 3,
+      "decision_scope": "Predeclared 1e-8 normalized observation-noise floor at the frozen point.",
+      "limitation": "The earned claim is a local positive Kerr advantage, not nonlinear computation or physical detector robustness."
+    },
+    {
+      "gate_result_id": "gate-l14-replicated-nonlinear",
+      "run_id": "run-ledger14-detector-noise",
+      "criterion_id": null,
+      "gate_name": "replicated-nonlinear-delayed-capacity",
+      "evidence_polarity": "falsifies",
+      "passed": false,
+      "metric_value": 0.0,
+      "metric_text": null,
+      "units": "replicated-target-count",
+      "seed_pass_count": 0,
+      "seed_required_count": 3,
+      "decision_scope": "Degree-two or degree-three targets at the predeclared decision floor.",
+      "limitation": "This closes the local nonlinear gate, not every possible parameter region."
+    },
+    {
+      "gate_result_id": "gate-l14-noise-aware-dimension",
+      "run_id": "run-ledger14-detector-noise",
+      "criterion_id": null,
+      "gate_name": "noise-aware-observable-dimension-accounting",
+      "evidence_polarity": "criticizes",
+      "passed": true,
+      "metric_value": 12.0,
+      "metric_text": "noise-aware dimension 12; noiseless rank 14; disabled dimension 4",
+      "units": "observable-directions",
+      "seed_pass_count": 3,
+      "seed_required_count": 3,
+      "decision_scope": "Declared one-standard-deviation principal-axis observability convention at noise std 1e-8.",
+      "limitation": "A declared normalized robustness diagnostic, not an instrument-derived universal definition of observability."
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison_id": "comparison-l14-kerr-disabled-quadrature",
+      "run_id": "run-ledger14-detector-noise",
+      "baseline_run_id": null,
+      "control_relationship": "Matched Kerr-disabled quadrature condition using common detector-noise draws within every seed/noise pair",
+      "metric": "corrected total capacity, Kerr minus disabled, at detector-noise std 1e-8",
+      "evidence_polarity": "survives-test",
+      "minimum_delta": 0.0225,
+      "maximum_delta": 0.039771,
+      "mean_delta": 0.03383,
+      "units": "corrected-capacity",
+      "decision_scope": "Three paired seeds at the predeclared normalized decision floor; 1e-7 remains descriptive only."
+    }
+  ],
+  "ledger_links": [
+    {
+      "ledger_link_id": "link-l14-run",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "records-run",
+      "admitted_claim": "The predeclared normalized observation-noise suite completed.",
+      "run_id": "run-ledger14-detector-noise",
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l14-protocol",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "freezes-protocol",
+      "admitted_claim": "The 1e-8 gate, three seeds, 512 trials, and 0.99 family-wise quantile were fixed before the run.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": "protocol-ledger14-detector-noise",
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l14-cell",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "advances-cell",
+      "admitted_claim": "Only the normalized Kerr quadrature linear-memory lead advances to a bounded siege.",
+      "run_id": null,
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l14-conjecture",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "reports-survival",
+      "admitted_claim": "The narrow local Kerr quadrature linear-memory lead survived its declared noise test.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": "conjecture-kerr-quadrature-linear-memory-lead",
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l14-artifact",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "identifies-canonical-detail",
+      "admitted_claim": "The ignored per-run SQLite database is hash-addressed without duplicating its 1650 target rows.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": "artifact-ledger14-results-sqlite",
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l14-lag3-gate",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "reports-gate",
+      "admitted_claim": "Lag three survived with paired lower envelope +0.003779114380916937.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": "gate-l14-lag3-survival",
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l14-lag4-gate",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "reports-gate",
+      "admitted_claim": "Lag four survived with paired lower envelope +0.014251203363338294.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": "gate-l14-lag4-survival",
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l14-comparison",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "reports-comparison",
+      "admitted_claim": "At 1e-8, total Kerr-minus-disabled capacity was positive across all three seeds.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": "comparison-l14-kerr-disabled-quadrature"
+    },
+    {
+      "ledger_link_id": "link-l14-nonlinear-gate",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "reports-gate",
+      "admitted_claim": "No nonlinear target replicated at the predeclared decision floor.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": "gate-l14-replicated-nonlinear",
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l14-dimension-gate",
+      "ledger_number": 14,
+      "ledger_title": "Detector-Noise Survival of Kerr Quadrature Memory",
+      "ledger_path": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md",
+      "ledger_sha256": "1EE7E74B17958BE00349611AA25325DD80426EE9FEDFEAA9DB45070014BAE9A6",
+      "relation": "reports-diagnostic-gate",
+      "admitted_claim": "At 1e-8 the declared noise-aware dimension was 12, versus noiseless rank 14.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": "gate-l14-noise-aware-dimension",
+      "comparison_id": null
+    }
+  ]
+}

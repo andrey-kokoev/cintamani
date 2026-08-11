@@ -1,0 +1,160 @@
+{
+  "record_id": "admission-domain-taxonomy-v1",
+  "schema_version": 1,
+  "admitted_at": "2026-08-10",
+  "description": "Domain axes and the two normalized Kerr observation cells evidenced by Ledgers 12-14. The LiTaO3 row is an unvalidated candidate only and is not attached to an evidence-bearing cell.",
+  "theoretical_models": [
+    {
+      "model_id": "normalized-driven-kerr-resonator",
+      "name": "Normalized driven Kerr resonator",
+      "description": "Finite retained-mode driven-dissipative Kerr process implemented by the Rust capacity instrument.",
+      "epistemic_status": "implemented-normalized-model"
+    }
+  ],
+  "materials": [
+    {
+      "material_id": "abstract-normalized-medium",
+      "name": "Abstract normalized Kerr medium",
+      "material_kind": "abstract-normalized-medium",
+      "epistemic_status": "abstract-placeholder",
+      "description": "Placeholder material axis for normalized-model evidence; it carries no device or material calibration claim."
+    },
+    {
+      "material_id": "thin-film-litao3-candidate",
+      "name": "Thin-film LiTaO3 candidate",
+      "material_kind": "candidate-physical-material",
+      "epistemic_status": "unvalidated-candidate",
+      "description": "Candidate material named by the program, with no validated device realization or evidence link in Ledgers 12-14."
+    }
+  ],
+  "physical_mechanisms": [
+    {
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "name": "Driven-dissipative Kerr mixing",
+      "description": "Normalized cubic field mixing in an open driven resonator, with Kerr-disabled matched controls.",
+      "epistemic_status": "implemented-normalized-model"
+    }
+  ],
+  "interfaces": [
+    {
+      "interface_id": "bus-mode-intensity",
+      "name": "Bus-output mode intensity",
+      "observation_kind": "intensity",
+      "units": "normalized-intensity",
+      "description": "Seven bus-output mode intensities; square-law observation is an explicitly charged nonlinear resource.",
+      "epistemic_status": "implemented-normalized-interface"
+    },
+    {
+      "interface_id": "bus-mode-coherent-quadrature",
+      "name": "Bus-output coherent quadrature",
+      "observation_kind": "coherent-quadrature",
+      "units": "normalized-real-quadrature",
+      "description": "Real and imaginary bus-field quadratures for seven retained modes, giving fourteen declared real observations.",
+      "epistemic_status": "implemented-normalized-interface"
+    }
+  ],
+  "typed_morphisms": [
+    {
+      "morphism_id": "morphism-kerr-to-intensity",
+      "name": "Normalized Kerr dynamics to bus intensity",
+      "source_model_id": "normalized-driven-kerr-resonator",
+      "material_id": "abstract-normalized-medium",
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "target_interface_id": "bus-mode-intensity",
+      "morphism_type": "dynamics-to-observation",
+      "validation_status": "implemented-normalized",
+      "description": "Implemented map from normalized cavity state and drive to the declared intensity observation."
+    },
+    {
+      "morphism_id": "morphism-kerr-to-quadrature",
+      "name": "Normalized Kerr dynamics to coherent quadrature",
+      "source_model_id": "normalized-driven-kerr-resonator",
+      "material_id": "abstract-normalized-medium",
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "target_interface_id": "bus-mode-coherent-quadrature",
+      "morphism_type": "dynamics-to-observation",
+      "validation_status": "implemented-normalized",
+      "description": "Implemented map from normalized cavity state and drive to the declared coherent-quadrature observation."
+    }
+  ],
+  "siege_cells": [
+    {
+      "cell_id": "cell-kerr-abstract-intensity",
+      "name": "Normalized Kerr / abstract medium / Kerr mixing / intensity",
+      "model_id": "normalized-driven-kerr-resonator",
+      "material_id": "abstract-normalized-medium",
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "interface_id": "bus-mode-intensity",
+      "morphism_id": "morphism-kerr-to-intensity",
+      "epistemic_status": "normalized-model-only"
+    },
+    {
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "name": "Normalized Kerr / abstract medium / Kerr mixing / quadrature",
+      "model_id": "normalized-driven-kerr-resonator",
+      "material_id": "abstract-normalized-medium",
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "interface_id": "bus-mode-coherent-quadrature",
+      "morphism_id": "morphism-kerr-to-quadrature",
+      "epistemic_status": "normalized-model-only"
+    }
+  ],
+  "parameter_definitions": [
+    {
+      "parameter_id": "kerr-strength",
+      "name": "Kerr strength",
+      "symbol": "g",
+      "units": "normalized-angular-frequency",
+      "description": "Cubic Kerr coefficient in the normalized field equation."
+    },
+    {
+      "parameter_id": "pump-amplitude",
+      "name": "Pump amplitude",
+      "symbol": "s_p",
+      "units": "normalized-field-amplitude",
+      "description": "Continuous mode-zero input-field amplitude."
+    },
+    {
+      "parameter_id": "detuning",
+      "name": "Detuning",
+      "symbol": "delta",
+      "units": "normalized-angular-frequency",
+      "description": "Normalized pump-cavity detuning."
+    },
+    {
+      "parameter_id": "dispersion",
+      "name": "Second-order dispersion",
+      "symbol": "D2",
+      "units": "normalized-angular-frequency-per-mode-squared",
+      "description": "Quadratic modal-dispersion coefficient."
+    },
+    {
+      "parameter_id": "symbol-duration",
+      "name": "Symbol duration",
+      "symbol": "T_s",
+      "units": "normalized-time",
+      "description": "Integration step multiplied by steps per symbol."
+    },
+    {
+      "parameter_id": "input-scale",
+      "name": "Input scale",
+      "symbol": "s_u",
+      "units": "normalized-field-amplitude",
+      "description": "Bounded data-field amplitude scale in mode one."
+    },
+    {
+      "parameter_id": "detector-noise-std",
+      "name": "Detector observation-noise standard deviation",
+      "symbol": "sigma_d",
+      "units": "normalized-real-quadrature",
+      "description": "Independent additive Gaussian noise at the observation boundary, not a physical detector calibration."
+    },
+    {
+      "parameter_id": "readout-detector-noise-gain",
+      "name": "Readout detector-noise gain",
+      "symbol": "g_d",
+      "units": "dimensionless",
+      "description": "Detector-noise standard deviation times the raw-equivalent readout-weight norm; future ceilings may use less-or-equal criteria."
+    }
+  ]
+}

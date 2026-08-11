@@ -1,0 +1,15 @@
+{
+  "name": "@cintamani/domain",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "cargo build",
+    "check": "cargo check --all-targets",
+    "test": "cargo test --all-targets",
+    "domain:init": "cargo run -- init",
+    "domain:rebuild": "cargo run -- rebuild",
+    "domain:check": "cargo run -- check",
+    "domain:list": "cargo run -- list all --limit 50"
+  }
+}

@@ -8,6 +8,8 @@ importers:
 
   .: {}
 
+  packages/cintamani-domain: {}
+
   packages/kerr-capacity: {}
 
   packages/vrc-mnist: {}

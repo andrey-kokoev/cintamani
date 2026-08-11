@@ -1,0 +1,172 @@
+{
+  "record_id": "admission-ledger-12",
+  "schema_version": 1,
+  "admitted_at": "2026-08-10",
+  "description": "Ledger 12 normalized single-point Kerr/intensity comparison and its explicit limits.",
+  "siege_cell_decisions": [
+    {
+      "decision_id": "decision-intensity-r1",
+      "cell_id": "cell-kerr-abstract-intensity",
+      "revision": 1,
+      "decided_at": "2026-08-10",
+      "status": "tested-local",
+      "rationale": "Ledger 12 tested the intensity interface at one normalized noiseless point and found no Kerr corrected-capacity or delayed-memory advantage.",
+      "decision_scope": "One seed and one normalized noiseless parameter point under the Ledger 12 estimator."
+    }
+  ],
+  "protocols": [
+    {
+      "protocol_id": "protocol-ledger12-first-control",
+      "name": "Ledger 12 first matched Kerr control",
+      "version": 1,
+      "config_uri": null,
+      "config_sha256": null,
+      "config_hash_status": "unavailable",
+      "predeclared": true,
+      "seed_count": 1,
+      "null_trials": 8,
+      "null_quantile": 0.99,
+      "decision_scope": "One normalized noiseless point, 55 targets through degree three and lag four, with an earlier pooled-null estimator superseded for inference by Ledger 13."
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "run-ledger12-first-control",
+      "protocol_id": "protocol-ledger12-first-control",
+      "cell_id": "cell-kerr-abstract-intensity",
+      "code_commit": "ce4648f21cb5a36e294034105399c3ad37b9a4f5",
+      "run_status": "completed",
+      "epistemic_status": "normalized-single-point",
+      "summary": "Both Kerr and Kerr-disabled totals remained below numerical rank, but Kerr reduced corrected total capacity by 0.005961 and supplied no useful delayed-memory gain. Intensity nonlinearity was already present in the square-law observation control."
+    }
+  ],
+  "gate_results": [
+    {
+      "gate_result_id": "gate-l12-capacity-bound",
+      "run_id": "run-ledger12-first-control",
+      "criterion_id": null,
+      "gate_name": "fixed-observation-capacity-bound",
+      "evidence_polarity": "survives-test",
+      "passed": true,
+      "metric_value": null,
+      "metric_text": "Kerr 0.979571 <= rank 5; disabled 0.985532 <= rank 2",
+      "units": "corrected-capacity",
+      "seed_pass_count": 1,
+      "seed_required_count": 1,
+      "decision_scope": "Attempted falsification of the finite observed-rank bound at one point.",
+      "limitation": "Not a proof; target family ends at degree three and lag four."
+    },
+    {
+      "gate_result_id": "gate-l12-delayed-nonlinear-advantage",
+      "run_id": "run-ledger12-first-control",
+      "criterion_id": null,
+      "gate_name": "delayed-nonlinear-kerr-advantage",
+      "evidence_polarity": "falsifies",
+      "passed": false,
+      "metric_value": -0.005687,
+      "metric_text": null,
+      "units": "corrected-historical-capacity-delta",
+      "seed_pass_count": 0,
+      "seed_required_count": 1,
+      "decision_scope": "Kerr minus matched Kerr-disabled intensity control at the frozen Ledger 12 point.",
+      "limitation": "One seed and one normalized noiseless parameter point."
+    }
+  ],
+  "comparisons": [
+    {
+      "comparison_id": "comparison-l12-kerr-disabled-intensity",
+      "run_id": "run-ledger12-first-control",
+      "baseline_run_id": null,
+      "control_relationship": "Matched Kerr-disabled intensity case within the same run suite",
+      "metric": "corrected total capacity, Kerr minus disabled",
+      "evidence_polarity": "falsifies",
+      "minimum_delta": -0.005961,
+      "maximum_delta": -0.005961,
+      "mean_delta": -0.005961,
+      "units": "corrected-capacity",
+      "decision_scope": "Single-seed, single-point normalized comparison."
+    }
+  ],
+  "ledger_links": [
+    {
+      "ledger_link_id": "link-l12-run",
+      "ledger_number": 12,
+      "ledger_title": "Rust Kerr Capacity Instrument and First Control",
+      "ledger_path": "src/ledger/20260810-12 Rust Kerr Capacity Instrument and First Control.md",
+      "ledger_sha256": "16FC8C8BD15FD9C5EC451DECD7D8341BC8AE6EFB072C295C076A234D8D48CCA4",
+      "relation": "records-run",
+      "admitted_claim": "The executable first paired normalized run completed.",
+      "run_id": "run-ledger12-first-control",
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l12-cell",
+      "ledger_number": 12,
+      "ledger_title": "Rust Kerr Capacity Instrument and First Control",
+      "ledger_path": "src/ledger/20260810-12 Rust Kerr Capacity Instrument and First Control.md",
+      "ledger_sha256": "16FC8C8BD15FD9C5EC451DECD7D8341BC8AE6EFB072C295C076A234D8D48CCA4",
+      "relation": "tests-cell",
+      "admitted_claim": "The intensity-interface siege cell was tested locally.",
+      "run_id": null,
+      "cell_id": "cell-kerr-abstract-intensity",
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l12-bound-gate",
+      "ledger_number": 12,
+      "ledger_title": "Rust Kerr Capacity Instrument and First Control",
+      "ledger_path": "src/ledger/20260810-12 Rust Kerr Capacity Instrument and First Control.md",
+      "ledger_sha256": "16FC8C8BD15FD9C5EC451DECD7D8341BC8AE6EFB072C295C076A234D8D48CCA4",
+      "relation": "reports-gate",
+      "admitted_claim": "The corrected totals survived the fixed-observation rank-bound test.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": "gate-l12-capacity-bound",
+      "comparison_id": null
+    },
+    {
+      "ledger_link_id": "link-l12-comparison",
+      "ledger_number": 12,
+      "ledger_title": "Rust Kerr Capacity Instrument and First Control",
+      "ledger_path": "src/ledger/20260810-12 Rust Kerr Capacity Instrument and First Control.md",
+      "ledger_sha256": "16FC8C8BD15FD9C5EC451DECD7D8341BC8AE6EFB072C295C076A234D8D48CCA4",
+      "relation": "reports-comparison",
+      "admitted_claim": "Kerr reduced corrected total capacity by 0.005961 at the tested intensity point.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": null,
+      "comparison_id": "comparison-l12-kerr-disabled-intensity"
+    },
+    {
+      "ledger_link_id": "link-l12-delayed-gate",
+      "ledger_number": 12,
+      "ledger_title": "Rust Kerr Capacity Instrument and First Control",
+      "ledger_path": "src/ledger/20260810-12 Rust Kerr Capacity Instrument and First Control.md",
+      "ledger_sha256": "16FC8C8BD15FD9C5EC451DECD7D8341BC8AE6EFB072C295C076A234D8D48CCA4",
+      "relation": "reports-gate",
+      "admitted_claim": "The tested point failed the delayed nonlinear Kerr-advantage gate.",
+      "run_id": null,
+      "cell_id": null,
+      "conjecture_id": null,
+      "protocol_id": null,
+      "artifact_id": null,
+      "gate_result_id": "gate-l12-delayed-nonlinear-advantage",
+      "comparison_id": null
+    }
+  ]
+}
