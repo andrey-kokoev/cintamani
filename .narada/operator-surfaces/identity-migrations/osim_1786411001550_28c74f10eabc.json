@@ -1,0 +1,15 @@
+{
+  "migration_id": "osim_1786411001550_28c74f10eabc",
+  "old_identity_id": "cintamani-architect",
+  "new_identity_id": "cintamani.architect",
+  "site_id": "cintamani",
+  "role": "architect",
+  "migrated_by": "operator",
+  "migrated_at": "2026-08-11T01:16:41.550Z",
+  "immutable_history_posture": "old evidence remains attributed to old_identity_id; current addressability resolves through previous_identity_ids alias",
+  "authority_limits": [
+    "durable_identity_registry_mutated_here",
+    "runtime_bindings_are_projection_records_updated_only_when present_in_same_site_root",
+    "historical_evidence_not_rewritten"
+  ]
+}

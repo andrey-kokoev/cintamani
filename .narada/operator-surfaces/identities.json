@@ -1,9 +1,9 @@
 {
   "schema": "https://narada.dev/schemas/operator-surface-identities/v1",
-  "updated_at": "2026-08-11T00:26:04.631Z",
+  "updated_at": "2026-08-11T01:16:41.551Z",
   "identities": [
     {
-      "identity_id": "cintamani-architect",
+      "identity_id": "cintamani.architect",
       "site_id": "cintamani",
       "role": "architect",
       "agent_kind": "codex_cli",
@@ -11,11 +11,23 @@
       "submit_strategy": "type_only",
       "admitted_by": "operator",
       "admitted_at": "2026-08-11T00:26:04.631Z",
-      "updated_at": "2026-08-11T00:26:04.631Z",
+      "updated_at": "2026-08-11T01:16:41.550Z",
       "authority_limits": [
         "identity_record_is_site_authority",
         "runtime_handle_binding_is_not_admitted_here",
         "operator_surface_does_not_grant_effect_capability"
+      ],
+      "previous_identity_ids": [
+        "cintamani-architect"
+      ],
+      "migration_history": [
+        {
+          "old_identity_id": "cintamani-architect",
+          "new_identity_id": "cintamani.architect",
+          "migrated_by": "operator",
+          "migrated_at": "2026-08-11T01:16:41.550Z",
+          "evidence_path": "C:\\Users\\andrey\\src\\cintamani\\.narada\\operator-surfaces\\identity-migrations\\osim_1786411001550_28c74f10eabc.json"
+        }
       ]
     }
   ]
