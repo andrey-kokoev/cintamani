@@ -1,0 +1,24 @@
+# Narada local runtime state for this project Site
+/db/
+/logs/
+/runtime/
+/tmp/
+/state/
+/traces/
+*.db
+*.db-shm
+*.db-wal
+
+# Generated/local agent runtime and materialized tool surfaces
+/.ai/*
+!.ai/inbox-envelopes/
+!.ai/inbox-envelopes/**
+!.ai/inbox-drop/
+!.ai/inbox-drop/.gitkeep
+/.pi/
+/tools/**
+
+# Keep durable governance and exported envelopes trackable by default
+!.ai/inbox-envelopes/
+!.ai/inbox-envelopes/**
+!.ai/inbox-drop/.gitkeep

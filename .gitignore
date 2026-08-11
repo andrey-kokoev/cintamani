@@ -5,3 +5,13 @@
 *.checkpoint
 node_modules/
 .pnpm-store/
+
+# Narada local runtime/materialized surfaces
+/.ai/
+.narada/.ai/*
+!.narada/.ai/inbox-drop/
+!.narada/.ai/inbox-drop/.gitkeep
+!.narada/.ai/inbox-envelopes/
+!.narada/.ai/inbox-envelopes/**
+.narada/.pi/
+.narada/tools/**
