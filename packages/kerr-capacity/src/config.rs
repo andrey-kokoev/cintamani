@@ -36,6 +36,11 @@ pub struct Config {
     pub input_scale: f64,
     pub input_mode: isize,
     pub noise_std: f64,
+    /// Additive Gaussian noise applied to each real observation feature after
+    /// the noiseless bus field has been converted to the declared interface.
+    /// This normalized observation-boundary scale is not a physical detector
+    /// calibration.
+    pub detector_noise_std: f64,
     pub thermal_coupling: f64,
     pub thermal_decay: f64,
     pub raman_fraction: f64,
@@ -81,6 +86,7 @@ impl Config {
             ("intrinsic_loss", self.intrinsic_loss),
             ("external_coupling", self.external_coupling),
             ("noise_std", self.noise_std),
+            ("detector_noise_std", self.detector_noise_std),
             ("thermal_coupling", self.thermal_coupling),
             ("thermal_decay", self.thermal_decay),
         ] {
@@ -176,6 +182,7 @@ mod tests {
             input_scale: 0.1,
             input_mode: 0,
             noise_std: 0.0,
+            detector_noise_std: 0.0,
             thermal_coupling: 0.0,
             thermal_decay: 0.0,
             raman_fraction: 0.0,
@@ -220,9 +227,19 @@ mod tests {
     }
 
     #[test]
+    fn detector_noise_is_a_separate_non_negative_parameter() {
+        let mut config = valid();
+        config.detector_noise_std = 1e-8;
+        config.validate().unwrap();
+        config.detector_noise_std = -1e-8;
+        assert!(config.validate().is_err());
+    }
+
+    #[test]
     fn committed_configs_parse_and_validate() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR"));
         Config::load(root.join("configs/smoke.toml")).unwrap();
         Config::load(root.join("configs/linear-control.toml")).unwrap();
+        Config::load(root.join("configs/detector-noise-frozen.toml")).unwrap();
     }
 }

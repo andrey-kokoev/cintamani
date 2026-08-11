@@ -60,7 +60,12 @@ pub fn run(config: &Config) -> Result<ExperimentResult> {
     if simulation.observations.first().map(Vec::len) != Some(config.observation_dimension()) {
         bail!("simulator observation width does not match the configured interface");
     }
-    let capacity = capacity::analyze(&simulation.inputs, &simulation.observations, config)?;
+    let capacity = capacity::analyze_with_noiseless(
+        &simulation.inputs,
+        &simulation.observations,
+        &simulation.noiseless_observations,
+        config,
+    )?;
     let total = capacity.total_corrected_capacity;
     let effective_rank = capacity.effective_observation_rank;
     let signed_margin = effective_rank as f64 - total;
@@ -190,6 +195,7 @@ mod tests {
             input_scale: 0.12,
             input_mode: 0,
             noise_std: 0.0,
+            detector_noise_std: 0.0,
             thermal_coupling: 0.01,
             thermal_decay: 0.05,
             raman_fraction: 0.0,

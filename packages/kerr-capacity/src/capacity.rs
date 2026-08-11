@@ -16,6 +16,10 @@ pub struct TargetCapacity {
     pub familywise_permutation_threshold: f64,
     pub familywise_significant: bool,
     pub corrected_capacity: f64,
+    pub standardized_weight_norm: f64,
+    pub raw_equivalent_weight_norm: Option<f64>,
+    pub raw_weight_conversion_defined: bool,
+    pub detector_noise_gain: Option<f64>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -45,6 +49,36 @@ pub struct ObservationSpectrum {
     pub stable_rank: f64,
     pub participation_ratio: f64,
     pub rank_profile: Vec<RankAtTolerance>,
+    /// Singular values of the noiseless interface after training-only
+    /// per-feature standardization.  This retains ideal mathematical span.
+    pub noiseless_standardized_singular_values: Vec<f64>,
+    pub noiseless_standardized_relative_singular_values: Vec<f64>,
+    pub noiseless_numerical_rank: usize,
+    /// Principal standard deviations of the centered noiseless interface in
+    /// raw normalized observation units, used for the detector-noise test.
+    pub noiseless_raw_singular_values: Vec<f64>,
+    pub detector_noise_std: f64,
+    pub noise_aware_singular_threshold: f64,
+    pub noise_aware_observable_dimension: usize,
+    pub noise_aware_criterion: String,
+    pub degenerate_training_feature_count: usize,
+    pub feature_diagnostics: Vec<FeatureDiagnostic>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct FeatureDiagnostic {
+    pub feature: usize,
+    pub noiseless_training_mean: f64,
+    pub signal_std: f64,
+    pub declared_detector_noise_std: f64,
+    pub realized_detector_noise_rms: f64,
+    /// Power SNR = signal variance / declared detector-noise variance.  It is
+    /// null when the denominator is zero; `snr_status` distinguishes infinity
+    /// from the zero-over-zero case.
+    pub linear_power_snr: Option<f64>,
+    pub snr_db: Option<f64>,
+    pub snr_status: String,
+    pub signal_exceeds_declared_noise: bool,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -57,6 +91,8 @@ pub struct CapacityAnalysis {
     pub test_samples: usize,
     pub declared_observation_dimension: usize,
     pub effective_observation_rank: usize,
+    pub noiseless_numerical_rank: usize,
+    pub noise_aware_observable_dimension: usize,
     pub observation_spectrum: ObservationSpectrum,
     pub familywise_permutation_threshold: f64,
     pub total_positive_raw_capacity: f64,
@@ -79,13 +115,31 @@ struct PreparedFeatures {
     spectrum: ObservationSpectrum,
 }
 
+#[derive(Clone, Debug)]
+struct HeldOutFit {
+    score: f64,
+    weights: Vec<f64>,
+}
+
 pub fn analyze(
     inputs: &[f64],
     observations: &[Vec<f64>],
     config: &Config,
 ) -> Result<CapacityAnalysis> {
+    analyze_with_noiseless(inputs, observations, observations, config)
+}
+
+pub fn analyze_with_noiseless(
+    inputs: &[f64],
+    observations: &[Vec<f64>],
+    noiseless_observations: &[Vec<f64>],
+    config: &Config,
+) -> Result<CapacityAnalysis> {
     if inputs.len() != observations.len() {
         bail!("input and observation sample counts differ");
+    }
+    if inputs.len() != noiseless_observations.len() {
+        bail!("input and noiseless-observation sample counts differ");
     }
     if observations.is_empty() {
         bail!("capacity analysis requires observations");
@@ -97,15 +151,23 @@ pub fn analyze(
     {
         bail!("observation matrix is ragged or contains non-finite values");
     }
+    if noiseless_observations
+        .iter()
+        .any(|row| row.len() != dimension || row.iter().any(|value| !value.is_finite()))
+    {
+        bail!("noiseless observation matrix is ragged or contains non-finite values");
+    }
     if inputs.iter().any(|value| !value.is_finite()) {
         bail!("input stream contains non-finite values");
     }
 
     let features = prepare_features(
         observations,
+        noiseless_observations,
         config.max_lag,
         config.train_fraction,
         config.rank_relative_tolerance,
+        config.detector_noise_std,
     )?;
     let definitions = enumerate_targets(config.max_lag, config.max_degree);
     let target_values: Vec<_> = definitions
@@ -113,10 +175,10 @@ pub fn analyze(
         .map(|definition| evaluate_target(inputs, config.max_lag, &definition.degrees))
         .collect();
     let ridge_factor = ridge_factor(&features.rows, features.train_samples, config.ridge)?;
-    let raw_scores: Vec<_> = target_values
+    let raw_fits: Vec<_> = target_values
         .iter()
         .map(|target| {
-            held_out_capacity(
+            held_out_fit(
                 &features.rows,
                 target,
                 features.train_samples,
@@ -151,27 +213,42 @@ pub fn analyze(
     let familywise_threshold = empirical_quantile(&mut maximum_null_scores, config.null_quantile);
     let targets: Vec<_> = definitions
         .into_iter()
-        .zip(raw_scores)
+        .zip(raw_fits)
         .zip(null_by_target)
-        .map(|((definition, raw), mut null_scores)| {
+        .map(|((definition, raw_fit), mut null_scores)| {
             let positive_null_mean = null_scores.iter().sum::<f64>() / null_scores.len() as f64;
             let target_threshold = empirical_quantile(&mut null_scores, config.null_quantile);
-            let significant = raw > familywise_threshold;
+            let significant = raw_fit.score > familywise_threshold;
+            let standardized_weight_norm = raw_fit
+                .weights
+                .iter()
+                .map(|weight| weight.powi(2))
+                .sum::<f64>()
+                .sqrt();
+            let raw_equivalent_weight_norm = raw_equivalent_weight_norm(
+                &raw_fit.weights,
+                &features.spectrum.training_feature_scales,
+            );
             TargetCapacity {
                 target: definition.label,
                 total_degree: definition.total_degree,
                 maximum_lag: definition.maximum_lag,
                 interacting_lags: definition.interacting_lags,
-                raw_held_out_capacity: raw,
+                raw_held_out_capacity: raw_fit.score,
                 positive_null_mean,
                 target_permutation_threshold: target_threshold,
                 familywise_permutation_threshold: familywise_threshold,
                 familywise_significant: significant,
                 corrected_capacity: if significant {
-                    (raw - target_threshold).clamp(0.0, 1.0)
+                    (raw_fit.score - target_threshold).clamp(0.0, 1.0)
                 } else {
                     0.0
                 },
+                standardized_weight_norm,
+                raw_equivalent_weight_norm,
+                raw_weight_conversion_defined: raw_equivalent_weight_norm.is_some(),
+                detector_noise_gain: raw_equivalent_weight_norm
+                    .map(|norm| config.detector_noise_std * norm),
             }
         })
         .collect();
@@ -193,6 +270,8 @@ pub fn analyze(
         test_samples: features.rows.len() - features.train_samples,
         declared_observation_dimension: dimension,
         effective_observation_rank: features.spectrum.effective_rank,
+        noiseless_numerical_rank: features.spectrum.noiseless_numerical_rank,
+        noise_aware_observable_dimension: features.spectrum.noise_aware_observable_dimension,
         observation_spectrum: features.spectrum,
         familywise_permutation_threshold: familywise_threshold,
         total_positive_raw_capacity,
@@ -202,14 +281,17 @@ pub fn analyze(
 
 fn prepare_features(
     observations: &[Vec<f64>],
+    noiseless_observations: &[Vec<f64>],
     max_lag: usize,
     train_fraction: f64,
     rank_relative_tolerance: f64,
+    detector_noise_std: f64,
 ) -> Result<PreparedFeatures> {
     if observations.len() <= max_lag + 2 {
         bail!("not enough observations after lag alignment");
     }
     let mut rows = observations[max_lag..].to_vec();
+    let noiseless_rows = &noiseless_observations[max_lag..];
     let train_samples = ((rows.len() as f64) * train_fraction).floor() as usize;
     if train_samples < 2 || rows.len() - train_samples < 2 {
         bail!("train/test split leaves fewer than two samples in a partition");
@@ -257,6 +339,14 @@ fn prepare_features(
         vec![0.0; scales.len()]
     };
     spectrum.training_feature_scales = scales;
+    add_noiseless_diagnostics(
+        &mut spectrum,
+        &observations[max_lag..],
+        noiseless_rows,
+        train_samples,
+        rank_relative_tolerance,
+        detector_noise_std,
+    );
     Ok(PreparedFeatures {
         rows,
         train_samples,
@@ -264,12 +354,12 @@ fn prepare_features(
     })
 }
 
-fn held_out_capacity(
+fn held_out_fit(
     features: &[Vec<f64>],
     target: &[f64],
     train_samples: usize,
     ridge_factor: &[Vec<f64>],
-) -> Result<f64> {
+) -> Result<HeldOutFit> {
     if features.len() != target.len() {
         bail!("feature and target lengths differ");
     }
@@ -309,9 +399,36 @@ fn held_out_capacity(
     }
 
     if baseline_error <= f64::EPSILON {
-        return Ok(0.0);
+        return Ok(HeldOutFit {
+            score: 0.0,
+            weights,
+        });
     }
-    Ok((1.0 - model_error / baseline_error).min(1.0))
+    Ok(HeldOutFit {
+        score: (1.0 - model_error / baseline_error).min(1.0),
+        weights,
+    })
+}
+
+fn held_out_capacity(
+    features: &[Vec<f64>],
+    target: &[f64],
+    train_samples: usize,
+    ridge_factor: &[Vec<f64>],
+) -> Result<f64> {
+    Ok(held_out_fit(features, target, train_samples, ridge_factor)?.score)
+}
+
+fn raw_equivalent_weight_norm(weights: &[f64], scales: &[f64]) -> Option<f64> {
+    let mut squared_norm = 0.0;
+    for (&weight, &scale) in weights.iter().zip(scales) {
+        if scale > 0.0 {
+            squared_norm += (weight / scale).powi(2);
+        } else if weight.abs() > 1e-12 {
+            return None;
+        }
+    }
+    Some(squared_norm.sqrt())
 }
 
 fn ridge_factor(features: &[Vec<f64>], train_samples: usize, ridge: f64) -> Result<Vec<Vec<f64>>> {
@@ -394,6 +511,16 @@ fn observation_spectrum(rows: &[Vec<f64>], chosen_tolerance: f64) -> Observation
             stable_rank: 0.0,
             participation_ratio: 0.0,
             rank_profile: Vec::new(),
+            noiseless_standardized_singular_values: Vec::new(),
+            noiseless_standardized_relative_singular_values: Vec::new(),
+            noiseless_numerical_rank: 0,
+            noiseless_raw_singular_values: Vec::new(),
+            detector_noise_std: 0.0,
+            noise_aware_singular_threshold: 0.0,
+            noise_aware_observable_dimension: 0,
+            noise_aware_criterion: String::new(),
+            degenerate_training_feature_count: 0,
+            feature_diagnostics: Vec::new(),
         };
     }
     let dimension = rows[0].len();
@@ -467,6 +594,181 @@ fn observation_spectrum(rows: &[Vec<f64>], chosen_tolerance: f64) -> Observation
         stable_rank,
         participation_ratio,
         rank_profile,
+        noiseless_standardized_singular_values: Vec::new(),
+        noiseless_standardized_relative_singular_values: Vec::new(),
+        noiseless_numerical_rank: 0,
+        noiseless_raw_singular_values: Vec::new(),
+        detector_noise_std: 0.0,
+        noise_aware_singular_threshold: 0.0,
+        noise_aware_observable_dimension: 0,
+        noise_aware_criterion: String::new(),
+        degenerate_training_feature_count: 0,
+        feature_diagnostics: Vec::new(),
+    }
+}
+
+fn add_noiseless_diagnostics(
+    spectrum: &mut ObservationSpectrum,
+    observed_rows: &[Vec<f64>],
+    noiseless_rows: &[Vec<f64>],
+    train_samples: usize,
+    rank_relative_tolerance: f64,
+    detector_noise_std: f64,
+) {
+    let dimension = noiseless_rows[0].len();
+    let mut signal_means = vec![0.0; dimension];
+    for row in &noiseless_rows[..train_samples] {
+        for (mean, &value) in signal_means.iter_mut().zip(row) {
+            *mean += value;
+        }
+    }
+    for mean in &mut signal_means {
+        *mean /= train_samples as f64;
+    }
+
+    let mut signal_scales = vec![0.0; dimension];
+    for row in &noiseless_rows[..train_samples] {
+        for ((scale, &value), &mean) in signal_scales.iter_mut().zip(row).zip(&signal_means) {
+            *scale += (value - mean).powi(2);
+        }
+    }
+    for scale in &mut signal_scales {
+        *scale = (*scale / train_samples as f64).sqrt();
+    }
+
+    let noiseless_standardized: Vec<Vec<f64>> = noiseless_rows[..train_samples]
+        .iter()
+        .map(|row| {
+            row.iter()
+                .zip(&signal_means)
+                .zip(&signal_scales)
+                .map(|((&value, &mean), &scale)| {
+                    if scale > 1e-12 * mean.abs().max(1.0) {
+                        (value - mean) / scale
+                    } else {
+                        0.0
+                    }
+                })
+                .collect()
+        })
+        .collect();
+    let noiseless_raw_centered: Vec<Vec<f64>> = noiseless_rows[..train_samples]
+        .iter()
+        .map(|row| {
+            row.iter()
+                .zip(&signal_means)
+                .map(|(&value, &mean)| value - mean)
+                .collect()
+        })
+        .collect();
+    let standardized_singular = covariance_singular_values(&noiseless_standardized);
+    let standardized_relative = relative_values(&standardized_singular);
+    let noiseless_numerical_rank = standardized_relative
+        .iter()
+        .filter(|&&value| value > rank_relative_tolerance)
+        .count();
+    let raw_singular = covariance_singular_values(&noiseless_raw_centered);
+    let noise_aware_observable_dimension = if detector_noise_std == 0.0 {
+        noiseless_numerical_rank
+    } else {
+        raw_singular
+            .iter()
+            .filter(|&&value| value > detector_noise_std)
+            .count()
+            .min(noiseless_numerical_rank)
+    };
+
+    let feature_diagnostics = (0..dimension)
+        .map(|feature| {
+            let realized_detector_noise_rms = (observed_rows[..train_samples]
+                .iter()
+                .zip(&noiseless_rows[..train_samples])
+                .map(|(observed, noiseless)| (observed[feature] - noiseless[feature]).powi(2))
+                .sum::<f64>()
+                / train_samples as f64)
+                .sqrt();
+            let signal_std = signal_scales[feature];
+            let (linear_power_snr, snr_db, snr_status) = if detector_noise_std == 0.0 {
+                if signal_std > 0.0 {
+                    (None, None, "infinite".to_owned())
+                } else {
+                    (None, None, "undefined-zero-over-zero".to_owned())
+                }
+            } else if signal_std == 0.0 {
+                (Some(0.0), None, "zero".to_owned())
+            } else {
+                let linear = (signal_std / detector_noise_std).powi(2);
+                (
+                    Some(linear),
+                    Some(10.0 * linear.log10()),
+                    "finite".to_owned(),
+                )
+            };
+            FeatureDiagnostic {
+                feature,
+                noiseless_training_mean: signal_means[feature],
+                signal_std,
+                declared_detector_noise_std: detector_noise_std,
+                realized_detector_noise_rms,
+                linear_power_snr,
+                snr_db,
+                snr_status,
+                signal_exceeds_declared_noise: signal_std > detector_noise_std,
+            }
+        })
+        .collect();
+
+    spectrum.noiseless_standardized_singular_values = standardized_singular;
+    spectrum.noiseless_standardized_relative_singular_values = standardized_relative;
+    spectrum.noiseless_numerical_rank = noiseless_numerical_rank;
+    spectrum.noiseless_raw_singular_values = raw_singular;
+    spectrum.detector_noise_std = detector_noise_std;
+    spectrum.noise_aware_singular_threshold = detector_noise_std;
+    spectrum.noise_aware_observable_dimension = noise_aware_observable_dimension;
+    spectrum.noise_aware_criterion = if detector_noise_std == 0.0 {
+        "zero-noise limit: equal to noiseless standardized numerical rank at the configured relative tolerance"
+            .to_owned()
+    } else {
+        "count of noiseless raw principal standard deviations strictly above detector_noise_std, capped by noiseless standardized numerical rank"
+            .to_owned()
+    };
+    spectrum.degenerate_training_feature_count = spectrum
+        .training_feature_scales
+        .iter()
+        .filter(|&&scale| scale == 0.0)
+        .count();
+    spectrum.feature_diagnostics = feature_diagnostics;
+}
+
+fn covariance_singular_values(rows: &[Vec<f64>]) -> Vec<f64> {
+    if rows.is_empty() || rows[0].is_empty() {
+        return Vec::new();
+    }
+    let dimension = rows[0].len();
+    let mut covariance = DMatrix::zeros(dimension, dimension);
+    for row in rows {
+        for left in 0..dimension {
+            for right in 0..dimension {
+                covariance[(left, right)] += row[left] * row[right];
+            }
+        }
+    }
+    covariance /= rows.len() as f64;
+    let mut values: Vec<_> = SymmetricEigen::new(covariance)
+        .eigenvalues
+        .iter()
+        .map(|&value| value.max(0.0).sqrt())
+        .collect();
+    values.sort_by(|left, right| right.total_cmp(left));
+    values
+}
+
+fn relative_values(values: &[f64]) -> Vec<f64> {
+    let largest = values.first().copied().unwrap_or(0.0);
+    if largest > 0.0 {
+        values.iter().map(|value| value / largest).collect()
+    } else {
+        vec![0.0; values.len()]
     }
 }
 
@@ -624,6 +926,7 @@ mod tests {
             input_scale: 0.0,
             input_mode: 0,
             noise_std: 0.0,
+            detector_noise_std: 0.0,
             thermal_coupling: 0.0,
             thermal_decay: 0.0,
             raman_fraction: 0.0,
@@ -713,7 +1016,7 @@ mod tests {
                 vec![primary, primary + 1e-5 * perturbation]
             })
             .collect();
-        let prepared = prepare_features(&observations, 0, 0.7, 1e-3).unwrap();
+        let prepared = prepare_features(&observations, &observations, 0, 0.7, 1e-3, 0.0).unwrap();
         assert_eq!(prepared.spectrum.effective_rank, 1);
         assert!(prepared.spectrum.stable_rank < 1.01);
         assert_eq!(
@@ -726,5 +1029,49 @@ mod tests {
                 .rank,
             2
         );
+    }
+
+    #[test]
+    fn noise_aware_dimension_uses_strict_floor_and_zero_noise_limit() {
+        let rows = vec![vec![-1.0], vec![1.0], vec![-1.0], vec![1.0]];
+        let mut zero = observation_spectrum(&rows, 1e-6);
+        add_noiseless_diagnostics(&mut zero, &rows, &rows, rows.len(), 1e-6, 0.0);
+        assert_eq!(zero.noiseless_numerical_rank, 1);
+        assert_eq!(zero.noise_aware_observable_dimension, 1);
+
+        let mut at_boundary = observation_spectrum(&rows, 1e-6);
+        add_noiseless_diagnostics(&mut at_boundary, &rows, &rows, rows.len(), 1e-6, 1.0);
+        assert_eq!(at_boundary.noiseless_raw_singular_values, vec![1.0]);
+        assert_eq!(at_boundary.noise_aware_observable_dimension, 0);
+
+        let mut below_boundary = observation_spectrum(&rows, 1e-6);
+        add_noiseless_diagnostics(
+            &mut below_boundary,
+            &rows,
+            &rows,
+            rows.len(),
+            1e-6,
+            1.0 - 1e-12,
+        );
+        assert_eq!(below_boundary.noise_aware_observable_dimension, 1);
+    }
+
+    #[test]
+    fn snr_is_power_ratio_and_db_conversion_is_auditable() {
+        let rows = vec![vec![-1.0], vec![1.0], vec![-1.0], vec![1.0]];
+        let mut spectrum = observation_spectrum(&rows, 1e-6);
+        add_noiseless_diagnostics(&mut spectrum, &rows, &rows, rows.len(), 1e-6, 0.5);
+        let diagnostic = &spectrum.feature_diagnostics[0];
+        assert_eq!(diagnostic.linear_power_snr, Some(4.0));
+        assert!((diagnostic.snr_db.unwrap() - 6.020_599_913).abs() < 1e-9);
+        assert_eq!(diagnostic.snr_status, "finite");
+    }
+
+    #[test]
+    fn raw_readout_norm_converts_training_scales_and_rejects_degenerate_weight() {
+        let norm = raw_equivalent_weight_norm(&[2.0, 3.0], &[4.0, 0.5]).unwrap();
+        assert!((norm - (0.25_f64 + 36.0).sqrt()).abs() < 1e-14);
+        assert_eq!(raw_equivalent_weight_norm(&[0.0], &[0.0]), Some(0.0));
+        assert_eq!(raw_equivalent_weight_norm(&[1e-3], &[0.0]), None);
     }
 }

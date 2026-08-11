@@ -10,6 +10,7 @@
     "run:smoke": "cargo run -- run configs/smoke.toml --output output/smoke",
     "run:linear-control": "cargo run -- run configs/linear-control.toml --output output/linear-control",
     "controls": "cargo run --release -- controls configs/smoke.toml --output output/controls",
+    "noise-suite:frozen": "cargo run --release -- noise-suite configs/detector-noise-frozen.toml --output output/detector-noise-frozen",
     "db-check": "cargo run -- db-check output/controls/results.sqlite",
     "cross-check": "cargo run -- cross-check configs/smoke.toml"
   }

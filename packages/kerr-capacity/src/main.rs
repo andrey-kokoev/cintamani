@@ -1,5 +1,7 @@
 use anyhow::Result;
-use cintamani_kerr_capacity::{config::Config, controls, database, experiment, report};
+use cintamani_kerr_capacity::{
+    config::Config, controls, database, experiment, noise, noise_report, report,
+};
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
@@ -31,6 +33,12 @@ enum Command {
         seed_count: usize,
         #[arg(long, value_delimiter = ',', default_value = "0.6,0.7,0.8")]
         train_fractions: Vec<f64>,
+    },
+    /// Run the predeclared Ledger-14 detector-noise falsification gate.
+    NoiseSuite {
+        config: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
     },
     DbCheck {
         database: PathBuf,
@@ -78,6 +86,15 @@ fn main() -> Result<()> {
                     summary.historical_input_corrected_capacity,
                 );
             }
+        }
+        Command::NoiseSuite { config, output } => {
+            let config = Config::load(config)?;
+            let suite = noise::run_frozen(&config)?;
+            noise_report::write_all(&output, &config, &suite)?;
+            println!(
+                "detector-noise gate at {:.1e}: {} ({})",
+                suite.decision_floor, suite.gate_passed, suite.decision
+            );
         }
         Command::DbCheck { database: path } => {
             let inspection = database::inspect(path)?;

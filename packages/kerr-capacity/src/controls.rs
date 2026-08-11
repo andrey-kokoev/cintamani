@@ -227,9 +227,10 @@ pub fn run(
         let kerr_capacity = if train_fraction == config.train_fraction {
             kerr_intensity_capacity.clone()
         } else {
-            capacity::analyze(
+            capacity::analyze_with_noiseless(
                 &kerr_intensity_simulation.inputs,
                 &kerr_intensity_simulation.observations,
+                &kerr_intensity_simulation.noiseless_observations,
                 &kerr_split_config,
             )?
         };
@@ -245,9 +246,10 @@ pub fn run(
         let disabled_capacity = if train_fraction == config.train_fraction {
             disabled_intensity_capacity.clone()
         } else {
-            capacity::analyze(
+            capacity::analyze_with_noiseless(
                 &disabled_intensity_simulation.inputs,
                 &disabled_intensity_simulation.observations,
+                &disabled_intensity_simulation.noiseless_observations,
                 &disabled_split_config,
             )?
         };
@@ -263,9 +265,10 @@ pub fn run(
         let kerr_quadrature_split_capacity = if train_fraction == config.train_fraction {
             kerr_quadrature_capacity.clone()
         } else {
-            capacity::analyze(
+            capacity::analyze_with_noiseless(
                 &kerr_quadrature_simulation.inputs,
                 &kerr_quadrature_simulation.observations,
+                &kerr_quadrature_simulation.noiseless_observations,
                 &kerr_quadrature_split_config,
             )?
         };
@@ -281,9 +284,10 @@ pub fn run(
         let disabled_quadrature_split_capacity = if train_fraction == config.train_fraction {
             disabled_quadrature_capacity.clone()
         } else {
-            capacity::analyze(
+            capacity::analyze_with_noiseless(
                 &disabled_quadrature_simulation.inputs,
                 &disabled_quadrature_simulation.observations,
+                &disabled_quadrature_simulation.noiseless_observations,
                 &disabled_quadrature_split_config,
             )?
         };
@@ -409,7 +413,12 @@ fn simulate_and_analyze(config: &Config) -> Result<(Simulation, CapacityAnalysis
     if simulation.observations.first().map(Vec::len) != Some(config.observation_dimension()) {
         bail!("simulator observation width does not match the configured interface");
     }
-    let analysis = capacity::analyze(&simulation.inputs, &simulation.observations, config)?;
+    let analysis = capacity::analyze_with_noiseless(
+        &simulation.inputs,
+        &simulation.observations,
+        &simulation.noiseless_observations,
+        config,
+    )?;
     Ok((simulation, analysis))
 }
 
@@ -555,6 +564,7 @@ mod tests {
             input_scale: 0.12,
             input_mode: 1,
             noise_std: 0.0,
+            detector_noise_std: 0.0,
             thermal_coupling: 0.0,
             thermal_decay: 0.05,
             raman_fraction: 0.0,

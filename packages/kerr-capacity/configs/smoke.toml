@@ -14,6 +14,7 @@ pump_amplitude = 1.25
 input_scale = 0.16
 input_mode = 1
 noise_std = 0.0
+detector_noise_std = 0.0
 thermal_coupling = 0.0
 thermal_decay = 0.08
 raman_fraction = 0.0

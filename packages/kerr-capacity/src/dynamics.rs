@@ -6,6 +6,9 @@ use rand_distr::{Distribution, StandardNormal};
 use serde::Serialize;
 use std::f64::consts::TAU;
 
+const STATE_NOISE_STREAM: u64 = 0xa076_1d64_78bd_642f;
+const DETECTOR_NOISE_STREAM: u64 = 0xe21c_75f2_1bb1_9e97;
+
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct ResourceUsage {
     pub elapsed_time: f64,
@@ -20,6 +23,10 @@ pub struct ResourceUsage {
 #[derive(Clone, Debug, Serialize)]
 pub struct Simulation {
     pub inputs: Vec<f64>,
+    /// Observation interface before detector noise is charged.  This is kept
+    /// for SNR and observable-dimension audits, not supplied to the readout.
+    pub noiseless_observations: Vec<Vec<f64>>,
+    /// Observation interface actually supplied to capacity estimation.
     pub observations: Vec<Vec<f64>>,
     pub state_power: Vec<f64>,
     pub thermal_state: Vec<f64>,
@@ -264,13 +271,29 @@ impl KerrSystem {
         }
     }
 
+    fn apply_detector_noise(&self, noiseless: &[f64], detector_noise_rng: &mut StdRng) -> Vec<f64> {
+        if self.config.detector_noise_std == 0.0 {
+            return noiseless.to_vec();
+        }
+        noiseless
+            .iter()
+            .map(|&value| {
+                let draw: f64 = StandardNormal.sample(detector_noise_rng);
+                value + self.config.detector_noise_std * draw
+            })
+            .collect()
+    }
+
     pub fn simulate(&self) -> Result<Simulation> {
         let mut input_rng = StdRng::seed_from_u64(self.config.seed);
-        let mut noise_rng = StdRng::seed_from_u64(self.config.seed ^ 0xa076_1d64_78bd_642f);
+        let mut noise_rng = StdRng::seed_from_u64(self.config.seed ^ STATE_NOISE_STREAM);
+        let mut detector_noise_rng =
+            StdRng::seed_from_u64(self.config.seed ^ DETECTOR_NOISE_STREAM);
         let mut state = self.zero_state();
         let mut thermal = 0.0;
         let total_symbols = self.config.warmup_symbols + self.config.sample_symbols;
         let mut inputs = Vec::with_capacity(self.config.sample_symbols);
+        let mut noiseless_observations = Vec::with_capacity(self.config.sample_symbols);
         let mut observations = Vec::with_capacity(self.config.sample_symbols);
         let mut state_power = Vec::with_capacity(self.config.sample_symbols);
         let mut thermal_state = Vec::with_capacity(self.config.sample_symbols);
@@ -309,7 +332,9 @@ impl KerrSystem {
 
             if symbol >= self.config.warmup_symbols {
                 inputs.push(input);
-                observations.push(self.observe(&state, input));
+                let noiseless = self.observe(&state, input);
+                observations.push(self.apply_detector_noise(&noiseless, &mut detector_noise_rng));
+                noiseless_observations.push(noiseless);
                 state_power.push(state.iter().map(|value| value.norm_sqr()).sum());
                 thermal_state.push(thermal);
             }
@@ -317,6 +342,7 @@ impl KerrSystem {
 
         Ok(Simulation {
             inputs,
+            noiseless_observations,
             observations,
             state_power,
             thermal_state,
@@ -373,6 +399,7 @@ mod tests {
             input_scale: 0.1,
             input_mode: 0,
             noise_std: 0.0,
+            detector_noise_std: 0.0,
             thermal_coupling: 0.01,
             thermal_decay: 0.05,
             raman_fraction: 0.0,
@@ -413,7 +440,65 @@ mod tests {
         let second = system.simulate().unwrap();
         assert_eq!(first.inputs, second.inputs);
         assert_eq!(first.observations, second.observations);
+        assert_eq!(first.observations, first.noiseless_observations);
         assert_eq!(first.thermal_state, second.thermal_state);
+    }
+
+    #[test]
+    fn detector_noise_is_reproducible_and_confined_to_observation_boundary() {
+        let baseline = KerrSystem::new(&config()).simulate().unwrap();
+        let mut noisy_config = config();
+        noisy_config.detector_noise_std = 1e-5;
+        let first = KerrSystem::new(&noisy_config).simulate().unwrap();
+        let second = KerrSystem::new(&noisy_config).simulate().unwrap();
+
+        assert_eq!(first.observations, second.observations);
+        assert_eq!(first.noiseless_observations, baseline.observations);
+        assert_eq!(first.state_power, baseline.state_power);
+        assert_eq!(first.thermal_state, baseline.thermal_state);
+        assert_ne!(first.observations, first.noiseless_observations);
+    }
+
+    #[test]
+    fn matched_physical_cases_receive_common_detector_noise_draws() {
+        let mut kerr_config = config();
+        kerr_config.detector_noise_std = 1e-5;
+        let kerr = KerrSystem::new(&kerr_config).simulate().unwrap();
+        let mut disabled_config = kerr_config.clone();
+        disabled_config.kerr_strength = 0.0;
+        let disabled = KerrSystem::new(&disabled_config).simulate().unwrap();
+
+        for (((kerr_noisy, kerr_clean), disabled_noisy), disabled_clean) in kerr
+            .observations
+            .iter()
+            .zip(&kerr.noiseless_observations)
+            .zip(&disabled.observations)
+            .zip(&disabled.noiseless_observations)
+        {
+            for (((&kn, &kc), &dn), &dc) in kerr_noisy
+                .iter()
+                .zip(kerr_clean)
+                .zip(disabled_noisy)
+                .zip(disabled_clean)
+            {
+                assert_relative_eq!(kn - kc, dn - dc, epsilon = 1e-15);
+            }
+        }
+    }
+
+    #[test]
+    fn detector_rng_is_independent_of_dynamical_noise_rng() {
+        let mut baseline_config = config();
+        baseline_config.noise_std = 1e-4;
+        let baseline = KerrSystem::new(&baseline_config).simulate().unwrap();
+        let mut noisy_config = baseline_config;
+        noisy_config.detector_noise_std = 1e-5;
+        let noisy = KerrSystem::new(&noisy_config).simulate().unwrap();
+        assert_eq!(baseline.state_power, noisy.state_power);
+        assert_eq!(
+            baseline.noiseless_observations,
+            noisy.noiseless_observations
+        );
     }
 
     #[test]

@@ -4,13 +4,14 @@ use crate::{
     controls::{AttributionSuite, ReplicationSummary},
     dynamics::ResourceUsage,
     experiment::ExperimentResult,
+    noise::{NoiseReplicationOutcome, NoiseSuite},
 };
 use anyhow::{Context, Result};
 use rusqlite::{Connection, Transaction, params};
 use serde::Serialize;
 use std::path::Path;
 
-const SCHEMA_VERSION: &str = "1";
+const SCHEMA_VERSION: &str = "2";
 
 #[derive(Clone, Debug, Serialize)]
 pub struct DatabaseInspection {
@@ -24,9 +25,14 @@ pub struct DatabaseInspection {
     pub targets: usize,
     pub singular_values: usize,
     pub feature_scales: usize,
+    pub feature_diagnostics: usize,
     pub sensitivity_rows: usize,
     pub replication_conditions: usize,
     pub replicated_targets: usize,
+    pub noise_levels: usize,
+    pub noise_cases: usize,
+    pub paired_differences: usize,
+    pub noise_replication: usize,
 }
 
 pub fn inspect(path: impl AsRef<Path>) -> Result<DatabaseInspection> {
@@ -58,6 +64,18 @@ pub fn write_attribution_suite(
     let mut connection = Connection::open(path)
         .with_context(|| format!("failed to open SQLite database {}", path.display()))?;
     write_attribution_connection(&mut connection, config, suite)
+        .with_context(|| format!("failed to write SQLite database {}", path.display()))
+}
+
+pub fn write_noise_suite(
+    path: impl AsRef<Path>,
+    config: &Config,
+    suite: &NoiseSuite,
+) -> Result<()> {
+    let path = path.as_ref();
+    let mut connection = Connection::open(path)
+        .with_context(|| format!("failed to open SQLite database {}", path.display()))?;
+    write_noise_connection(&mut connection, config, suite)
         .with_context(|| format!("failed to write SQLite database {}", path.display()))
 }
 
@@ -147,13 +165,124 @@ fn write_attribution_connection(
     Ok(())
 }
 
+fn write_noise_connection(
+    connection: &mut Connection,
+    config: &Config,
+    suite: &NoiseSuite,
+) -> Result<()> {
+    connection.pragma_update(None, "foreign_keys", "ON")?;
+    let transaction = connection.transaction()?;
+    initialize_snapshot(&transaction, "detector-noise-suite")?;
+    insert_configuration(&transaction, "base", config)?;
+    for (key, value) in [
+        ("decision_floor", suite.decision_floor.to_string()),
+        ("gate_passed", suite.gate_passed.to_string()),
+        ("decision", suite.decision.clone()),
+        (
+            "observation_noise_units",
+            suite.observation_noise_units.clone(),
+        ),
+        (
+            "common_random_number_rule",
+            suite.common_random_number_rule.clone(),
+        ),
+        (
+            "noise_aware_dimension_rule",
+            suite.noise_aware_dimension_rule.clone(),
+        ),
+    ] {
+        transaction.execute(
+            "INSERT INTO metadata (key, value) VALUES (?1, ?2)",
+            params![key, value],
+        )?;
+    }
+
+    for &level in &suite.detector_noise_levels {
+        transaction.execute(
+            "INSERT INTO noise_levels (detector_noise_std, is_decision_floor)
+             VALUES (?1, ?2)",
+            params![level, bool_i64(level == suite.decision_floor)],
+        )?;
+    }
+
+    for case in &suite.cases {
+        let role = format!(
+            "noise:{:.17e}:{}:{}",
+            case.detector_noise_std, case.seed, case.condition
+        );
+        insert_configuration(&transaction, &role, &case.configuration)?;
+        let name = format!(
+            "{}:seed-{}:noise-{:.17e}",
+            case.condition, case.seed, case.detector_noise_std
+        );
+        let case_id = insert_case(
+            &transaction,
+            &name,
+            "Matched coherent-quadrature detector-noise case.",
+            "normalized-detector-observation-noise",
+            Some(&role),
+            &case.capacity,
+            Some(&case.resources),
+        )?;
+        transaction.execute(
+            "INSERT INTO noise_cases (
+                case_id, noise_level_id, condition, seed
+             ) VALUES (
+                ?1, (SELECT noise_level_id FROM noise_levels WHERE detector_noise_std = ?2), ?3, ?4
+             )",
+            params![
+                case_id,
+                case.detector_noise_std,
+                case.condition,
+                case.seed.to_string()
+            ],
+        )?;
+    }
+
+    for row in &suite.paired_differences {
+        transaction.execute(
+            "INSERT INTO paired_differences (
+                noise_level_id, seed, target, total_degree, maximum_lag,
+                kerr_corrected_capacity, disabled_corrected_capacity,
+                kerr_minus_disabled, kerr_familywise_significant,
+                disabled_familywise_significant
+             ) VALUES (
+                (SELECT noise_level_id FROM noise_levels WHERE detector_noise_std = ?1),
+                ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10
+             )",
+            params![
+                row.detector_noise_std,
+                row.seed.to_string(),
+                row.target,
+                to_i64(row.total_degree),
+                to_i64(row.maximum_lag),
+                row.kerr_corrected_capacity,
+                row.disabled_corrected_capacity,
+                row.kerr_minus_disabled,
+                bool_i64(row.kerr_familywise_significant),
+                bool_i64(row.disabled_familywise_significant),
+            ],
+        )?;
+    }
+    for outcome in &suite.replication {
+        insert_noise_replication(&transaction, outcome)?;
+    }
+    transaction.commit()?;
+    Ok(())
+}
+
 fn initialize_snapshot(transaction: &Transaction<'_>, artifact_kind: &str) -> Result<()> {
     transaction.execute_batch(
         "PRAGMA foreign_keys = ON;
+         DROP TABLE IF EXISTS noise_replication;
+         DROP TABLE IF EXISTS paired_differences;
+         DROP TABLE IF EXISTS noise_cases;
+         DROP TABLE IF EXISTS noise_levels;
          DROP TABLE IF EXISTS replicated_targets;
          DROP TABLE IF EXISTS replication;
          DROP TABLE IF EXISTS sensitivity;
          DROP TABLE IF EXISTS rank_profile;
+         DROP TABLE IF EXISTS feature_diagnostics;
          DROP TABLE IF EXISTS feature_scales;
          DROP TABLE IF EXISTS singular_values;
          DROP TABLE IF EXISTS targets;
@@ -178,6 +307,11 @@ fn initialize_snapshot(transaction: &Transaction<'_>, artifact_kind: &str) -> Re
              configuration_role TEXT REFERENCES configurations(role),
              declared_observation_dimension INTEGER NOT NULL,
              effective_observation_rank INTEGER NOT NULL,
+             noiseless_numerical_rank INTEGER NOT NULL,
+             noise_aware_observable_dimension INTEGER NOT NULL,
+             detector_noise_std REAL NOT NULL,
+             noise_aware_criterion TEXT NOT NULL,
+             degenerate_training_feature_count INTEGER NOT NULL,
              stable_rank REAL NOT NULL,
              participation_ratio REAL NOT NULL,
              rank_relative_tolerance REAL NOT NULL,
@@ -212,6 +346,10 @@ fn initialize_snapshot(transaction: &Transaction<'_>, artifact_kind: &str) -> Re
              familywise_permutation_threshold REAL NOT NULL,
              familywise_significant INTEGER NOT NULL CHECK (familywise_significant IN (0, 1)),
              corrected_capacity REAL NOT NULL,
+             standardized_weight_norm REAL NOT NULL,
+             raw_equivalent_weight_norm REAL,
+             raw_weight_conversion_defined INTEGER NOT NULL CHECK (raw_weight_conversion_defined IN (0, 1)),
+             detector_noise_gain REAL,
              PRIMARY KEY (case_id, target)
          ) STRICT;
          CREATE INDEX targets_degree_lag ON targets(case_id, total_degree, maximum_lag);
@@ -220,7 +358,23 @@ fn initialize_snapshot(transaction: &Transaction<'_>, artifact_kind: &str) -> Re
              component INTEGER NOT NULL,
              normalized_singular_value REAL NOT NULL,
              relative_singular_value REAL NOT NULL,
+             noiseless_standardized_singular_value REAL NOT NULL,
+             noiseless_standardized_relative_singular_value REAL NOT NULL,
+             noiseless_raw_singular_value REAL NOT NULL,
              PRIMARY KEY (case_id, component)
+         ) STRICT;
+         CREATE TABLE feature_diagnostics (
+             case_id INTEGER NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
+             feature INTEGER NOT NULL,
+             noiseless_training_mean REAL NOT NULL,
+             signal_std REAL NOT NULL,
+             declared_detector_noise_std REAL NOT NULL,
+             realized_detector_noise_rms REAL NOT NULL,
+             linear_power_snr REAL,
+             snr_db REAL,
+             snr_status TEXT NOT NULL,
+             signal_exceeds_declared_noise INTEGER NOT NULL CHECK (signal_exceeds_declared_noise IN (0, 1)),
+             PRIMARY KEY (case_id, feature)
          ) STRICT;
          CREATE TABLE feature_scales (
              case_id INTEGER NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
@@ -271,6 +425,47 @@ fn initialize_snapshot(transaction: &Transaction<'_>, artifact_kind: &str) -> Re
              minimum_corrected_capacity REAL NOT NULL,
              mean_corrected_capacity REAL NOT NULL,
              PRIMARY KEY (condition, target)
+         ) STRICT;
+         CREATE TABLE noise_levels (
+             noise_level_id INTEGER PRIMARY KEY,
+             detector_noise_std REAL NOT NULL UNIQUE CHECK (detector_noise_std >= 0.0),
+             is_decision_floor INTEGER NOT NULL CHECK (is_decision_floor IN (0, 1))
+         ) STRICT;
+         CREATE TABLE noise_cases (
+             case_id INTEGER PRIMARY KEY REFERENCES cases(case_id) ON DELETE CASCADE,
+             noise_level_id INTEGER NOT NULL REFERENCES noise_levels(noise_level_id),
+             condition TEXT NOT NULL,
+             seed TEXT NOT NULL,
+             UNIQUE (noise_level_id, condition, seed)
+         ) STRICT;
+         CREATE TABLE paired_differences (
+             noise_level_id INTEGER NOT NULL REFERENCES noise_levels(noise_level_id) ON DELETE CASCADE,
+             seed TEXT NOT NULL,
+             target TEXT NOT NULL,
+             total_degree INTEGER NOT NULL,
+             maximum_lag INTEGER NOT NULL,
+             kerr_corrected_capacity REAL NOT NULL,
+             disabled_corrected_capacity REAL NOT NULL,
+             kerr_minus_disabled REAL NOT NULL,
+             kerr_familywise_significant INTEGER NOT NULL CHECK (kerr_familywise_significant IN (0, 1)),
+             disabled_familywise_significant INTEGER NOT NULL CHECK (disabled_familywise_significant IN (0, 1)),
+             PRIMARY KEY (noise_level_id, seed, target)
+         ) STRICT;
+         CREATE TABLE noise_replication (
+             noise_level_id INTEGER NOT NULL REFERENCES noise_levels(noise_level_id) ON DELETE CASCADE,
+             target TEXT NOT NULL,
+             total_degree INTEGER NOT NULL,
+             maximum_lag INTEGER NOT NULL,
+             required_seed_count INTEGER NOT NULL,
+             kerr_significant_seed_count INTEGER NOT NULL,
+             disabled_significant_seed_count INTEGER NOT NULL,
+             positive_delta_seed_count INTEGER NOT NULL,
+             kerr_replicated INTEGER NOT NULL CHECK (kerr_replicated IN (0, 1)),
+             disabled_replicated INTEGER NOT NULL CHECK (disabled_replicated IN (0, 1)),
+             paired_advantage_replicated INTEGER NOT NULL CHECK (paired_advantage_replicated IN (0, 1)),
+             minimum_kerr_minus_disabled REAL NOT NULL,
+             mean_kerr_minus_disabled REAL NOT NULL,
+             PRIMARY KEY (noise_level_id, target)
          ) STRICT;",
     )?;
     transaction.execute(
@@ -305,7 +500,7 @@ fn insert_case(
     configuration_role: Option<&str>,
     capacity: &CapacityAnalysis,
     resources: Option<&ResourceUsage>,
-) -> Result<()> {
+) -> Result<i64> {
     let linear = group_capacity(&capacity.by_degree, 1);
     let current = group_capacity(&capacity.by_maximum_lag, 0);
     let significant_target_count = capacity
@@ -316,13 +511,16 @@ fn insert_case(
     transaction.execute(
         "INSERT INTO cases (
             name, description, kind, configuration_role, declared_observation_dimension,
-            effective_observation_rank, stable_rank, participation_ratio,
+            effective_observation_rank, noiseless_numerical_rank,
+            noise_aware_observable_dimension, detector_noise_std, noise_aware_criterion,
+            degenerate_training_feature_count, stable_rank, participation_ratio,
             rank_relative_tolerance, familywise_permutation_threshold,
             significant_target_count, total_positive_raw_capacity, total_corrected_capacity,
             linear_corrected_capacity, nonlinear_corrected_capacity,
             current_input_corrected_capacity, historical_input_corrected_capacity
          ) VALUES (
-            ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17
+            ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16,
+            ?17, ?18, ?19, ?20, ?21, ?22
          )",
         params![
             name,
@@ -331,6 +529,15 @@ fn insert_case(
             configuration_role,
             to_i64(capacity.declared_observation_dimension),
             to_i64(capacity.effective_observation_rank),
+            to_i64(capacity.noiseless_numerical_rank),
+            to_i64(capacity.noise_aware_observable_dimension),
+            capacity.observation_spectrum.detector_noise_std,
+            capacity.observation_spectrum.noise_aware_criterion,
+            to_i64(
+                capacity
+                    .observation_spectrum
+                    .degenerate_training_feature_count
+            ),
             capacity.observation_spectrum.stable_rank,
             capacity.observation_spectrum.participation_ratio,
             capacity.observation_spectrum.chosen_relative_tolerance,
@@ -354,8 +561,10 @@ fn insert_case(
             "INSERT INTO targets (
                 case_id, target, total_degree, maximum_lag, interacting_lags,
                 raw_held_out_capacity, positive_null_mean, target_permutation_threshold,
-                familywise_permutation_threshold, familywise_significant, corrected_capacity
-             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+                familywise_permutation_threshold, familywise_significant, corrected_capacity,
+                standardized_weight_norm, raw_equivalent_weight_norm,
+                raw_weight_conversion_defined, detector_noise_gain
+             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
             params![
                 case_id,
                 target.target,
@@ -368,21 +577,64 @@ fn insert_case(
                 target.familywise_permutation_threshold,
                 bool_i64(target.familywise_significant),
                 target.corrected_capacity,
+                target.standardized_weight_norm,
+                target.raw_equivalent_weight_norm,
+                bool_i64(target.raw_weight_conversion_defined),
+                target.detector_noise_gain,
             ],
         )?;
     }
     let spectrum = &capacity.observation_spectrum;
-    for (component, (&singular, &relative)) in spectrum
+    for (
+        component,
+        ((((&singular, &relative), &noiseless_standardized), &noiseless_relative), &noiseless_raw),
+    ) in spectrum
         .normalized_singular_values
         .iter()
         .zip(&spectrum.relative_singular_values)
+        .zip(&spectrum.noiseless_standardized_singular_values)
+        .zip(&spectrum.noiseless_standardized_relative_singular_values)
+        .zip(&spectrum.noiseless_raw_singular_values)
         .enumerate()
     {
         transaction.execute(
             "INSERT INTO singular_values (
                 case_id, component, normalized_singular_value, relative_singular_value
-             ) VALUES (?1, ?2, ?3, ?4)",
-            params![case_id, to_i64(component), singular, relative],
+                , noiseless_standardized_singular_value,
+                noiseless_standardized_relative_singular_value,
+                noiseless_raw_singular_value
+             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+            params![
+                case_id,
+                to_i64(component),
+                singular,
+                relative,
+                noiseless_standardized,
+                noiseless_relative,
+                noiseless_raw
+            ],
+        )?;
+    }
+    for diagnostic in &spectrum.feature_diagnostics {
+        transaction.execute(
+            "INSERT INTO feature_diagnostics (
+                case_id, feature, noiseless_training_mean, signal_std,
+                declared_detector_noise_std, realized_detector_noise_rms,
+                linear_power_snr, snr_db, snr_status,
+                signal_exceeds_declared_noise
+             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+            params![
+                case_id,
+                to_i64(diagnostic.feature),
+                diagnostic.noiseless_training_mean,
+                diagnostic.signal_std,
+                diagnostic.declared_detector_noise_std,
+                diagnostic.realized_detector_noise_rms,
+                diagnostic.linear_power_snr,
+                diagnostic.snr_db,
+                diagnostic.snr_status,
+                bool_i64(diagnostic.signal_exceeds_declared_noise),
+            ],
         )?;
     }
     for (feature, ((&mean, &scale), &relative)) in spectrum
@@ -410,7 +662,7 @@ fn insert_case(
             ],
         )?;
     }
-    Ok(())
+    Ok(case_id)
 }
 
 fn insert_resources(
@@ -483,6 +735,40 @@ fn insert_replication(
     Ok(())
 }
 
+fn insert_noise_replication(
+    transaction: &Transaction<'_>,
+    outcome: &NoiseReplicationOutcome,
+) -> Result<()> {
+    transaction.execute(
+        "INSERT INTO noise_replication (
+            noise_level_id, target, total_degree, maximum_lag, required_seed_count,
+            kerr_significant_seed_count, disabled_significant_seed_count,
+            positive_delta_seed_count, kerr_replicated, disabled_replicated,
+            paired_advantage_replicated, minimum_kerr_minus_disabled,
+            mean_kerr_minus_disabled
+         ) VALUES (
+            (SELECT noise_level_id FROM noise_levels WHERE detector_noise_std = ?1),
+            ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13
+         )",
+        params![
+            outcome.detector_noise_std,
+            outcome.target,
+            to_i64(outcome.total_degree),
+            to_i64(outcome.maximum_lag),
+            to_i64(outcome.required_seed_count),
+            to_i64(outcome.kerr_significant_seed_count),
+            to_i64(outcome.disabled_significant_seed_count),
+            to_i64(outcome.positive_delta_seed_count),
+            bool_i64(outcome.kerr_replicated),
+            bool_i64(outcome.disabled_replicated),
+            bool_i64(outcome.paired_advantage_replicated),
+            outcome.minimum_kerr_minus_disabled,
+            outcome.mean_kerr_minus_disabled,
+        ],
+    )?;
+    Ok(())
+}
+
 fn group_capacity(groups: &[GroupCapacity], group: usize) -> f64 {
     groups
         .iter()
@@ -514,9 +800,14 @@ fn inspect_connection(connection: &Connection) -> Result<DatabaseInspection> {
         targets: table_count(connection, "targets")?,
         singular_values: table_count(connection, "singular_values")?,
         feature_scales: table_count(connection, "feature_scales")?,
+        feature_diagnostics: table_count(connection, "feature_diagnostics")?,
         sensitivity_rows: table_count(connection, "sensitivity")?,
         replication_conditions: table_count(connection, "replication")?,
         replicated_targets: table_count(connection, "replicated_targets")?,
+        noise_levels: table_count(connection, "noise_levels")?,
+        noise_cases: table_count(connection, "noise_cases")?,
+        paired_differences: table_count(connection, "paired_differences")?,
+        noise_replication: table_count(connection, "noise_replication")?,
     })
 }
 
@@ -537,9 +828,14 @@ fn table_count(connection: &Connection, table: &str) -> Result<usize> {
         "targets",
         "singular_values",
         "feature_scales",
+        "feature_diagnostics",
         "sensitivity",
         "replication",
         "replicated_targets",
+        "noise_levels",
+        "noise_cases",
+        "paired_differences",
+        "noise_replication",
     ];
     if !allowed.contains(&table) {
         anyhow::bail!("table {table} is not in the inspection allowlist");
@@ -554,7 +850,7 @@ mod tests {
     use super::*;
     use crate::{
         config::{Backend, Observation},
-        controls, experiment,
+        controls, experiment, noise,
     };
 
     fn config() -> Config {
@@ -575,6 +871,7 @@ mod tests {
             input_scale: 0.12,
             input_mode: 1,
             noise_std: 0.0,
+            detector_noise_std: 0.0,
             thermal_coupling: 0.0,
             thermal_decay: 0.05,
             raman_fraction: 0.0,
@@ -632,5 +929,35 @@ mod tests {
         assert_eq!(cases, 8);
         assert_eq!(replications, 4);
         assert_eq!(foreign_key_errors, 0);
+    }
+
+    #[test]
+    fn noise_database_is_schema_versioned_and_matches_suite_projection() {
+        let mut configuration = config();
+        configuration.observation = Observation::Quadrature;
+        let suite = noise::run(&configuration, &[0.0, 1e-6], 1, 1e-6).unwrap();
+        let mut connection = Connection::open_in_memory().unwrap();
+        write_noise_connection(&mut connection, &configuration, &suite).unwrap();
+        let inspection = inspect_connection(&connection).unwrap();
+
+        assert_eq!(inspection.schema_version, "2");
+        assert_eq!(inspection.artifact_kind, "detector-noise-suite");
+        assert_eq!(inspection.noise_levels, 2);
+        assert_eq!(inspection.noise_cases, suite.cases.len());
+        assert_eq!(
+            inspection.paired_differences,
+            suite.paired_differences.len()
+        );
+        assert_eq!(inspection.noise_replication, suite.replication.len());
+        assert_eq!(inspection.foreign_key_violations, 0);
+        assert_eq!(inspection.integrity, "ok");
+        let normalized_cases: i64 = connection
+            .query_row(
+                "SELECT COUNT(*) FROM cases WHERE kind = 'normalized-detector-observation-noise'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(normalized_cases as usize, suite.cases.len());
     }
 }

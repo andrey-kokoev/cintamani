@@ -15,6 +15,10 @@ The thermal state follows `d theta/dt = thermal_coupling * sum |a_mu|^2 -
 thermal_decay * theta`. Additive complex Gaussian state noise is optional and separately seeded.
 The measured bus field uses `s_out = s_in - sqrt(kappa_external) a`; each symbol contributes one
 fixed snapshot, so no uncharged virtual time nodes enter the observation dimension.
+`detector_noise_std` is a separate normalized Gaussian scale applied only after that noiseless bus
+observation. It uses its own deterministic RNG stream; matched Kerr and Kerr-disabled cases reuse
+the same draws. The simulator retains the noiseless interface for training-partition signal/SNR
+diagnostics but supplies only the noisy interface to the readout.
 
 Two independently coded cubic operators are available:
 
@@ -41,6 +45,7 @@ pnpm --filter @cintamani/kerr-capacity cross-check
 pnpm --filter @cintamani/kerr-capacity run:smoke
 pnpm --filter @cintamani/kerr-capacity run:linear-control
 pnpm --filter @cintamani/kerr-capacity controls
+pnpm --filter @cintamani/kerr-capacity noise-suite:frozen
 pnpm --filter @cintamani/kerr-capacity db-check
 ```
 
@@ -63,9 +68,26 @@ sensitivity rows, and replication decisions. The cross-seed summary admits a tar
 passes the family-wise gate in every seed, then charges its minimum corrected capacity across those
 seeds.
 
+The frozen detector-noise suite evaluates coherent quadratures at normalized detector-noise
+standard deviations `0`, `1e-10`, `1e-9`, `1e-8`, and `1e-7` for seeds 20260810 through 20260812.
+The `1e-8` level is the predeclared decision floor. Every case reports per-feature signal scale,
+declared and realized noise, power SNR and dB SNR, readout norms in standardized and raw-equivalent
+coordinates, detector-noise gain, ideal noiseless numerical rank, and a separate noise-aware
+observable dimension. At nonzero noise, the latter counts noiseless raw principal standard
+deviations strictly above the detector-noise standard deviation, capped by ideal numerical rank.
+At zero noise it equals the ideal rank. Degenerate training features are zeroed; raw weight
+conversion is explicitly marked undefined if a nonzero standardized weight were ever assigned to
+one.
+
+Schema version 2 adds these diagnostics and normalized noise-level, noise-case, paired-difference,
+and cross-seed replication relations. `noise-suite.json` and the CSV/Markdown files are derived
+from the same in-memory suite written transactionally to `results.sqlite`.
+
 ## Deliberate perimeter
 
 Raman dynamics are unsupported in this first executable. Configuration validation rejects every
 nonzero `raman_fraction` until a material- and orientation-specific response kernel exists. The
-model also does not yet claim physical-unit calibration, detector bandwidth/noise, or accounting of
-energy leaking beyond the retained mode window; reports repeat these exclusions.
+model does not claim physical-unit detector calibration, shot-noise physics, local-oscillator or
+ADC limits, detector bandwidth, or accounting of energy leaking beyond the retained mode window;
+reports repeat these exclusions. The normalized additive detector floor is a robustness charge,
+not a model of any particular instrument.

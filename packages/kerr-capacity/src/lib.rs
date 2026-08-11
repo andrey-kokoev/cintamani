@@ -4,4 +4,6 @@ pub mod controls;
 pub mod database;
 pub mod dynamics;
 pub mod experiment;
+pub mod noise;
+pub mod noise_report;
 pub mod report;

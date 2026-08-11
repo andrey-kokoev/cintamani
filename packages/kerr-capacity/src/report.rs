@@ -612,6 +612,7 @@ mod tests {
             input_scale: 0.1,
             input_mode: 0,
             noise_std: 0.0,
+            detector_noise_std: 0.0,
             thermal_coupling: 0.0,
             thermal_decay: 0.0,
             raman_fraction: 0.0,
