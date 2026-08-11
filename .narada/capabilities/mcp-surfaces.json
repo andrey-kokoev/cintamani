@@ -3,7 +3,7 @@
   "artifact_role": "site_capability_surface_registry_not_mcp_client_config",
   "site_id": "cintamani",
   "generated_by": "mcp-registrar",
-  "generated_at": "2026-08-11T00:19:24.461Z",
+  "generated_at": "2026-08-11T01:38:51.591Z",
   "generation_policy": {
     "source": ".ai/mcp + registrar surface catalog",
     "mode": "enabled_surface_tool_authority",
@@ -3480,9 +3480,9 @@
       "display_name": "narada-cintamani-artifacts",
       "server_name": "narada-cintamani-artifacts",
       "runtime_binding": {
-        "runtime_kind": "bun-stdio",
+        "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:\\Users\\andrey\\src\\mcp-surfaces\\packages\\artifacts-mcp\\dist\\src\\main.js",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
@@ -3492,14 +3492,18 @@
             "--surface-id",
             "artifacts",
             "--child-command",
-            "C:/Users/andrey/.bun/bin/bun.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "6",
             "--entrypoint",
-            "C:\\Users\\andrey\\src\\mcp-surfaces\\packages\\artifacts-mcp\\dist\\src\\main.js",
-            "--"
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "--child-invocation-kind",
+            "native_entrypoint",
+            "--",
+            "--surface-id",
+            "artifacts"
           ]
         }
       },
@@ -4465,9 +4469,9 @@
       "display_name": "narada-cintamani-mailbox",
       "server_name": "narada-cintamani-mailbox",
       "runtime_binding": {
-        "runtime_kind": "bun-stdio",
+        "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:\\Users\\andrey\\src\\mcp-surfaces\\packages\\mailbox-mcp\\dist\\src\\main.js",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
@@ -4477,14 +4481,18 @@
             "--surface-id",
             "mailbox",
             "--child-command",
-            "C:/Users/andrey/.bun/bin/bun.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "6",
             "--entrypoint",
-            "C:\\Users\\andrey\\src\\mcp-surfaces\\packages\\mailbox-mcp\\dist\\src\\main.js",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "--child-invocation-kind",
+            "native_entrypoint",
             "--",
+            "--surface-id",
+            "mailbox",
             "--site-root",
             "C:\\Users\\andrey\\src\\cintamani"
           ]
@@ -5989,9 +5997,9 @@
       "display_name": "narada-cintamani-scheduler",
       "server_name": "narada-cintamani-scheduler",
       "runtime_binding": {
-        "runtime_kind": "bun-stdio",
+        "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:\\Users\\andrey\\src\\mcp-surfaces\\packages\\scheduler-mcp\\dist\\src\\main.js",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
@@ -6001,14 +6009,18 @@
             "--surface-id",
             "scheduler",
             "--child-command",
-            "C:/Users/andrey/.bun/bin/bun.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "6",
             "--entrypoint",
-            "C:\\Users\\andrey\\src\\mcp-surfaces\\packages\\scheduler-mcp\\dist\\src\\main.js",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "--child-invocation-kind",
+            "native_entrypoint",
             "--",
+            "--surface-id",
+            "scheduler",
             "--allowed-root",
             "C:\\Users\\andrey\\src\\cintamani"
           ]
@@ -9839,7 +9851,7 @@
       "display_name": "narada-cintamani-task-lifecycle",
       "server_name": "narada-cintamani-task-lifecycle",
       "runtime_binding": {
-        "runtime_kind": "node-stdio",
+        "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
         "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/narada-task-lifecycle-mcp.exe",
         "owner_site_id": "cintamani",
@@ -14591,7 +14603,7 @@
       "display_name": "narada-cintamani-work-lifecycle",
       "server_name": "narada-cintamani-work-lifecycle",
       "runtime_binding": {
-        "runtime_kind": "node-stdio",
+        "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
         "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/narada-work-lifecycle-mcp.exe",
         "owner_site_id": "cintamani",
