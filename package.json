@@ -4,6 +4,12 @@
   "private": true,
   "license": "Apache-2.0",
   "packageManager": "pnpm@10.9.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ]
+  },
   "scripts": {
     "build": "pnpm --recursive run build",
     "check": "pnpm --recursive run check",
@@ -11,6 +17,16 @@
     "domain:init": "pnpm --filter @cintamani/domain domain:init",
     "domain:rebuild": "pnpm --filter @cintamani/domain domain:rebuild",
     "domain:check": "pnpm --filter @cintamani/domain domain:check",
-    "domain:list": "pnpm --filter @cintamani/domain domain:list"
+    "domain:list": "pnpm --filter @cintamani/domain domain:list",
+    "domain:dimensions": "pnpm --filter @cintamani/domain domain:dimensions",
+    "domain:frontier": "pnpm --filter @cintamani/domain domain:frontier",
+    "domain:mcp": "pnpm --filter @cintamani/domain domain:mcp",
+    "site:generate": "pnpm --filter @cintamani/site generate:data",
+    "site:dev": "pnpm --filter @cintamani/site dev",
+    "site:check": "pnpm --filter @cintamani/site check",
+    "site:test": "pnpm --filter @cintamani/site test",
+    "site:build": "pnpm --filter @cintamani/site build",
+    "site:preview": "pnpm --filter @cintamani/site preview",
+    "site:ship": "pnpm --filter @cintamani/site ship"
   }
 }

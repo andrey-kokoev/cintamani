@@ -1,80 +1,202 @@
 # Cintamani domain siege registry
 
-This Rust package builds a bounded, queryable SQLite projection of Cintamani's categorical siege
-domain. Schema version 1 represents theoretical models, material candidates, physical mechanisms,
-observation interfaces, axis-consistent typed morphisms and siege cells, append-only cell decisions,
-parameter regions, conjectures, append-only conjecture dispositions, falsification criteria,
-protocols, runs, artifact identities, gate results, matched comparisons, and Ledger provenance
-links.
+This Rust package governs and queries Cintamani's categorical siege memory. Schema version 2 is a
+rebuildable SQLite projection, not a scientific database and not experimental evidence. It keeps
+stable domain identities separate from append-only epistemic history, exact provenance, and
+derived runtime observations.
 
-The registry is organizational infrastructure. Its presence is not experimental evidence and does
-not upgrade the epistemic status of any row.
+## Authority and storage boundaries
 
-## Ownership boundaries
+Five surfaces remain deliberately distinct:
 
-The durable and generated surfaces are deliberately separate:
+- `.narada/kb/cintamani-domain/` is Git-visible Site memory. The four version-1 admission JSON
+  files remain byte-for-byte immutable. `chain/HEAD` selects an immutable manifest generation;
+  each manifest pins sequence, path, content hash, predecessor entry hash, admitted identity/time,
+  admitting actor, external authority kind/reference, and its deterministic entry hash.
+- The bootstrap manifest's Task #2 WorkResultReport reference retrospectively certifies the
+  migration of the four existing records into the chain. It is not their original scientific
+  admission authority and supplies no new scientific evidence.
+- `.narada/db/cintamani-domain.sqlite` is an ignored, disposable Site projection. Rebuild creates
+  and fully validates a sibling database before atomically replacing an owned v1/v2 projection.
+  Chain, parse, schema, history, path, provenance, tracked-source, and present-artifact failures
+  preserve the existing database bytes. A nonempty foreign database is never adopted or cleared.
+- `packages/kerr-capacity/output/*/results.sqlite` files are ignored per-run evidence stores. The
+  registry retains artifact identity, expected hash, URI, and selected admitted claims; it does
+  not copy target rows. Availability and observed hash are derived during `check`, so no stale
+  mutable availability status is stored. Absence is tolerated; a present hash mismatch fails.
+- Task Lifecycle owns work assignment, reports, review, and closure. The registry neither mirrors
+  nor edits lifecycle state. `src/ledger` remains the human scientific narrative; tracked Ledger
+  paths and hashes are operationally checked and linked through typed provenance.
 
-- `migrations/001_v1.sql` is the tracked schema migration.
-- `.narada/kb/cintamani-domain/admissions/*.json` contains tracked Site admission records. Prior
-  admissions are treated as immutable. Advance or reject a stable siege-cell/conjecture identity by
-  adding the next contiguous `siege_cell_decisions` or `conjecture_dispositions` revision in a new
-  admission; the CLI deterministically selects the highest revision and preserves the full history.
-  Definition/schema corrections require an explicit migration rather than a silent rewrite.
-- `.narada/db/cintamani-domain.sqlite` is the ignored, rebuildable Site projection. The builder
-  refuses to overwrite a nonempty SQLite database without the registry's exact schema and
-  projection identity.
-- `packages/kerr-capacity/output/*/results.sqlite` databases are ignored per-run evidence stores.
-  The domain registry retains only selected artifact identity, hash, availability, row-count, and
-  provenance metadata; it does not copy target-level evidence.
-- Task Lifecycle owns work state and review. This database does not mirror or mutate lifecycle
-  state.
-- `src/ledger` owns human-readable experimental narrative. Ledger files and hashes are linked and
-  checked, not copied into the registry.
+Direct ad-hoc SQL mutation is not an admitted workflow.
 
-Version 1 has no MCP registration. Access is through the Rust CLI and pnpm wrappers.
+## Schema and field classification
 
-## Commands
+The primary schema uses explicit tables rather than a generic EAV or untyped category graph.
 
-From the repository root:
+| Classification | Examples | Evolution rule |
+| --- | --- | --- |
+| Stable identity/definition | model, material, mechanism, interface, port, morphism, path, cell, parameter, region, conjecture, protocol, run, artifact IDs; names; axes; units; morphism endpoints | Insert once through a governed admission; do not overwrite. |
+| Append-only assessment/status | model epistemic status; material classification and epistemic status; mechanism/interface status; morphism validation; cell epistemic assessment and decision; protocol provenance; run operational and epistemic status | Family-specific contiguous revisions with event kind, time, rationale, scope, and source admission. Illegal transitions require explicit correction/supersession. |
+| Append-only definition version | parameter-region definition, conjecture statement, protocol definition | Contiguous typed versions; deterministic current views select the highest revision. |
+| Immutable evidence result | gate result and matched comparison, including polarity, metrics, limits, and decision scope | Never update in place. A typed same-identity supersession edge selects a replacement and preserves the chain. |
+| Derived observation | current artifact presence/hash posture | Recomputed by `check`; never admitted as mutable epistemic state. |
+
+Every evidence-bearing exact row/version/result must have a typed-union provenance claim whose
+source admission is the same admission as that row. Evidence classifications additionally require
+a same-admission Ledger link and `evidence` provenance kind; an unrelated claim cannot satisfy the
+invariant. Definition and limitation provenance are explicit and cannot silently confer evidence.
+
+The category-oriented representation has axis-qualified process ports, parallel same-boundary
+typed morphisms, and ordered morphism paths. Composite foreign keys bind morphisms and paths to the
+same model/material/mechanism/interface axes as their siege cell. Validation also requires
+contiguous path positions, declared first/last endpoints, and exact target-to-source adjacency
+between steps.
+
+The SQLite `siege_space_dimensions` view makes the categorical siege coordinates first-class. Its
+governed order preserves the original framing: (1) theoretical model, (2) physical material, and
+(3) physical calculation mechanism. (4) observation interface is labeled
+`later-added-fourth-dimension`, rather than being retroactively presented as part of the original
+three-dimensional conjecture. Each member row carries deterministic within-axis order, identity
+and name, plus its exact current assessment ID/revision/status/detail, assessment time, rationale,
+scope, and source admission. The shared `dimensions` query always returns metadata for all four
+axes, with a member count and member array, so an axis with no admitted members remains visible.
+
+## Governed admissions
+
+Each post-v1 admission is a schema-2 record with a nonempty list of typed changes. Promotion is an
+append operation: one immutable generation contains the new record and the full successor
+manifest, then `HEAD` is atomically advanced. Earlier generation bytes are never rewritten.
+
+The lifecycle is:
+
+1. `admission new` creates an intentionally incomplete typed JSON skeleton.
+2. Edit it to add explicit typed changes and exact provenance changes.
+3. `admission validate` checks its typed record shape without mutation.
+4. `admission preview` supplies the proposed actor, external authority kind/reference, and expected
+   current HEAD. It builds and checks a temporary projection, reports relation-count deltas, removes
+   all preview material, and leaves governed HEAD unchanged.
+5. `admission promote` repeats validation, takes an exclusive lock, rejects a stale expected HEAD,
+   atomically exposes the generation and HEAD, rebuilds the projection, and emits an admission
+   receipt. Blank or placeholder authority, arbitrary SQL, duplicate identities, and cross-axis or
+   incomplete changes are rejected.
+
+Example (the authority values must come from the real external admission path):
 
 ```text
-pnpm domain:init
+cargo run -- admission validate .narada/kb/cintamani-domain/drafts/example.json --format json
+cargo run -- admission preview .narada/kb/cintamani-domain/drafts/example.json \
+  --admitted-by cintamani.builder \
+  --authority-kind task-lifecycle-work-result-report \
+  --authority-ref <opaque-real-receipt> \
+  --expected-head <current-head> --format json
+cargo run -- admission promote .narada/kb/cintamani-domain/drafts/example.json \
+  --admitted-by cintamani.builder \
+  --authority-kind task-lifecycle-work-result-report \
+  --authority-ref <opaque-real-receipt> \
+  --expected-head <current-head> --format json
+```
+
+If preview fails, fix the draft; the live DB and HEAD are unchanged. If a process leaves a `LOCK`,
+first verify that no promotion is active before removing it. A fully written but unreferenced
+generation is inert because only HEAD is authoritative. If HEAD advanced but projection replacement
+failed, do not promote again: run `rebuild`, then `check`.
+
+## CLI and pagination
+
+Root wrappers cover common operations:
+
+```text
 pnpm domain:rebuild
 pnpm domain:check
 pnpm domain:list
+pnpm domain:dimensions
+pnpm domain:frontier
+pnpm domain:mcp
 ```
 
-The package-local forms are `pnpm --filter @cintamani/domain <script>`. The Rust CLI also accepts
-`--workspace-root`, `--database`, and `--records`; relative overrides resolve beneath the selected
-workspace root.
+The Rust CLI accepts `--workspace-root`, `--database`, `--chain`, and `--format human|json`.
 
-`init` and `rebuild` transactionally recreate the projection from admission records in sorted path
-order. `check` reports schema/projection identity, relation counts, SQLite integrity, foreign-key
-violations, admission-source hashes, tracked Ledger/config hashes, and current artifact posture.
-An absent ignored evidence artifact is represented as `missing-ignored-artifact` and is allowed. A
-present artifact with the wrong hash fails the check.
-
-The list command provides deterministic JSON views with a limit from 1 through 100:
+`list` covers models, materials, mechanisms, interfaces, morphisms, paths, cells, conjectures,
+conjecture versions, criteria, parameters, regions, region versions, protocols, runs, artifacts,
+gates, comparisons, admissions, and provenance. Filters include the four axes, current status,
+source admission, Ledger number, and text. Results use stable keyset cursors and a limit from 1 to
+100. A cursor is bound to its collection and exact filter digest; malformed, stale, wrong-family,
+and wrong-filter cursors are rejected. Following `next_cursor` reaches every matching row.
 
 ```text
-cargo run --manifest-path packages/cintamani-domain/Cargo.toml -- list cells --limit 20
-cargo run --manifest-path packages/cintamani-domain/Cargo.toml -- list conjectures
-cargo run --manifest-path packages/cintamani-domain/Cargo.toml -- list runs
-cargo run --manifest-path packages/cintamani-domain/Cargo.toml -- list artifacts
-cargo run --manifest-path packages/cintamani-domain/Cargo.toml -- list gates
-cargo run --manifest-path packages/cintamani-domain/Cargo.toml -- list comparisons
-cargo run --manifest-path packages/cintamani-domain/Cargo.toml -- list links
+cargo run -- --format json list cells --ledger 14 --limit 1
+cargo run -- --format human show cells cell-kerr-abstract-quadrature
+cargo run -- --format json history cells cell-kerr-abstract-quadrature --limit 2
+cargo run -- --format json why gates gate-l14-lag3-survival
+cargo run -- --format json frontier --material thin-film-litao3-candidate --limit 20
 ```
 
-## Seed scope
+`show` returns a stable identity plus deterministic current state. `history` returns all typed
+families belonging to that identity (for example cell assessment and decision histories,
+conjecture versions and dispositions, or protocol versions and config-provenance assessments).
+Gate and comparison history follows typed supersession chains. `why` traverses exact provenance to
+the immutable admission and Ledger claim. `frontier` computes a bounded lexicographic four-axis
+matrix and represents unadmitted cells as explicit gaps; it does not materialize an unbounded
+Cartesian product.
 
-The version-1 records admit only selected facts already reported by Ledgers 12-14. The current
-advanced cell is the normalized driven Kerr model with an abstract material placeholder,
-driven-dissipative Kerr mixing, and coherent-quadrature readout. Its earned result is a local,
-replicated positive Kerr-minus-disabled linear-memory advantage at the predeclared normalized
-observation-noise floor.
+`dimensions` reads the schema-level `siege_space_dimensions` view and groups its rows beneath the
+fixed four-axis metadata. Both axis and member ordering are deterministic; the fixed metadata makes
+empty axes explicit without inventing placeholder member identities.
 
-The `thin-film-litao3-candidate` row is explicitly unvalidated and is not attached to an
-evidence-bearing siege cell. The registry makes no LiTaO3 device, physical detector, connected
-parameter-region, nonlinear-computation, or Conjecture 5 claim. No nonlinear target replicated in
-the admitted suites.
+Human and JSON output use the same query result object. Human mode changes rendering only.
+
+## Local MCP surface
+
+`cintamani-domain-mcp` is a newline-delimited JSON-RPC stdio MCP server using the same Rust library
+as the CLI. It exposes safe `check`, admission `validate`/`preview`, `list`, `show`, `history`,
+`why`, `dimensions`, and `frontier` tools plus the sole mutating tool, `admission_promote`. The
+mutation tool has the same external receipt, expected-HEAD, lock, and temporary-projection checks
+as the CLI. MCP draft paths must stay workspace-relative.
+
+Tracked local material is under `mcp/`:
+
+- `cintamani-domain.surface.json` — Cintamani-local surface descriptor and mutation declaration;
+- `server.config.template.json` — stdio client configuration template;
+- `conformance-fixture.jsonl` — initialization, discovery, check, list, and frontier fixture.
+
+The server and CLI parity are tested locally. Full Narada Site-fabric registration is not claimed:
+the external registrar currently requires a native descriptor in the separately owned
+`mcp-surfaces` catalog. This repository does not cross that authority boundary; the local
+descriptor records `local-protocol-tested-catalog-registration-blocked` until a governed catalog
+addition is authorized.
+
+## Migration, integrity, and verification
+
+Migration `001_v1.sql` remains the historical v1 schema. `002_v2.sql` is the clean v2 projection
+schema. Rebuild reads the governed chain directly, semantically maps the four v1 records without
+editing them, applies later typed v2 changes, and records whether the operation was `clean-v2`, an
+`owned-v1-upgrade`, or an `owned-v2-rebuild`.
+
+`check` reports and enforces projection identity, migration lineage, SQLite integrity, foreign
+keys, chain agreement, family history and transition invariants, path composition, exact
+provenance, tracked Ledger/config hashes, and artifact posture.
+
+```text
+cargo fmt --check
+cargo check --all-targets
+cargo clippy --all-targets -- -D warnings
+cargo test --all-targets
+pnpm check
+pnpm test
+pnpm domain:rebuild
+pnpm domain:check
+```
+
+## Seed scope and scientific limits
+
+The migrated seed states only facts admitted from Ledgers 12–14. The current local lead remains the
+normalized driven Kerr model, abstract normalized-medium placeholder, driven-dissipative Kerr
+mixing, and coherent-quadrature interface. Ledger 14 earned a replicated positive local
+Kerr-minus-disabled linear-memory advantage at the predeclared normalized observation-noise floor.
+
+The `thin-film-litao3-candidate` identity remains an unvalidated candidate and has no
+evidence-bearing cell. The registry makes no LiTaO3 device/material validation, physical-detector
+calibration or robustness, connected parameter-region, replicated nonlinear-computation, or
+Conjecture 5 claim. Organizational structure, history machinery, query results, and an MCP surface
+do not strengthen those scientific claims.

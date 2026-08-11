@@ -10,6 +10,12 @@
     "domain:init": "cargo run -- init",
     "domain:rebuild": "cargo run -- rebuild",
     "domain:check": "cargo run -- check",
-    "domain:list": "cargo run -- list all --limit 50"
+    "domain:list": "cargo run -- list cells --limit 50",
+    "domain:show": "cargo run -- show",
+    "domain:history": "cargo run -- history",
+    "domain:why": "cargo run -- why",
+    "domain:dimensions": "cargo run -- dimensions",
+    "domain:frontier": "cargo run -- frontier",
+    "domain:mcp": "cargo run --bin cintamani-domain-mcp --"
   }
 }

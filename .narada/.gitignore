@@ -8,6 +8,10 @@
 *.db
 *.db-shm
 *.db-wal
+/kb/cintamani-domain/drafts/
+/kb/cintamani-domain/chain/LOCK
+/kb/cintamani-domain/chain/.HEAD-next-*
+/kb/cintamani-domain/chain/generations/.stage-*
 
 # Generated/local agent runtime and materialized tool surfaces
 /.ai/*

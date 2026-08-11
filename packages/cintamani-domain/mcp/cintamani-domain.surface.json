@@ -1,0 +1,43 @@
+{
+  "schema": "cintamani.local-mcp-surface.v1",
+  "surface_id": "cintamani-domain",
+  "name": "Cintamani Domain Registry",
+  "transport": "stdio",
+  "authority_locus": "cintamani-project-site",
+  "server": {
+    "command": "cargo",
+    "args": [
+      "run",
+      "--quiet",
+      "--bin",
+      "cintamani-domain-mcp",
+      "--",
+      "--workspace-root",
+      "${workspaceRoot}"
+    ],
+    "cwd": "${workspaceRoot}/packages/cintamani-domain"
+  },
+  "tools": [
+    "cintamani_domain_check",
+    "cintamani_domain_admission_validate",
+    "cintamani_domain_admission_preview",
+    "cintamani_domain_admission_promote",
+    "cintamani_domain_list",
+    "cintamani_domain_show",
+    "cintamani_domain_history",
+    "cintamani_domain_why",
+    "cintamani_domain_dimensions",
+    "cintamani_domain_frontier"
+  ],
+  "mutation_policy": {
+    "only_mutating_tool": "cintamani_domain_admission_promote",
+    "requires": [
+      "admitted_by",
+      "external_authority_kind",
+      "external_authority_ref",
+      "expected_chain_head"
+    ]
+  },
+  "registration_status": "local-protocol-tested-catalog-registration-blocked",
+  "registration_blocker": "The external mcp-surfaces registrar requires a native catalog descriptor; this repository does not own that catalog."
+}

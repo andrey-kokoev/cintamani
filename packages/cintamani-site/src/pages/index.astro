@@ -1,0 +1,218 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro'
+import dimensionsSnapshot from '../data/dimensions.json'
+import frontierSnapshot from '../data/frontier.json'
+import registrySummary from '../data/registry-summary.json'
+
+interface DimensionMember {
+  member_order: number
+  member_id: string
+  member_name: string
+  current_assessment_id: string | null
+  current_assessment_revision: number | null
+  current_assessment_status: string | null
+  current_assessment_detail: string | null
+  assessed_at: string | null
+  assessment_rationale: string | null
+  assessment_scope: string | null
+  source_admission_id: string | null
+}
+
+interface Dimension {
+  dimension_order: number
+  dimension_key: string
+  dimension_name: string
+  dimension_role: string
+  member_count: number
+  members: DimensionMember[]
+}
+
+interface FrontierItem {
+  model_id: string
+  material_id: string
+  mechanism_id: string
+  interface_id: string
+  cell_id: string | null
+  cell_name: string | null
+  status: string | null
+  gap: boolean
+}
+
+const dimensions = dimensionsSnapshot.items as Dimension[]
+const frontier = frontierSnapshot.items as FrontierItem[]
+const admittedCells = frontier.filter((item) => !item.gap)
+const gaps = frontier.filter((item) => item.gap)
+const label = (value: string | null) => value ? value.replaceAll('-', ' ') : 'unassessed'
+---
+<SiteLayout
+  title="Cintamani · Categorical siege registry"
+  description="A checked static view of Cintamani's ordered computation-model, material, mechanism, and observation-interface siege space."
+>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow">Categorical research map · schema {registrySummary.schema_version}</p>
+      <h1 id="hero-title">Turn the frontal assault<br />into a <em>siege.</em></h1>
+      <p class="lede">
+        Cintamani organizes computation claims by the model they assume, the material they may inhabit,
+        and the physical mechanism that performs the work. Observation interface is shown honestly as a
+        later fourth dimension.
+      </p>
+      <div class="hero-actions">
+        <a class="primary-action" href="#dimensions">Enter the siege space</a>
+        <a class="text-action" href="#authority">How this view is governed</a>
+      </div>
+    </div>
+    <aside class="coordinate-card" aria-label="Current registry coordinates">
+      <p class="coordinate-kicker">Current bounded projection</p>
+      <dl class="metric-grid">
+        <div><dt>Dimensions</dt><dd>{dimensions.length}</dd></div>
+        <div><dt>Axis members</dt><dd>{dimensions.reduce((sum, axis) => sum + axis.member_count, 0)}</dd></div>
+        <div><dt>Admitted cells</dt><dd>{admittedCells.length}</dd></div>
+        <div><dt>Explicit gaps</dt><dd>{gaps.length}</dd></div>
+      </dl>
+      <div class="coordinate-lines" aria-hidden="true">
+        {dimensions.map((axis) => (
+          <span style={`--axis:${axis.dimension_order}`}><i></i><b>{axis.dimension_order}</b></span>
+        ))}
+      </div>
+      <p class="coordinate-note">A coordinate is organizational memory, not experimental proof.</p>
+    </aside>
+  </section>
+
+  <section class="authority-strip" id="authority" aria-label="Registry authority summary">
+    <div>
+      <span class="status-light" aria-hidden="true"></span>
+      <p><strong>Registry check passed</strong><br />Integrity {registrySummary.integrity}; chain consistent.</p>
+    </div>
+    <div>
+      <span class="strip-index">{registrySummary.registry_counts.admissions}</span>
+      <p><strong>Immutable admissions</strong><br />Generation {registrySummary.chain_generation}</p>
+    </div>
+    <div>
+      <span class="strip-index">0</span>
+      <p><strong>Live edge mutations</strong><br />Static JSON, generated during build.</p>
+    </div>
+  </section>
+
+  <section class="section-shell" id="dimensions" aria-labelledby="dimensions-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">The search volume</p>
+        <h2 id="dimensions-title">Four ordered dimensions</h2>
+      </div>
+      <p>
+        Axes 1–3 preserve the original three-dimensional conjecture. Axis 4 records the observation
+        boundary added later; the distinction is part of the data contract.
+      </p>
+    </div>
+
+    <ol class="dimension-grid">
+      {dimensions.map((axis) => (
+        <li class:list={['dimension-card', axis.dimension_order === 4 && 'dimension-card--later']}>
+          <header>
+            <span class="dimension-number" aria-label={`Dimension ${axis.dimension_order}`}>{axis.dimension_order}</span>
+            <div>
+              <p class="dimension-role">
+                {axis.dimension_order === 4 ? 'Later-added fourth dimension' : 'Original 3D axis'}
+              </p>
+              <h3>{axis.dimension_name}</h3>
+            </div>
+          </header>
+          <p class="member-count">{axis.member_count} admitted {axis.member_count === 1 ? 'member' : 'members'}</p>
+          {axis.members.length === 0 ? (
+            <p class="empty-axis">No members have been admitted on this axis.</p>
+          ) : (
+            <ul class="member-list">
+              {axis.members.map((member) => (
+                <li>
+                  <div class="member-heading">
+                    <strong>{member.member_name}</strong>
+                    <span class="status-pill">{label(member.current_assessment_status)}</span>
+                  </div>
+                  <code>{member.member_id}</code>
+                  {member.current_assessment_detail && (
+                    <p class="assessment-detail">Classification: {label(member.current_assessment_detail)}</p>
+                  )}
+                  <details>
+                    <summary>Assessment &amp; provenance</summary>
+                    <p>{member.assessment_rationale}</p>
+                    <dl class="provenance-list">
+                      <div><dt>Revision</dt><dd>{member.current_assessment_revision ?? '—'}</dd></div>
+                      <div><dt>Assessed</dt><dd>{member.assessed_at ?? '—'}</dd></div>
+                      <div><dt>Scope</dt><dd>{member.assessment_scope ?? '—'}</dd></div>
+                      <div><dt>Admission</dt><dd><code>{member.source_admission_id ?? '—'}</code></dd></div>
+                    </dl>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="section-shell frontier-section" id="frontier" aria-labelledby="frontier-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Bounded Cartesian view</p>
+        <h2 id="frontier-title">Admitted cells and honest gaps</h2>
+      </div>
+      <p>
+        Every displayed coordinate is present in the bounded four-axis frontier. A gap means “not
+        admitted,” not “refuted” and not “physically impossible.”
+      </p>
+    </div>
+    <div class="frontier-legend" aria-label="Frontier legend">
+      <span><i class="legend-dot legend-dot--cell"></i> Admitted cell</span>
+      <span><i class="legend-dot legend-dot--gap"></i> Explicit gap</span>
+    </div>
+    <div class="frontier-grid">
+      {frontier.map((item) => (
+        <article class:list={['frontier-card', item.gap ? 'frontier-card--gap' : 'frontier-card--cell']}>
+          <header>
+            <p>{item.gap ? 'Unadmitted coordinate' : 'Governed siege cell'}</p>
+            <span>{item.gap ? 'gap' : label(item.status)}</span>
+          </header>
+          <h3>{item.cell_name ?? 'No cell occupies this coordinate'}</h3>
+          {item.cell_id && <code>{item.cell_id}</code>}
+          <dl class="axis-coordinates">
+            <div><dt>Model</dt><dd>{label(item.model_id)}</dd></div>
+            <div><dt>Material</dt><dd>{label(item.material_id)}</dd></div>
+            <div><dt>Mechanism</dt><dd>{label(item.mechanism_id)}</dd></div>
+            <div><dt>Interface</dt><dd>{label(item.interface_id)}</dd></div>
+          </dl>
+          {item.gap && (
+            <p class="gap-note">No governed evidence-bearing cell has been admitted here.</p>
+          )}
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section-shell limits-section" id="limits" aria-labelledby="limits-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Epistemic perimeter</p>
+        <h2 id="limits-title">What this registry does not claim</h2>
+      </div>
+      <p>The interface makes boundaries prominent because a navigable taxonomy can otherwise look stronger than its evidence.</p>
+    </div>
+    <ul class="limits-grid">
+      <li><span>01</span><p><strong>No LiTaO3 validation.</strong> Thin-film LiTaO3 is an unvalidated candidate, not an admitted physical device cell.</p></li>
+      <li><span>02</span><p><strong>No physical detector calibration.</strong> The admitted gate used normalized additive observation noise.</p></li>
+      <li><span>03</span><p><strong>No replicated nonlinear computation.</strong> The earned lead is narrow, local, and linear-memory only.</p></li>
+      <li><span>04</span><p><strong>No Conjecture 5 or connected-region claim.</strong> Gaps remain invitations to criticism, not conclusions.</p></li>
+    </ul>
+  </section>
+
+  <section class="snapshot-callout" aria-labelledby="snapshot-title">
+    <p class="eyebrow">Cloudflare delivery boundary</p>
+    <h2 id="snapshot-title">Fast at the edge. Static by design.</h2>
+    <p>
+      Cloudflare Workers Assets serves these generated files. There is no D1 database and no mutable
+      edge registry. Changes enter through governed admissions, rebuild the Rust/SQLite projection,
+      pass integrity checks, and only then become a new static site snapshot.
+    </p>
+  </section>
+</SiteLayout>

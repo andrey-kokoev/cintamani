@@ -1,0 +1,46 @@
+{
+  "collection": "frontier",
+  "item_count": 4,
+  "items": [
+    {
+      "cell_id": "cell-kerr-abstract-quadrature",
+      "cell_name": "Normalized Kerr / abstract medium / Kerr mixing / quadrature",
+      "gap": false,
+      "interface_id": "bus-mode-coherent-quadrature",
+      "material_id": "abstract-normalized-medium",
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "model_id": "normalized-driven-kerr-resonator",
+      "status": "advanced-local-lead"
+    },
+    {
+      "cell_id": "cell-kerr-abstract-intensity",
+      "cell_name": "Normalized Kerr / abstract medium / Kerr mixing / intensity",
+      "gap": false,
+      "interface_id": "bus-mode-intensity",
+      "material_id": "abstract-normalized-medium",
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "model_id": "normalized-driven-kerr-resonator",
+      "status": "tested-local"
+    },
+    {
+      "cell_id": null,
+      "cell_name": null,
+      "gap": true,
+      "interface_id": "bus-mode-coherent-quadrature",
+      "material_id": "thin-film-litao3-candidate",
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "model_id": "normalized-driven-kerr-resonator",
+      "status": null
+    },
+    {
+      "cell_id": null,
+      "cell_name": null,
+      "gap": true,
+      "interface_id": "bus-mode-intensity",
+      "material_id": "thin-film-litao3-candidate",
+      "mechanism_id": "driven-dissipative-kerr-mixing",
+      "model_id": "normalized-driven-kerr-resonator",
+      "status": null
+    }
+  ]
+}

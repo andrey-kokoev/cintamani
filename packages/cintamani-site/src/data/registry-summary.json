@@ -1,0 +1,30 @@
+{
+  "snapshot_schema": "cintamani.site-registry-summary.v1",
+  "snapshot_mode": "build-time-static",
+  "registry_authority": "Rust/SQLite Cintamani domain registry",
+  "mutable_edge_registry": false,
+  "schema_version": "2",
+  "projection_kind": "rebuildable-site-domain-registry",
+  "chain_generation": "bootstrap-0004-0e32d9248223",
+  "check_status": "passed",
+  "integrity": "ok",
+  "admission_chain_consistent": true,
+  "invariant_counts": {
+    "foreign_key_violations": 0,
+    "migration_violations": 0,
+    "history_violations": 0,
+    "path_violations": 0,
+    "provenance_violations": 0,
+    "ledger_source_mismatches": 0,
+    "protocol_config_mismatches": 0
+  },
+  "registry_counts": {
+    "admissions": 4,
+    "theoretical_models": 1,
+    "materials": 2,
+    "physical_mechanisms": 1,
+    "interfaces": 2,
+    "siege_cells": 2,
+    "provenance_claims": 74
+  }
+}

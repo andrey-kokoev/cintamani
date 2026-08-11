@@ -1,0 +1,55 @@
+{
+  "schema": "cintamani.admission-manifest.v1",
+  "generation": "bootstrap-0004-0e32d9248223",
+  "previous_generation": null,
+  "entries": [
+    {
+      "sequence": 1,
+      "path": ".narada/kb/cintamani-domain/admissions/0001-taxonomy.json",
+      "content_sha256": "1542f65cfeaab46383f309a1e3246346c3182d724194c57f3151752aeb65bb20",
+      "predecessor_entry_hash": "GENESIS",
+      "record_id": "admission-domain-taxonomy-v1",
+      "admitted_at": "2026-08-10",
+      "admitted_by": "cintamani.builder",
+      "authority_kind": "task-lifecycle-work-result-report",
+      "authority_ref": "wrr_8b8caf6f_task-922122e1-59b1-433e-b6d3-9a6a7eddd545_cintamani.builder",
+      "entry_hash": "43f0f2de91cd62c43257dcae24bdfeded846bbd2358a305a9d20f1beb3c30ec2"
+    },
+    {
+      "sequence": 2,
+      "path": ".narada/kb/cintamani-domain/admissions/0002-ledger12.json",
+      "content_sha256": "18f30d6a0bf371e43e08813426b918156782de79de46a9c7d397dd87706d5f27",
+      "predecessor_entry_hash": "43f0f2de91cd62c43257dcae24bdfeded846bbd2358a305a9d20f1beb3c30ec2",
+      "record_id": "admission-ledger-12",
+      "admitted_at": "2026-08-10",
+      "admitted_by": "cintamani.builder",
+      "authority_kind": "task-lifecycle-work-result-report",
+      "authority_ref": "wrr_8b8caf6f_task-922122e1-59b1-433e-b6d3-9a6a7eddd545_cintamani.builder",
+      "entry_hash": "2ba1c8cf07aed862f7cb2877394c47a8a53892f4f9b710e39287a0cd003be69d"
+    },
+    {
+      "sequence": 3,
+      "path": ".narada/kb/cintamani-domain/admissions/0003-ledger13.json",
+      "content_sha256": "ea54001407e6a50ed3d6af577ea3652ca7b501d6162b3221b2cb015116524c37",
+      "predecessor_entry_hash": "2ba1c8cf07aed862f7cb2877394c47a8a53892f4f9b710e39287a0cd003be69d",
+      "record_id": "admission-ledger-13",
+      "admitted_at": "2026-08-10",
+      "admitted_by": "cintamani.builder",
+      "authority_kind": "task-lifecycle-work-result-report",
+      "authority_ref": "wrr_8b8caf6f_task-922122e1-59b1-433e-b6d3-9a6a7eddd545_cintamani.builder",
+      "entry_hash": "f57d4ec368070d9e949f5d919576da921fdbe0134676915bfe83ba155d782d6c"
+    },
+    {
+      "sequence": 4,
+      "path": ".narada/kb/cintamani-domain/admissions/0004-ledger14.json",
+      "content_sha256": "0ccd170a7f6a346e2d510b1bdb596078395742cd2e11a7e7d9e30eac688448b9",
+      "predecessor_entry_hash": "f57d4ec368070d9e949f5d919576da921fdbe0134676915bfe83ba155d782d6c",
+      "record_id": "admission-ledger-14",
+      "admitted_at": "2026-08-10",
+      "admitted_by": "cintamani.builder",
+      "authority_kind": "task-lifecycle-work-result-report",
+      "authority_ref": "wrr_8b8caf6f_task-922122e1-59b1-433e-b6d3-9a6a7eddd545_cintamani.builder",
+      "entry_hash": "0e32d9248223165b48c7b41652b5393b7e20bf04a4f2c024006cd9c71b288a02"
+    }
+  ]
+}

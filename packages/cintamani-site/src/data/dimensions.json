@@ -1,0 +1,119 @@
+{
+  "collection": "dimensions",
+  "items": [
+    {
+      "dimension_key": "theoretical-model",
+      "dimension_name": "Theoretical model",
+      "dimension_order": 1,
+      "dimension_role": "original-three-dimensional-axis",
+      "member_count": 1,
+      "members": [
+        {
+          "assessed_at": "2026-08-10",
+          "assessment_rationale": "Migrated v1 status with its narrow normalized-model evidence source.",
+          "assessment_scope": "Normalized executable model only.",
+          "current_assessment_detail": null,
+          "current_assessment_id": "assessment-model-normalized-driven-kerr-resonator-r1",
+          "current_assessment_revision": 1,
+          "current_assessment_status": "implemented-normalized-model",
+          "member_id": "normalized-driven-kerr-resonator",
+          "member_name": "Normalized driven Kerr resonator",
+          "member_order": 1,
+          "source_admission_id": "admission-ledger-12"
+        }
+      ]
+    },
+    {
+      "dimension_key": "physical-material",
+      "dimension_name": "Physical material",
+      "dimension_order": 2,
+      "dimension_role": "original-three-dimensional-axis",
+      "member_count": 2,
+      "members": [
+        {
+          "assessed_at": "2026-08-10",
+          "assessment_rationale": "Migrated v1 material boundary without adding evidence.",
+          "assessment_scope": "Taxonomic classification only; no material/device validation.",
+          "current_assessment_detail": "abstract-normalized-medium",
+          "current_assessment_id": "assessment-material-abstract-normalized-medium-r1",
+          "current_assessment_revision": 1,
+          "current_assessment_status": "abstract-placeholder",
+          "member_id": "abstract-normalized-medium",
+          "member_name": "Abstract normalized Kerr medium",
+          "member_order": 1,
+          "source_admission_id": "admission-domain-taxonomy-v1"
+        },
+        {
+          "assessed_at": "2026-08-10",
+          "assessment_rationale": "Migrated v1 material boundary without adding evidence.",
+          "assessment_scope": "Taxonomic classification only; no material/device validation.",
+          "current_assessment_detail": "candidate-physical-material",
+          "current_assessment_id": "assessment-material-thin-film-litao3-candidate-r1",
+          "current_assessment_revision": 1,
+          "current_assessment_status": "unvalidated-candidate",
+          "member_id": "thin-film-litao3-candidate",
+          "member_name": "Thin-film LiTaO3 candidate",
+          "member_order": 2,
+          "source_admission_id": "admission-domain-taxonomy-v1"
+        }
+      ]
+    },
+    {
+      "dimension_key": "physical-calculation-mechanism",
+      "dimension_name": "Physical calculation mechanism",
+      "dimension_order": 3,
+      "dimension_role": "original-three-dimensional-axis",
+      "member_count": 1,
+      "members": [
+        {
+          "assessed_at": "2026-08-10",
+          "assessment_rationale": "Migrated v1 normalized mechanism status.",
+          "assessment_scope": "Implemented normalized Kerr term only.",
+          "current_assessment_detail": null,
+          "current_assessment_id": "assessment-mechanism-driven-dissipative-kerr-mixing-r1",
+          "current_assessment_revision": 1,
+          "current_assessment_status": "implemented-normalized-model",
+          "member_id": "driven-dissipative-kerr-mixing",
+          "member_name": "Driven-dissipative Kerr mixing",
+          "member_order": 1,
+          "source_admission_id": "admission-ledger-12"
+        }
+      ]
+    },
+    {
+      "dimension_key": "observation-interface",
+      "dimension_name": "Observation interface",
+      "dimension_order": 4,
+      "dimension_role": "later-added-fourth-dimension",
+      "member_count": 2,
+      "members": [
+        {
+          "assessed_at": "2026-08-10",
+          "assessment_rationale": "Migrated v1 implemented normalized interface status.",
+          "assessment_scope": "Normalized observation interface only.",
+          "current_assessment_detail": "coherent-quadrature",
+          "current_assessment_id": "assessment-interface-bus-mode-coherent-quadrature-r1",
+          "current_assessment_revision": 1,
+          "current_assessment_status": "implemented-normalized-interface",
+          "member_id": "bus-mode-coherent-quadrature",
+          "member_name": "Bus-output coherent quadrature",
+          "member_order": 1,
+          "source_admission_id": "admission-ledger-13"
+        },
+        {
+          "assessed_at": "2026-08-10",
+          "assessment_rationale": "Migrated v1 implemented normalized interface status.",
+          "assessment_scope": "Normalized observation interface only.",
+          "current_assessment_detail": "intensity",
+          "current_assessment_id": "assessment-interface-bus-mode-intensity-r1",
+          "current_assessment_revision": 1,
+          "current_assessment_status": "implemented-normalized-interface",
+          "member_id": "bus-mode-intensity",
+          "member_name": "Bus-output mode intensity",
+          "member_order": 2,
+          "source_admission_id": "admission-ledger-12"
+        }
+      ]
+    }
+  ]
+}

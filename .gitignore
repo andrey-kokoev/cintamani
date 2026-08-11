@@ -2,6 +2,10 @@
 **/artifacts/
 **/output/
 **/data/
+!packages/cintamani-site/src/data/
+!packages/cintamani-site/src/data/*.json
+**/.astro/
+**/dist/
 *.checkpoint
 node_modules/
 .pnpm-store/

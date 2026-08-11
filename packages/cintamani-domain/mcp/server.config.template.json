@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "cintamani-domain": {
+      "command": "cargo",
+      "args": [
+        "run",
+        "--quiet",
+        "--bin",
+        "cintamani-domain-mcp",
+        "--",
+        "--workspace-root",
+        "C:\\absolute\\path\\to\\cintamani"
+      ],
+      "cwd": "C:\\absolute\\path\\to\\cintamani\\packages\\cintamani-domain"
+    }
+  }
+}
