@@ -1,0 +1,240 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+---
+<SiteLayout
+  title="Cintamani · Submit a public proposal"
+  description="Publish a typed, attributable Cintamani proposal as an immediate submitted and unreviewed public record."
+>
+  <header class="proposal-new-header">
+    <p class="eyebrow">Public proposal plane</p>
+    <h1>Submit a proposal</h1>
+    <p class="lede">
+      State one bounded idea clearly enough to criticize. Publication is immediate and administrative:{' '}
+      <strong>submitted · unreviewed</strong> does not mean accepted, supported, or canonical.
+    </p>
+  </header>
+
+  <div class="proposal-new-shell">
+    <noscript>
+      <p class="no-script-note">
+        JavaScript is required for GitHub authentication, typed field selection, Turnstile, and publication.
+        You can still <a href="/proposals/">read the public proposal record</a> anonymously.
+      </p>
+    </noscript>
+
+    <p class="form-status" data-new-page-status role="alert" hidden></p>
+    <section class="submission-gate" data-submit-auth-required hidden>
+      <h2>Sign in before submitting</h2>
+      <p>Your GitHub handle will be public attribution. Email and numeric GitHub identifiers are never shown.</p>
+      <a class="primary-action" data-new-sign-in href="/api/auth/github/start?return_to=%2Fproposals%2Fnew%2F">
+        Sign in with GitHub
+      </a>
+    </section>
+    <section class="submission-gate" data-submit-locked hidden>
+      <h2 id="proposal-form-title-locked">Submission unavailable while contributor lock is active</h2>
+      <p>You may continue to read, sign out, and appeal the recorded moderation action from a proposal page.</p>
+    </section>
+
+    <form class="proposal-new-form" data-proposal-form novalidate hidden>
+      <div class="proposal-form-heading">
+        <p class="eyebrow">One focused public record</p>
+        <h2 id="proposal-form-title">Describe the proposal</h2>
+        <p>Required fields are marked. Your entered values stay in place if validation or publication fails.</p>
+      </div>
+
+      <section class="form-error-summary" data-error-summary role="alert" tabindex="-1" hidden>
+        <h3>Review the highlighted fields</h3>
+        <p>Nothing was published. Correct the following items and submit again:</p>
+        <ul data-error-summary-list></ul>
+      </section>
+
+      <fieldset class="proposal-form-section" data-form-section="kind">
+        <legend><span>1</span> Choose the proposal kind</legend>
+        <p class="form-section-help">This choice determines the precise domain fields requested below.</p>
+        <div class="form-field">
+          <label for="proposal-kind">Proposal kind <span class="required-marker">Required</span></label>
+          <select id="proposal-kind" name="kind" required aria-describedby="proposal-kind-help"></select>
+          <p class="form-field-help" id="proposal-kind-help">
+            Example: choose “physical material member” to propose a candidate material—not a validated device.
+          </p>
+          <p class="form-field-error" data-field-error-for="kind" hidden></p>
+        </div>
+      </fieldset>
+
+      <fieldset class="proposal-form-section" data-form-section="core">
+        <legend><span>2</span> Give it a clear identity</legend>
+        <div class="form-field">
+          <label for="proposal-title">Title <span class="required-marker">Required</span></label>
+          <input
+            id="proposal-title"
+            name="title"
+            required
+            maxlength="160"
+            placeholder="e.g., Add normalized phase-sensitive readout as a candidate interface"
+            aria-describedby="proposal-title-help"
+          />
+          <p class="form-field-help" id="proposal-title-help">Name the proposed change or claim in one specific line.</p>
+          <p class="form-field-error" data-field-error-for="title" hidden></p>
+        </div>
+        <div class="form-field">
+          <label for="proposal-summary">Summary <span class="required-marker">Required</span></label>
+          <textarea
+            id="proposal-summary"
+            name="summary"
+            required
+            maxlength="2000"
+            rows="3"
+            placeholder="e.g., A bounded proposal to represent one normalized field quadrature separately from intensity, without claiming a physical detector implementation."
+            aria-describedby="proposal-summary-help"
+          ></textarea>
+          <p class="form-field-help" id="proposal-summary-help">Give a compact account that a reader can understand before opening the full rationale.</p>
+          <p class="form-field-error" data-field-error-for="summary" hidden></p>
+        </div>
+      </fieldset>
+
+      <fieldset class="proposal-form-section" data-form-section="framing">
+        <legend><span>3</span> Explain the problem, rationale, and boundary</legend>
+        <div class="form-field">
+          <label for="proposal-problem">Problem being addressed <span class="required-marker">Required</span></label>
+          <textarea
+            id="proposal-problem"
+            name="problem"
+            required
+            maxlength="3000"
+            rows="4"
+            placeholder="e.g., The current coordinate cannot distinguish phase-sensitive observation from intensity-only readout."
+            aria-describedby="proposal-problem-help"
+          ></textarea>
+          <p class="form-field-help" id="proposal-problem-help">What is missing, mistaken, or worth testing in the current siege space?</p>
+          <p class="form-field-error" data-field-error-for="problem" hidden></p>
+        </div>
+        <div class="form-field">
+          <label for="proposal-rationale">Rationale <span class="required-marker">Required</span></label>
+          <textarea
+            id="proposal-rationale"
+            name="rationale"
+            required
+            maxlength="8800"
+            rows="6"
+            placeholder="e.g., Keeping the observation map explicit makes matched tests criticizable and prevents normalized noise from being mistaken for detector calibration."
+            aria-describedby="proposal-rationale-help"
+          ></textarea>
+          <p class="form-field-help" id="proposal-rationale-help">Explain why this proposal is worth criticism or a bounded test. Include the problem statement here when publishing.</p>
+          <p class="form-field-error" data-field-error-for="rationale" hidden></p>
+        </div>
+        <div class="form-field">
+          <label for="proposal-scope">Scope and limits <span class="required-marker">Required</span></label>
+          <textarea
+            id="proposal-scope"
+            name="scope"
+            required
+            maxlength="4000"
+            rows="4"
+            placeholder="e.g., Limited to a normalized observation interface; no material, device, fabrication, nonlinear-target, or connected-region claim."
+            aria-describedby="proposal-scope-help"
+          ></textarea>
+          <p class="form-field-help" id="proposal-scope-help">State what the proposal does not establish—especially material, device, or broad-computation claims.</p>
+          <p class="form-field-error" data-field-error-for="scope" hidden></p>
+        </div>
+      </fieldset>
+
+      <fieldset class="proposal-form-section" data-form-section="typed">
+        <legend><span>4</span> Add kind-specific detail</legend>
+        <p class="form-section-help">Only fields relevant to the selected proposal kind appear here.</p>
+        <div class="typed-detail-fields" data-detail-fields></div>
+      </fieldset>
+
+      <details class="optional-support" data-optional-support>
+        <summary>Optional evidence and references</summary>
+        <p class="form-section-help">These records add context; they are not votes, scores, or automatic scientific support.</p>
+        <div class="form-field">
+          <label for="evidence-kind">Evidence kind <span class="optional-marker">Optional</span></label>
+          <select id="evidence-kind" name="evidence_kind">
+            <option value="argument">Argument</option>
+            <option value="empirical-result">Empirical result</option>
+            <option value="simulation-result">Simulation result</option>
+            <option value="criticism-response">Criticism response</option>
+            <option value="other-explicit">Other explicit</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="evidence-summary">Evidence summary <span class="optional-marker">Optional</span></label>
+          <textarea
+            id="evidence-summary"
+            name="evidence_summary"
+            maxlength="12000"
+            rows="4"
+            placeholder="e.g., Predeclared matched-control protocol with fixed seeds, null, and decision rule; no outcome is asserted here."
+            aria-describedby="evidence-summary-help"
+          ></textarea>
+          <p class="form-field-help" id="evidence-summary-help">Describe the argument, result, or criticism response without implying an epistemic score.</p>
+        </div>
+        <div class="form-field">
+          <label for="reference-kind">Reference kind <span class="optional-marker">Optional</span></label>
+          <select id="reference-kind" name="reference_kind">
+            <option value="primary-source">Primary source</option>
+            <option value="dataset">Dataset</option>
+            <option value="software">Software</option>
+            <option value="criticism">Criticism</option>
+            <option value="context">Context</option>
+            <option value="other-explicit">Other explicit</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="reference-label">Reference label <span class="optional-marker">Optional</span></label>
+          <input
+            id="reference-label"
+            name="reference_label"
+            maxlength="300"
+            placeholder="e.g., Protocol and raw-artifact manifest"
+          />
+          <p class="form-field-error" data-field-error-for="reference_label" hidden></p>
+        </div>
+        <div class="form-field">
+          <label for="reference-url">HTTPS reference URL <span class="optional-marker">Optional</span></label>
+          <input
+            id="reference-url"
+            name="reference_url"
+            type="url"
+            inputmode="url"
+            pattern="https://.*"
+            maxlength="2048"
+            placeholder="e.g., https://example.org/cintamani/protocol"
+            aria-describedby="reference-url-help"
+          />
+          <p class="form-field-help" id="reference-url-help">Use a direct HTTPS source. Leave this blank when no external reference applies.</p>
+          <p class="form-field-error" data-field-error-for="reference_url" hidden></p>
+        </div>
+      </details>
+
+      <p class="linked-proposal-note" data-parent-note hidden></p>
+      <div class="turnstile-slot" data-authenticated-turnstile aria-label="Human verification"></div>
+      <p class="form-status" role="status" aria-live="polite" data-submit-status hidden></p>
+      <button class="primary-action proposal-submit" type="submit" data-submit-button>
+        <span data-submit-label>Publish submitted · unreviewed</span>
+      </button>
+    </form>
+
+    <section class="submission-success" data-submit-success role="status" tabindex="-1" hidden>
+      <p class="eyebrow">Public record created</p>
+      <h2>Proposal published</h2>
+      <p>
+        Proposal <code data-success-id></code> is now{' '}
+        <strong data-success-state>submitted · unreviewed</strong>.
+      </p>
+      <a class="primary-action" data-view-proposal href="/proposals/">View published proposal</a>
+    </section>
+  </div>
+
+  <script>
+    import { initializeProposalNew } from '../../scripts/proposal-new.mjs'
+    initializeProposalNew().catch((error) => {
+      const status = document.querySelector<HTMLElement>('[data-new-page-status]')
+      if (status) {
+        status.textContent = `Submission page unavailable: ${error.message}`
+        status.dataset.kind = 'error'
+        status.hidden = false
+      }
+    })
+  </script>
+</SiteLayout>

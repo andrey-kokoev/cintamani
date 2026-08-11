@@ -102,6 +102,20 @@ first verify that no promotion is active before removing it. A fully written but
 generation is inert because only HEAD is authoritative. If HEAD advanced but projection replacement
 failed, do not promote again: run `rebuild`, then `check`.
 
+### Maintainer-selected public proposal exports
+
+The browser site's D1 proposal plane is separate and has no canonical mutation authority. Its
+content-addressed export wrapper may be verified and translated into a candidate schema-2 draft by
+`pnpm site:prepare-admission`; see `../cintamani-site/README.md`. This is an explicit maintainer
+action, not a Worker promotion path. Candidate axis mappings include revision-1 non-evidentiary
+assessment and exact same-admission definition/limitation provenance. Existing-member assessments
+require the maintainer to supply the next history revision and event kind. Evidence-bearing status,
+explicit correction, and ontology change are never inferred by the bridge.
+
+The ordinary `admission validate`, `preview`, real external authority, expected-HEAD, and `promote`
+requirements remain unchanged. Public selection is not admission. A public `admission_link` may be
+recorded only after canonical promotion emits its receipt.
+
 ## CLI and pagination
 
 Root wrappers cover common operations:

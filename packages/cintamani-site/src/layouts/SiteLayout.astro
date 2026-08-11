@@ -1,4 +1,5 @@
 ---
+import HeaderSession from '../components/HeaderSession.astro'
 import '../styles/global.css'
 
 interface Props {
@@ -22,28 +23,34 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefin
     {canonical && <link rel="canonical" href={canonical} />}
     {canonical && <meta property="og:url" content={canonical} />}
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23ffae62' d='M32 4 58 19v30L32 64 6 49V19z'/%3E%3Cpath fill='%2308131a' d='m32 15 15 9v17l-15 9-15-9V24z'/%3E%3C/svg%3E" />
+    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
     <title>{title}</title>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to registry view</a>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <a class="brand" href="/" aria-label="Cintamani home">
         <span class="brand-mark" aria-hidden="true"></span>
         <span>Cintamani</span>
       </a>
-      <nav aria-label="Page sections">
-        <a href="#dimensions">Dimensions</a>
-        <a href="#frontier">Frontier</a>
-        <a href="#limits">Limits</a>
+      <nav aria-label="Primary navigation">
+        <a href="/#dimensions">Dimensions</a>
+        <a href="/#frontier">Frontier</a>
+        <a href="/proposals/">Proposals</a>
+        <a href="/proposals/new/" target="_blank" rel="noopener">Submit</a>
       </nav>
-      <span class="header-mode">Static registry view</span>
+      <HeaderSession />
     </header>
     <main id="main-content">
       <slot />
     </main>
     <footer class="site-footer">
       <p><strong>Cintamani</strong> maps conjectures into bounded, criticizable siege coordinates.</p>
-      <p>Rendered from a checked build-time snapshot. The Rust/SQLite registry remains authoritative.</p>
+      <p>The checked Rust/SQLite registry remains canonical; public proposals live in a separate D1 plane.</p>
     </footer>
+    <script>
+      import { loadSessionWithStatus } from '../scripts/public-api.mjs'
+      loadSessionWithStatus()
+    </script>
   </body>
 </html>

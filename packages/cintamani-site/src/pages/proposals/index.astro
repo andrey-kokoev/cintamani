@@ -1,0 +1,115 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+---
+<SiteLayout
+  title="Cintamani · Public proposals and criticism"
+  description="Submit typed Cintamani siege proposals, criticism, scoped tests, and competing interpretations to a separate public review plane."
+>
+  <section class="public-hero" aria-labelledby="public-title">
+    <div>
+      <p class="eyebrow">Separate public D1 plane</p>
+      <h1 id="public-title">Conjecture in public.<br /><em>Criticism by design.</em></h1>
+      <p class="lede">
+        GitHub-authenticated contributions appear immediately as <strong>submitted · unreviewed</strong>.
+        Administrative review never means true, likely, popular, or ranked—and this interface has no votes.
+      </p>
+      <div class="public-hero-actions">
+        <a class="primary-action" data-content-submit href="/proposals/new/" target="_blank" rel="noopener">
+          Submit proposal <span aria-hidden="true">↗</span>
+        </a>
+        <a class="text-action" href="#public-list-title">Browse public proposals</a>
+      </div>
+    </div>
+    <aside class="public-boundary-copy" aria-label="Authority boundary">
+      <p class="eyebrow">Authority boundary</p>
+      <h2>What publication means</h2>
+      <p>Public, attributable revision history with exact-revision criticism and scoped tests.</p>
+      <details>
+        <summary>Registry and admission boundary</summary>
+        <ul>
+          <li>Separate from the canonical Rust/SQLite registry</li>
+          <li>No direct Worker write into canonical admissions</li>
+        </ul>
+      </details>
+    </aside>
+  </section>
+
+  <noscript>
+    <p class="no-script-note section-shell">
+      JavaScript is required for authenticated writes. The public record remains readable as
+      <a href="/api/proposals">proposal JSON</a>; no account is required to read it.
+    </p>
+  </noscript>
+  <p class="form-status section-shell public-plane-status" data-hub-status role="alert" hidden></p>
+
+  <section class="section-shell public-hub-section public-hub-section--axes" aria-labelledby="overlay-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Siege-space overlay</p>
+        <h2 id="overlay-title">Canonical axes</h2>
+      </div>
+      <p>Counts show unreviewed public member proposals beside canonical members; they do not merge the planes.</p>
+    </div>
+    <div class="siege-overlay" data-siege-overlay aria-live="polite"></div>
+  </section>
+
+  <section class="section-shell public-hub-section public-proposals" aria-labelledby="public-list-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Public record</p>
+        <h2 id="public-list-title">Proposals</h2>
+      </div>
+      <div class="proposal-filters" aria-label="Proposal filters">
+        <label>Kind
+          <select data-proposal-filter data-filter-kind>
+            <option value="">All kinds</option>
+            <option value="theoretical-model-member">Theoretical model</option>
+            <option value="physical-material-member">Physical material</option>
+            <option value="physical-calculation-mechanism-member">Physical mechanism</option>
+            <option value="observation-interface-member">Observation interface</option>
+            <option value="existing-member-assessment">Existing assessment</option>
+            <option value="existing-member-correction">Explicit correction</option>
+            <option value="ontology-change">Ontology change</option>
+          </select>
+        </label>
+        <label>Administrative state
+          <select data-proposal-filter data-filter-state>
+            <option value="">All states</option>
+            <option value="submitted">Submitted</option>
+            <option value="triaged">Triaged</option>
+            <option value="under-review">Under review</option>
+            <option value="selected-for-export">Selected for export</option>
+            <option value="declined">Declined</option>
+            <option value="withdrawn">Withdrawn</option>
+            <option value="superseded">Superseded</option>
+            <option value="admitted-link-recorded">Admission link recorded</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <ul class="public-proposal-list" data-proposal-list aria-live="polite"></ul>
+  </section>
+
+  <section class="public-handoff-callout" aria-labelledby="handoff-title">
+    <div>
+      <p class="eyebrow">Maintainer boundary</p>
+      <h2 id="handoff-title">Selection is not admission.</h2>
+    </div>
+    <p>
+      A selected exact revision still requires independent verification, preview, and authorized promotion
+      through the canonical domain admission workflow.
+    </p>
+  </section>
+
+  <script>
+    import { initializeProposalHub } from '../../scripts/proposal-hub.mjs'
+    initializeProposalHub().catch((error) => {
+      const status = document.querySelector<HTMLElement>('[data-hub-status]')
+      if (status) {
+        status.textContent = `Public proposal plane unavailable: ${error.message}`
+        status.dataset.kind = 'error'
+        status.hidden = false
+      }
+    })
+  </script>
+</SiteLayout>

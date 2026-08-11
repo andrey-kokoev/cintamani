@@ -6,6 +6,7 @@
 !packages/cintamani-site/src/data/*.json
 **/.astro/
 **/dist/
+**/.wrangler/
 *.checkpoint
 node_modules/
 .pnpm-store/

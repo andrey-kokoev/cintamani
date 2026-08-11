@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import test from 'node:test'
 import { readFrontier } from '../scripts/generate-domain-snapshots.mjs'
+import { detailFormPlaceholders } from '../src/scripts/proposal-detail.mjs'
+import { detailFieldPlaceholders, focusFirstInvalid } from '../src/scripts/proposal-new.mjs'
 
 const testRoot = dirname(fileURLToPath(import.meta.url))
 const siteRoot = resolve(testRoot, '..')
@@ -112,24 +114,269 @@ test('frontier pagination rejects repeated coordinates, cursors, and unbounded t
   )
 })
 
-test('Astro page and Workers Assets config state the static authority boundary', () => {
+test('Astro page and Worker config state the canonical/public authority boundary', () => {
   const page = readFileSync(resolve(siteRoot, 'src/pages/index.astro'), 'utf8')
   for (const statement of [
     'No LiTaO3 validation.',
     'No physical detector calibration.',
     'No replicated nonlinear computation.',
     'No Conjecture 5 or connected-region claim.',
-    'There is no D1 database and no mutable',
+    'A separate public D1 plane',
+    'it cannot mutate the',
   ]) {
     assert.ok(page.includes(statement), `missing UI boundary: ${statement}`)
   }
   const wrangler = readJson('wrangler.jsonc')
   assert.equal(wrangler.name, 'cintamani')
+  assert.equal(wrangler.main, 'worker/index.mjs')
   assert.equal(wrangler.assets.directory, './dist')
   assert.equal(wrangler.assets.not_found_handling, '404-page')
+  assert.equal(wrangler.assets.binding, 'ASSETS')
+  assert.deepEqual(wrangler.assets.run_worker_first, ['/api/*'])
+  assert.equal(wrangler.d1_databases[0].binding, 'PROPOSALS_DB')
+  assert.equal(wrangler.d1_databases[0].database_name, 'cintamani-public-proposals')
   const astro = readFileSync(resolve(siteRoot, 'astro.config.mjs'), 'utf8')
   assert.match(astro, /output: 'static'/)
   assert.match(astro, /PUBLIC_SITE_URL/)
+})
+
+test('public proposal UI exposes accessible typed, history, criticism, test, and review surfaces without voting', () => {
+  const hub = readFileSync(resolve(siteRoot, 'src/pages/proposals/index.astro'), 'utf8')
+  const submission = readFileSync(resolve(siteRoot, 'src/pages/proposals/new.astro'), 'utf8')
+  const detail = readFileSync(resolve(siteRoot, 'src/pages/proposals/detail.astro'), 'utf8')
+  const scripts = [
+    readFileSync(resolve(siteRoot, 'src/scripts/proposal-hub.mjs'), 'utf8'),
+    readFileSync(resolve(siteRoot, 'src/scripts/proposal-new.mjs'), 'utf8'),
+    readFileSync(resolve(siteRoot, 'src/scripts/proposal-detail.mjs'), 'utf8'),
+    readFileSync(resolve(siteRoot, 'src/scripts/public-api.mjs'), 'utf8'),
+  ].join('\n')
+  for (const statement of [
+    'submitted · unreviewed',
+    'Submit proposal',
+    'Siege-space overlay',
+    'no votes',
+  ]) {
+    assert.ok(hub.includes(statement), `missing proposal-hub boundary: ${statement}`)
+  }
+  for (const statement of [
+    'Choose the proposal kind',
+    'Give it a clear identity',
+    'Explain the problem, rationale, and boundary',
+    'Add kind-specific detail',
+    'Optional evidence and references',
+    'View published proposal',
+  ]) {
+    assert.ok(submission.includes(statement), `missing focused proposal-submission surface: ${statement}`)
+  }
+  for (const statement of [
+    'Public revisions',
+    'Criticism and replies',
+    'Test reports',
+    'Competing interpretations',
+    'Moderation history',
+    'Audited review',
+  ]) {
+    assert.ok(detail.includes(statement), `missing proposal-detail surface: ${statement}`)
+  }
+  assert.match(hub, /<noscript>/)
+  assert.match(submission, /<noscript>/)
+  assert.match(detail, /<noscript>/)
+  assert.doesNotMatch(`${hub}\n${submission}\n${detail}`, /type="(?:button|submit)"[^>]*>[^<]*(?:vote|rank)/iu)
+  assert.doesNotMatch(scripts, /\.innerHTML\s*=/u)
+  assert.match(scripts, /textContent/u)
+  assert.match(detail, /aria-live="polite"/)
+  assert.match(detail, /data-operator-panel hidden/u)
+  for (const contract of [
+    '/withdrawal',
+    'data-moderation-form',
+    'target_github_login',
+    '/api/admin/appeals/',
+    'contributor_locked',
+    'moderation-tombstone',
+  ]) {
+    assert.ok(scripts.includes(contract), `missing practical moderation UI contract: ${contract}`)
+  }
+  assert.doesNotMatch(scripts, /target_account_id/u)
+})
+
+test('header utility has compact stable session states without persistent authentication success styling', () => {
+  const component = readFileSync(resolve(siteRoot, 'src/components/HeaderSession.astro'), 'utf8')
+  const layout = readFileSync(resolve(siteRoot, 'src/layouts/SiteLayout.astro'), 'utf8')
+  const api = readFileSync(resolve(siteRoot, 'src/scripts/public-api.mjs'), 'utf8')
+  const css = readFileSync(resolve(siteRoot, 'src/styles/global.css'), 'utf8')
+  const pages = ['index.astro', 'detail.astro', 'new.astro'].map((name) =>
+    readFileSync(resolve(siteRoot, `src/pages/proposals/${name}`), 'utf8'),
+  )
+
+  assert.match(component, /data-session-checking>/u)
+  assert.match(component, /data-session-signed-out[\s\S]*?hidden/u)
+  assert.match(component, /data-session-signed-in hidden/u)
+  assert.match(component, /data-session-error hidden role="alert"/u)
+  assert.match(component, /Checking GitHub session…/u)
+  assert.match(component, /session-skeleton/u)
+  assert.match(component, /class="github-mark"[\s\S]*?aria-hidden="true"/u)
+  assert.match(component, /data-operator-state hidden>Operator/u)
+  assert.match(component, /data-lock-state hidden>Locked/u)
+  assert.match(component, /data-logout>Sign out/u)
+  assert.doesNotMatch(component, /GitHub sign-in succeeded|session-state--success/u)
+  assert.match(layout, /<HeaderSession \/>/u)
+  assert.match(layout, /loadSessionWithStatus\(\)/u)
+  for (const page of pages) assert.doesNotMatch(page, /PublicSessionStrip|public-auth-strip/u)
+  assert.match(api, /renderContributorSessionError/u)
+  assert.ok(api.includes("strip.querySelector('[data-operator-state]').hidden = !session.operator"))
+  assert.ok(api.includes("strip.querySelector('[data-lock-state]').hidden = !session.contributor_locked"))
+  assert.match(css, /\[hidden\]\s*\{[^}]*display:\s*none\s*!important;/su)
+  assert.match(css, /\.header-session\s*\{[^}]*width:\s*15rem;/su)
+  assert.match(css, /\.header-sign-in \.github-mark\s*\{[^}]*width:\s*15px;[^}]*height:\s*15px;/su)
+  assert.doesNotMatch(css, /\.public-auth-strip|\.session-state--success/u)
+})
+
+test('proposal hub visual contract keeps one content CTA, compact hierarchy, and deterministic screenshot readiness', () => {
+  const hub = readFileSync(resolve(siteRoot, 'src/pages/proposals/index.astro'), 'utf8')
+  const layout = readFileSync(resolve(siteRoot, 'src/layouts/SiteLayout.astro'), 'utf8')
+  const controller = readFileSync(resolve(siteRoot, 'src/scripts/proposal-hub.mjs'), 'utf8')
+  const css = readFileSync(resolve(siteRoot, 'src/styles/global.css'), 'utf8')
+
+  assert.equal(hub.match(/data-content-submit/gu)?.length, 1)
+  assert.match(hub, /data-content-submit href="\/proposals\/new\/" target="_blank" rel="noopener"/u)
+  assert.match(layout, /href="\/proposals\/new\/" target="_blank" rel="noopener">Submit/u)
+  assert.doesNotMatch(hub, /Have a proposal\?|proposal-entry-callout|public-auth-strip/u)
+  assert.match(hub, /<details>[\s\S]*Registry and admission boundary[\s\S]*<\/details>/u)
+  assert.match(hub, /<h2 id="overlay-title">Canonical axes<\/h2>/u)
+  assert.match(hub, /<h2 id="public-list-title">Proposals<\/h2>/u)
+  assert.match(hub, /class="public-handoff-callout"/u)
+  assert.doesNotMatch(hub, /class="snapshot-callout"/u)
+  assert.match(controller, /list\.dataset\.settled = 'true'/u)
+  assert.match(controller, /delete root\.querySelector\('\[data-proposal-list\]'\)\.dataset\.settled/u)
+  assert.match(css, /\.public-hero\s*,[\s\S]*min-height:\s*420px;/u)
+  assert.match(css, /\.public-hub-section \.section-heading h2\s*\{[^}]*font-size:\s*clamp\(1\.9rem,/su)
+  assert.match(css, /\.empty-public-list\s*\{[^}]*padding:\s*20px;/su)
+})
+
+test('proposal hub delegates to a focused new-tab submission page with accessible failure and success behavior', () => {
+  const hub = readFileSync(resolve(siteRoot, 'src/pages/proposals/index.astro'), 'utf8')
+  const submission = readFileSync(resolve(siteRoot, 'src/pages/proposals/new.astro'), 'utf8')
+  const controller = readFileSync(resolve(siteRoot, 'src/scripts/proposal-new.mjs'), 'utf8')
+  const css = readFileSync(resolve(siteRoot, 'src/styles/global.css'), 'utf8')
+
+  assert.doesNotMatch(hub, /<form\b/u)
+  assert.doesNotMatch(hub, /data-proposal-form|turnstile-slot/u)
+  assert.match(hub, /href="\/proposals\/new\/" target="_blank" rel="noopener"/u)
+  assert.match(submission, /<form[^>]*data-proposal-form[^>]*novalidate hidden>/u)
+  assert.match(submission, /data-error-summary role="alert" tabindex="-1" hidden/u)
+  assert.match(submission, /data-submit-success role="status" tabindex="-1" hidden/u)
+  assert.match(submission, /data-view-proposal[^>]*>View published proposal</u)
+  assert.match(submission, /<details[^>]*data-optional-support>/u)
+  assert.match(submission, /<label for="proposal-kind">/u)
+  assert.match(submission, /Required<\/span>/u)
+  assert.match(submission, /Optional<\/span>/u)
+  assert.match(submission, /form-field-help/u)
+  assert.doesNotMatch(submission, /name="detail"|name="json"/iu)
+
+  const orderedSections = ['kind', 'core', 'framing', 'typed'].map((name) =>
+    submission.indexOf(`data-form-section="${name}"`),
+  )
+  assert.ok(orderedSections.every((index) => index >= 0))
+  assert.deepEqual([...orderedSections].sort((left, right) => left - right), orderedSections)
+  assert.ok(controller.indexOf('if (!session.authenticated)') < controller.indexOf('renderTurnstileSlots(form'))
+  assert.match(controller, /button\.disabled = true/u)
+  assert.match(controller, /label\.textContent = 'Publishing…'/u)
+  assert.match(controller, /success\.focus\(\)/u)
+  assert.match(controller, /focusFirstInvalid\(invalid\)/u)
+  assert.doesNotMatch(controller, /form\.reset\(\)/u)
+  assert.match(controller, /fieldContracts\[kind\]\.map/u)
+  assert.match(controller, /parent_proposal/u)
+  assert.match(controller, /body\.parent = parent/u)
+  for (const kind of [
+    'theoretical-model-member',
+    'physical-material-member',
+    'physical-calculation-mechanism-member',
+    'observation-interface-member',
+    'existing-member-assessment',
+    'existing-member-correction',
+    'ontology-change',
+  ]) {
+    assert.ok(controller.includes(`'${kind}'`), `missing typed browser contract for ${kind}`)
+  }
+  assert.match(css, /\.proposal-new-shell\s*\{[^}]*width:\s*min\(46rem,/su)
+  assert.match(css, /\.proposal-new-form \.typed-detail-fields\s*\{[^}]*grid-template-columns:\s*1fr;/su)
+
+  let focused = false
+  focusFirstInvalid([{ control: { focus: () => { focused = true } } }])
+  assert.equal(focused, true)
+})
+
+test('public-write examples cover core, every typed family, and exact-revision contribution forms without becoming values', () => {
+  const submission = readFileSync(resolve(siteRoot, 'src/pages/proposals/new.astro'), 'utf8')
+  const newController = readFileSync(resolve(siteRoot, 'src/scripts/proposal-new.mjs'), 'utf8')
+  const detailController = readFileSync(resolve(siteRoot, 'src/scripts/proposal-detail.mjs'), 'utf8')
+
+  for (const [name, example] of Object.entries({
+    title: 'e.g., Add normalized phase-sensitive readout as a candidate interface',
+    summary: 'e.g., A bounded proposal to represent one normalized field quadrature separately from intensity, without claiming a physical detector implementation.',
+    problem: 'e.g., The current coordinate cannot distinguish phase-sensitive observation from intensity-only readout.',
+    rationale: 'e.g., Keeping the observation map explicit makes matched tests criticizable and prevents normalized noise from being mistaken for detector calibration.',
+    scope: 'e.g., Limited to a normalized observation interface; no material, device, fabrication, nonlinear-target, or connected-region claim.',
+  })) {
+    assert.match(submission, new RegExp(`name="${name}"[\\s\\S]*?placeholder="${example.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&')}"`, 'u'))
+  }
+  assert.match(submission, /name="evidence_summary"[\s\S]*?placeholder="e\.g\., Predeclared matched-control protocol/u)
+  assert.match(submission, /name="reference_label"[\s\S]*?placeholder="e\.g\., Protocol and raw-artifact manifest"/u)
+  assert.match(submission, /name="reference_url"[\s\S]*?placeholder="e\.g\., https:\/\/example\.org\/cintamani\/protocol"/u)
+  for (const match of submission.matchAll(/placeholder="([^"]+)"/gu)) {
+    assert.match(match[1], /^e\.g\., (?!e\.g\., )/u, `text placeholder must have one exact prefix: ${match[1]}`)
+  }
+
+  const expectedKinds = {
+    'theoretical-model-member': ['member_id', 'member_name', 'model_definition', 'computational_claim', 'initial_epistemic_status'],
+    'physical-material-member': ['member_id', 'member_name', 'material_classification', 'composition_or_structure', 'physical_evidence_boundary', 'initial_epistemic_status'],
+    'physical-calculation-mechanism-member': ['member_id', 'member_name', 'physical_process', 'state_or_signal_carrier', 'initial_epistemic_status'],
+    'observation-interface-member': ['member_id', 'member_name', 'observation_kind', 'units', 'observation_boundary', 'initial_epistemic_status'],
+    'existing-member-assessment': ['target_dimension', 'target_member_id', 'proposed_assessment_status', 'proposed_assessment_detail', 'assessment_rationale', 'assessment_scope'],
+    'existing-member-correction': ['target_dimension', 'target_member_id', 'corrected_name', 'corrected_definition', 'corrected_assessment_status', 'corrected_assessment_detail', 'correction_rationale'],
+    'ontology-change': ['change_kind', 'target_key', 'proposed_definition', 'compatibility_effect', 'migration_requirements'],
+  }
+  assert.deepEqual(Object.keys(detailFieldPlaceholders), Object.keys(expectedKinds))
+  for (const [kind, fields] of Object.entries(expectedKinds)) {
+    assert.deepEqual(Object.keys(detailFieldPlaceholders[kind]), fields, `${kind} must cover every typed control`)
+    for (const example of Object.values(detailFieldPlaceholders[kind])) {
+      assert.ok(example.length > 0 && example.length <= 180, `${kind} examples must stay bounded`)
+      assert.doesNotMatch(example, /[<>]/u, `${kind} examples must remain plain attribute text`)
+      if (example.startsWith('Choose ')) {
+        assert.doesNotMatch(example, /^e\.g\., /u, `${kind} select prompts are options, not placeholders`)
+      } else {
+        assert.match(example, /^e\.g\., (?!e\.g\., )/u, `${kind} text placeholders need one exact prefix`)
+      }
+    }
+  }
+  assert.equal(detailFieldPlaceholders['theoretical-model-member'].member_id, 'e.g., bounded-delay-state-model')
+  assert.equal(detailFieldPlaceholders['physical-material-member'].member_id, 'e.g., normalized-dielectric-medium-candidate')
+  assert.equal(detailFieldPlaceholders['physical-calculation-mechanism-member'].member_id, 'e.g., coherent-path-interference')
+  assert.equal(detailFieldPlaceholders['observation-interface-member'].units, 'e.g., normalized amplitude')
+  assert.equal(detailFieldPlaceholders['existing-member-assessment'].proposed_assessment_status, 'e.g., candidate')
+  assert.equal(detailFieldPlaceholders['existing-member-correction'].corrected_assessment_status, 'e.g., candidate')
+  assert.equal(detailFieldPlaceholders['ontology-change'].target_key, 'e.g., observation-interface')
+
+  for (const expected of [
+    detailFormPlaceholders.revision.scope,
+    detailFormPlaceholders.criticism.criticism,
+    detailFormPlaceholders.reply,
+    detailFormPlaceholders.scoped_test.protocol,
+    detailFormPlaceholders.interpretation.interpretation,
+    detailFormPlaceholders.appeal,
+    detailFormPlaceholders.withdrawal_rationale,
+    detailFormPlaceholders.administrative.rationale,
+    detailFormPlaceholders.moderation.explanation,
+    detailFormPlaceholders.export_scope,
+  ]) {
+    assert.ok(detailController.includes(expected), `missing exact-revision public-write example: ${expected}`)
+    assert.match(expected, /^e\.g\., (?!e\.g\., )/u, `detail placeholder needs one exact prefix: ${expected}`)
+  }
+  assert.match(detailController, /chooseOption\('Choose relation to the claim…'\)/u)
+  assert.doesNotMatch(detailController, /chooseOption\('e\.g\., /u)
+  assert.match(newController, /attributes: \{ id, name, type: 'text', placeholder \}/u)
+  assert.match(newController, /\.map\(\(control\) => \[control\.name, control\.value\]\)/u)
+  assert.doesNotMatch(`${newController}\n${detailController}`, /\.value\s*=\s*[^\n]*placeholder/u)
 })
 
 test('Narada ochre primary and semantic colors retain readable contrast', () => {
@@ -158,12 +405,17 @@ test('Narada ochre primary and semantic colors retain readable contrast', () => 
     ['#dda5c2', '#3d2734', 'gap status on its soft surface'],
     ['#a9bfe4', '#1c283c', 'later-axis label on its panel'],
     ['#9db2b3', '#071117', 'body-muted copy on page ground'],
+    ['#6f8387', '#091920', 'example placeholder on standard form control'],
+    ['#6f8387', '#091820', 'example placeholder on dedicated proposal form control'],
   ]
   for (const [foreground, background, label] of pairs) {
     assert.ok(contrast(foreground, background) >= 4.5, `${label} must meet WCAG AA`)
   }
 
   const css = readFileSync(resolve(siteRoot, 'src/styles/global.css'), 'utf8')
+  assert.equal(contrast('#6f8387', '#091920').toFixed(3), '4.500')
+  assert.equal(contrast('#6f8387', '#091820').toFixed(3), '4.533')
+  assert.match(css, /--placeholder: #6f8387/)
   assert.match(css, /--ochre: #ffae62/)
   assert.doesNotMatch(css, /mint|#68e0c3|rgb\(104 224 195/)
   assert.match(css, /outline: 2px solid var\(--ochre\)/)

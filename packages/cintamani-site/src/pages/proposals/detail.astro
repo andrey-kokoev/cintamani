@@ -1,0 +1,128 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+---
+<SiteLayout
+  title="Cintamani · Proposal history and criticism"
+  description="Read an exact Cintamani public proposal revision history, criticism, scoped tests, competing interpretations, moderation, and appeals."
+>
+  <section class="proposal-detail-hero" aria-labelledby="proposal-title">
+    <p class="eyebrow" data-proposal-kind>Public proposal</p>
+    <h1 id="proposal-title" data-proposal-title>Loading proposal…</h1>
+    <div class="proposal-detail-meta">
+      <span class="status-pill status-pill--submitted" data-proposal-state>loading</span>
+      <span>submitted by <span data-proposal-author>—</span></span>
+    </div>
+    <p class="lede">
+      States on this page are administrative only. They are not truth, confidence, consensus, popularity,
+      or rank. Criticism remains visible alongside declined, withdrawn, and superseded proposals.
+    </p>
+    <p class="moderation-tombstone" data-listing-visibility hidden></p>
+  </section>
+  <noscript>
+    <p class="no-script-note section-shell">
+      This dynamic history view needs JavaScript. Exact proposal records are also available through
+      the public <code>/api/proposals/&lt;proposal-id&gt;</code> JSON route.
+    </p>
+  </noscript>
+
+  <section class="section-shell proposal-history-grid" aria-labelledby="revision-history-title">
+    <div>
+      <p class="eyebrow">Immutable edit history</p>
+      <h2 id="revision-history-title">Public revisions</h2>
+      <div class="revision-list" data-revisions aria-live="polite"></div>
+    </div>
+    <aside>
+      <p class="eyebrow">Audited administration</p>
+      <h2>State history</h2>
+      <ol class="state-history" data-state-history></ol>
+    </aside>
+  </section>
+
+  <section class="section-shell" aria-labelledby="author-tools-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Correction without erasure</p>
+        <h2 id="author-tools-title">Revision or linked follow-up</h2>
+      </div>
+      <p>Only the author may append while submitted. Once triaged, every follow-up is a new linked proposal.</p>
+    </div>
+    <div data-author-tools></div>
+  </section>
+
+  <section class="section-shell criticism-section" aria-labelledby="criticism-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Deutsch–Popperian surface</p>
+        <h2 id="criticism-title">Criticism and replies</h2>
+      </div>
+      <p>Each criticism targets one exact immutable revision. Replies do not erase or resolve it.</p>
+    </div>
+    <div class="discussion-list" data-criticisms aria-live="polite"></div>
+  </section>
+
+  <section class="section-shell" aria-labelledby="tests-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Scoped attempted refutation</p>
+        <h2 id="tests-title">Test reports</h2>
+      </div>
+      <p>Relations use survives-test, falsifies, criticizes, inconclusive, or mixed—not supporting scores.</p>
+    </div>
+    <div class="discussion-list" data-tests aria-live="polite"></div>
+  </section>
+
+  <section class="section-shell" aria-labelledby="interpretations-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Plural explanation</p>
+        <h2 id="interpretations-title">Competing interpretations</h2>
+      </div>
+      <p>Alternative readings remain addressable public records tied to the revision they interpret.</p>
+    </div>
+    <div class="discussion-list" data-interpretations aria-live="polite"></div>
+  </section>
+
+  <section class="section-shell" aria-labelledby="contribute-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Contribute to the current revision</p>
+        <h2 id="contribute-title">Criticize, test, or reinterpret</h2>
+      </div>
+      <p>GitHub attribution, CSRF, Turnstile, quotas, and immutable writes apply to every form.</p>
+    </div>
+    <div class="contribution-form-grid" data-contribution-forms></div>
+  </section>
+
+  <section class="section-shell" aria-labelledby="moderation-history-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Public administration and appeal</p>
+        <h2 id="moderation-history-title">Moderation history</h2>
+      </div>
+      <p>
+        Ordered moderation can hide or restore one exact revision/content target, or lock/unlock a
+        contributor; it cannot silently rewrite or delete the record.
+      </p>
+    </div>
+    <div class="discussion-list" data-moderation-history></div>
+  </section>
+
+  <section class="section-shell operator-panel" data-operator-panel hidden aria-labelledby="operator-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">D1-authorized operator controls</p>
+        <h2 id="operator-title">Audited review</h2>
+      </div>
+      <p>Selection and moderation create no scientific verdict and cannot write the canonical registry.</p>
+    </div>
+    <div class="operator-grid" data-operator-controls></div>
+  </section>
+
+  <script>
+    import { initializeProposalDetail } from '../../scripts/proposal-detail.mjs'
+    initializeProposalDetail().catch((error) => {
+      const title = document.querySelector('[data-proposal-title]')
+      if (title) title.textContent = `Proposal unavailable: ${error.message}`
+    })
+  </script>
+</SiteLayout>

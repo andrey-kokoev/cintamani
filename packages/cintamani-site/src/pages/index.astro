@@ -59,6 +59,7 @@ const label = (value: string | null) => value ? value.replaceAll('-', ' ') : 'un
       </p>
       <div class="hero-actions">
         <a class="primary-action" href="#dimensions">Enter the siege space</a>
+        <a class="primary-action primary-action--quiet" href="/proposals/">Propose or criticize</a>
         <a class="text-action" href="#authority">How this view is governed</a>
       </div>
     </div>
@@ -210,9 +211,10 @@ const label = (value: string | null) => value ? value.replaceAll('-', ' ') : 'un
     <p class="eyebrow">Cloudflare delivery boundary</p>
     <h2 id="snapshot-title">Fast at the edge. Static by design.</h2>
     <p>
-      Cloudflare Workers Assets serves these generated files. There is no D1 database and no mutable
-      edge registry. Changes enter through governed admissions, rebuild the Rust/SQLite projection,
-      pass integrity checks, and only then become a new static site snapshot.
+      Cloudflare Workers Assets serves the checked registry snapshot. A separate public D1 plane now
+      accepts immediately visible, explicitly unreviewed proposals and criticism; it cannot mutate the
+      canonical registry. Only a maintainer-selected, content-addressed export can enter the existing
+      domain admission preview and promotion workflow.
     </p>
   </section>
 </SiteLayout>

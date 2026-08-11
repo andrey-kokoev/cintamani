@@ -22,10 +22,13 @@
     "domain:frontier": "pnpm --filter @cintamani/domain domain:frontier",
     "domain:mcp": "pnpm --filter @cintamani/domain domain:mcp",
     "site:generate": "pnpm --filter @cintamani/site generate:data",
+    "site:prepare-admission": "pnpm --filter @cintamani/site prepare:admission",
     "site:dev": "pnpm --filter @cintamani/site dev",
     "site:check": "pnpm --filter @cintamani/site check",
     "site:test": "pnpm --filter @cintamani/site test",
+    "site:test:visual": "pnpm --filter @cintamani/site test:visual",
     "site:build": "pnpm --filter @cintamani/site build",
+    "site:worker-check": "pnpm --filter @cintamani/site worker:dry-run",
     "site:preview": "pnpm --filter @cintamani/site preview",
     "site:ship": "pnpm --filter @cintamani/site ship"
   }

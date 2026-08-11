@@ -8,8 +8,8 @@ pnpm monorepo for experiments derived from the VRC ledger in `src/ledger`.
 - `packages/kerr-capacity` — Rust Kerr coupled-mode/LLE simulator and held-out observable-capacity estimator.
 - `packages/cintamani-domain` — Rust/SQLite categorical siege registry with a tamper-evident
   admission chain, typed histories/provenance, bounded siege queries, and a local stdio MCP.
-- `packages/cintamani-site` — static Astro presentation generated from checked domain-registry
-  snapshots and configured for Cloudflare Workers Assets.
+- `packages/cintamani-site` — static Astro registry presentation plus a separate public D1 proposal,
+  criticism, and administrative-history plane served by a Cloudflare Worker.
 
 Run workspace checks with:
 
@@ -37,14 +37,17 @@ pnpm site:dev
 pnpm site:check
 pnpm site:test
 pnpm site:build
+pnpm site:worker-check
 pnpm site:preview
 pnpm site:ship
+pnpm site:prepare-admission -- --export <file> --out <draft> --record-id <id> --admitted-at <date>
 ```
 
-`site:ship` builds and runs `wrangler deploy`; use it only from an authorized Cloudflare shipping
-step. The provisional Worker name is `cintamani`. The site has no D1 binding or mutable edge
-registry: its tracked JSON is deterministically regenerated from the checked Rust/SQLite domain
-CLI during build. See `packages/cintamani-site/README.md` for the data and deployment boundaries.
+`site:ship` builds, migrates the remote public D1, and runs `wrangler deploy`; use it only from an
+authorized Cloudflare shipping step. The Worker name is `cintamani`. Tracked registry JSON is still
+deterministically regenerated from the checked Rust/SQLite domain CLI. Public proposals reside in a
+separate D1 and cannot mutate that canonical registry. See `packages/cintamani-site/README.md` for
+the security, authority, handoff, provisioning, and deployment boundaries.
 
 Its generated projection is `.narada/db/cintamani-domain.sqlite`, which is intentionally ignored.
 The schema migrations, immutable admission generations, and manifest chain remain tracked. The four
