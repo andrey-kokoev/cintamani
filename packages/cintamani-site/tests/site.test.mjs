@@ -7,6 +7,7 @@ import test from 'node:test'
 import { readFrontier } from '../scripts/generate-domain-snapshots.mjs'
 import { detailFormPlaceholders } from '../src/scripts/proposal-detail.mjs'
 import { detailFieldPlaceholders, focusFirstInvalid } from '../src/scripts/proposal-new.mjs'
+import { contributorLabel, samePublicContributor } from '../src/scripts/public-api.mjs'
 
 const testRoot = dirname(fileURLToPath(import.meta.url))
 const siteRoot = resolve(testRoot, '..')
@@ -135,6 +136,14 @@ test('Astro page and Worker config state the canonical/public authority boundary
   assert.deepEqual(wrangler.assets.run_worker_first, ['/api/*'])
   assert.equal(wrangler.d1_databases[0].binding, 'PROPOSALS_DB')
   assert.equal(wrangler.d1_databases[0].database_name, 'cintamani-public-proposals')
+  assert.equal(wrangler.vars.X402_ENABLED, 'false')
+  assert.equal(wrangler.vars.X402_MODE, 'testnet')
+  assert.equal(wrangler.vars.X402_PRECHALLENGE_IP_LIMIT_PER_HOUR, '30')
+  assert.equal(wrangler.vars.X402_PRECHALLENGE_GLOBAL_LIMIT_PER_HOUR, '300')
+  assert.equal(wrangler.vars.X402_PAY_TO, undefined)
+  for (const secret of ['X402_ENVELOPE_SECRET', 'CDP_API_KEY_ID', 'CDP_API_KEY_SECRET']) {
+    assert.equal(wrangler.vars[secret], undefined, `${secret} must not be committed as a Worker var`)
+  }
   const astro = readFileSync(resolve(siteRoot, 'astro.config.mjs'), 'utf8')
   assert.match(astro, /output: 'static'/)
   assert.match(astro, /PUBLIC_SITE_URL/)
@@ -190,6 +199,7 @@ test('public proposal UI exposes accessible typed, history, criticism, test, and
     '/withdrawal',
     'data-moderation-form',
     'target_github_login',
+    'target_public_pseudonym',
     '/api/admin/appeals/',
     'contributor_locked',
     'moderation-tombstone',
@@ -212,7 +222,7 @@ test('header utility has compact stable session states without persistent authen
   assert.match(component, /data-session-signed-out[\s\S]*?hidden/u)
   assert.match(component, /data-session-signed-in hidden/u)
   assert.match(component, /data-session-error hidden role="alert"/u)
-  assert.match(component, /Checking GitHub session…/u)
+  assert.match(component, /Checking contributor session…/u)
   assert.match(component, /session-skeleton/u)
   assert.match(component, /class="github-mark"[\s\S]*?aria-hidden="true"/u)
   assert.match(component, /data-operator-state hidden>Operator/u)
@@ -229,6 +239,18 @@ test('header utility has compact stable session states without persistent authen
   assert.match(css, /\.header-session\s*\{[^}]*width:\s*15rem;/su)
   assert.match(css, /\.header-sign-in \.github-mark\s*\{[^}]*width:\s*15px;[^}]*height:\s*15px;/su)
   assert.doesNotMatch(css, /\.public-auth-strip|\.session-state--success/u)
+})
+
+test('wallet contributors have pseudonymous attribution and exact public author matching', () => {
+  const wallet = { principal_kind: 'base-wallet', public_pseudonym: 'base:0123456789ab' }
+  const otherWallet = { principal_kind: 'base-wallet', public_pseudonym: 'base:abcdef012345' }
+  const github = { principal_kind: 'github', github_login: 'andrey-kokoev' }
+  assert.equal(contributorLabel(wallet), 'base:0123456789ab')
+  assert.equal(contributorLabel(github), '@andrey-kokoev')
+  assert.equal(samePublicContributor(wallet, { ...wallet }), true)
+  assert.equal(samePublicContributor(wallet, otherWallet), false)
+  assert.equal(samePublicContributor(github, { principal_kind: 'github', github_login: 'Andrey-Kokoev' }), true)
+  assert.equal(samePublicContributor(wallet, github), false)
 })
 
 test('proposal hub visual contract keeps one content CTA, compact hierarchy, and deterministic screenshot readiness', () => {
@@ -263,6 +285,13 @@ test('proposal hub delegates to a focused new-tab submission page with accessibl
   assert.doesNotMatch(hub, /data-proposal-form|turnstile-slot/u)
   assert.match(hub, /href="\/proposals\/new\/" target="_blank" rel="noopener"/u)
   assert.match(submission, /<form[^>]*data-proposal-form[^>]*novalidate hidden>/u)
+  assert.match(submission, /Publish with GitHub or a wallet/u)
+  assert.match(submission, /\$0\.01 USDC/u)
+  assert.match(submission, /data-wallet-connect/u)
+  assert.match(submission, /data-base-wallet/u)
+  assert.match(submission, /raw address is never published/u)
+  assert.match(submission, /retry the same record without paying again/u)
+  assert.match(submission, /Payment buys publication only/u)
   assert.match(submission, /data-error-summary role="alert" tabindex="-1" hidden/u)
   assert.match(submission, /data-submit-success role="status" tabindex="-1" hidden/u)
   assert.match(submission, /data-view-proposal[^>]*>View published proposal</u)
@@ -304,6 +333,21 @@ test('proposal hub delegates to a focused new-tab submission page with accessibl
   let focused = false
   focusFirstInvalid([{ control: { focus: () => { focused = true } } }])
   assert.equal(focused, true)
+})
+
+test('proposal form follows deployment x402 enablement and does not advertise a missing logo asset', () => {
+  const controller = readFileSync(resolve(siteRoot, 'src/scripts/proposal-new.mjs'), 'utf8')
+  const wallet = readFileSync(resolve(siteRoot, 'src/scripts/wallet-contribution.mjs'), 'utf8')
+  assert.match(controller, /config\.x402\?\.enabled === true/u)
+  assert.match(controller, /Wallet publication is not enabled on this deployment; GitHub remains available\./u)
+  assert.doesNotMatch(wallet, /favicon\.svg|appLogoUrl/u)
+  assert.match(wallet, /preference:\s*\{ telemetry: false \}/u)
+})
+
+test('Worker failure logging is metadata-only and cannot serialize request or payment errors', () => {
+  const source = readFileSync(resolve(siteRoot, 'worker/index.mjs'), 'utf8')
+  assert.match(source, /console\.error\('unhandled request failure', \{ name: safeName \}\)/u)
+  assert.doesNotMatch(source, /console\.error\('unhandled request failure', error\)/u)
 })
 
 test('public-write examples cover core, every typed family, and exact-revision contribution forms without becoming values', () => {

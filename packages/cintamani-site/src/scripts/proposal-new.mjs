@@ -7,6 +7,13 @@ import {
   turnstileToken,
   writeJson,
 } from './public-api.mjs'
+import {
+  authenticateWallet,
+  baseSmartWalletProvider,
+  connectWallet,
+  discoverWallets,
+  publishPaidProposal,
+} from './wallet-contribution.mjs'
 
 const fieldContracts = {
   'theoretical-model-member': [
@@ -340,7 +347,7 @@ function configureParentLink(root) {
   return { proposal_id: parentProposal, revision: parentRevision }
 }
 
-function proposalBody(form, parent) {
+function proposalBody(form, parent, { includeTurnstile = true } = {}) {
   const values = new FormData(form)
   const problem = values.get('problem').trim()
   const rationale = values.get('rationale').trim()
@@ -365,8 +372,8 @@ function proposalBody(form, parent) {
           https_url: values.get('reference_url'),
         }]
       : [],
-    turnstile_token: turnstileToken(form),
   }
+  if (includeTurnstile) body.turnstile_token = turnstileToken(form)
   if (parent) body.parent = parent
   return body
 }
@@ -378,9 +385,50 @@ export async function initializeProposalNew(root = document) {
   const authRequired = root.querySelector('[data-submit-auth-required]')
   const locked = root.querySelector('[data-submit-locked]')
   const pageStatus = root.querySelector('[data-new-page-status]')
+  let walletConnection = null
+  const walletPublicationEnabled = config.x402?.enabled === true
+
+  if (!walletPublicationEnabled) {
+    for (const button of root.querySelectorAll('[data-wallet-connect], [data-base-wallet]')) button.disabled = true
+    announce(
+      root.querySelector('[data-wallet-status]'),
+      'Wallet publication is not enabled on this deployment; GitHub remains available.',
+      'error',
+    )
+  }
+
+  const connect = async (provider) => {
+    const status = root.querySelector('[data-wallet-status]')
+    announce(status, 'Requesting wallet connection…')
+    const chainId = config.x402?.network ?? config.x402_network ?? 'eip155:8453'
+    walletConnection = await connectWallet(provider, chainId)
+    announce(status, 'Confirm the sign-in message in your wallet. This does not authorize payment.')
+    await authenticateWallet(walletConnection)
+    announce(status, 'Wallet authenticated. Reloading the proposal form…', 'success')
+    globalThis.location.reload()
+  }
+
+  const bindWalletButton = (selector, providerFactory) => {
+    const button = root.querySelector(selector)
+    button?.addEventListener('click', async () => {
+      button.disabled = true
+      try {
+        await connect(await providerFactory())
+      } catch (error) {
+        announce(root.querySelector('[data-wallet-status]'), error.message, 'error')
+        button.disabled = false
+      }
+    })
+  }
+  bindWalletButton('[data-wallet-connect]', async () => {
+    const wallets = await discoverWallets()
+    if (wallets.length === 0) throw new Error('No browser wallet was found. Install a wallet or use Base smart wallet.')
+    return wallets[0].provider
+  })
+  bindWalletButton('[data-base-wallet]', baseSmartWalletProvider)
 
   if (session.session_unavailable) {
-    announce(pageStatus, 'Submission remains closed because the GitHub session check failed. Public records are still readable.', 'error')
+    announce(pageStatus, 'Submission remains closed because the contributor session check failed. Public records are still readable.', 'error')
     return
   }
   if (!session.authenticated) {
@@ -389,6 +437,11 @@ export async function initializeProposalNew(root = document) {
   }
   if (session.contributor_locked) {
     locked.hidden = false
+    return
+  }
+
+  if (session.contributor?.principal_kind === 'base-wallet' && !walletPublicationEnabled) {
+    announce(pageStatus, 'Wallet publication is not enabled on this deployment. Sign out and use GitHub to publish.', 'error')
     return
   }
 
@@ -408,7 +461,13 @@ export async function initializeProposalNew(root = document) {
     form.querySelector('[data-error-summary]').hidden = true
   })
   renderDetailFields(form, config)
-  renderTurnstileSlots(form, config.turnstile_site_key)
+  const walletLane = session.contributor?.principal_kind === 'base-wallet'
+  if (walletLane) {
+    root.querySelector('[data-authenticated-turnstile]').hidden = true
+    root.querySelector('[data-payment-disclosure]').hidden = false
+  } else {
+    renderTurnstileSlots(form, config.turnstile_site_key)
+  }
 
   form.addEventListener('input', (event) => {
     if (event.target.matches('input, select, textarea')) clearSingleError(form, event.target)
@@ -434,7 +493,18 @@ export async function initializeProposalNew(root = document) {
     form.setAttribute('aria-busy', 'true')
     let published = false
     try {
-      const created = await writeJson('/api/proposals', proposalBody(form, parent), session)
+      let created
+      if (walletLane) {
+        if (!walletConnection) {
+          const wallets = await discoverWallets()
+          const provider = wallets[0]?.provider ?? await baseSmartWalletProvider()
+          walletConnection = await connectWallet(provider, config.x402?.network ?? config.x402_network ?? 'eip155:8453')
+        }
+        label.textContent = 'Confirm $0.01 payment…'
+        created = await publishPaidProposal(walletConnection, proposalBody(form, parent, { includeTurnstile: false }))
+      } else {
+        created = await writeJson('/api/proposals', proposalBody(form, parent), session)
+      }
       const success = root.querySelector('[data-submit-success]')
       success.querySelector('[data-success-id]').textContent = created.proposal_id
       success.querySelector('[data-view-proposal]').href =
@@ -444,7 +514,10 @@ export async function initializeProposalNew(root = document) {
       success.focus()
       published = true
     } catch (error) {
-      announce(status, `Publication failed: ${error.message}`, 'error')
+      const recovery = error.retryWithoutPayment
+        ? ' Your payment state is saved. Submit again to retry without paying again.'
+        : ''
+      announce(status, `Publication failed: ${error.message}${recovery}`, 'error')
       const invalid = serverInvalid(form, error)
       if (invalid.length > 0) {
         renderErrorSummary(form, invalid)
@@ -452,7 +525,7 @@ export async function initializeProposalNew(root = document) {
       } else {
         renderErrorSummary(form, [], error.message)
       }
-      globalThis.turnstile?.reset()
+      if (!walletLane) globalThis.turnstile?.reset()
     } finally {
       if (!published) {
         button.disabled = false

@@ -128,7 +128,7 @@ function insertRevisionStatements(database, { proposalId, revision, accountId, i
   ]
 }
 
-async function completeRevisionStatements(database, options) {
+export async function completeRevisionStatements(database, options) {
   const content = {
     title: options.input.title,
     summary: options.input.summary,
@@ -347,6 +347,18 @@ export async function createProposal(request, env, authorization, rawBody) {
   })
 }
 
+export async function isCurrentAuthorPrincipal(database, storedAuthorId, actingPrincipalId) {
+  if (storedAuthorId === actingPrincipalId) return true
+  const direct = await database.prepare(
+    `SELECT 1 AS authorized
+     FROM current_principal_identity_links
+     WHERE (github_principal_id = ? AND wallet_principal_id = ?)
+        OR (wallet_principal_id = ? AND github_principal_id = ?)
+     LIMIT 1`,
+  ).bind(storedAuthorId, actingPrincipalId, storedAuthorId, actingPrincipalId).first()
+  return direct?.authorized === 1
+}
+
 export async function createRevision(request, env, authorization, proposalId, rawBody) {
   const proposal = await env.PROPOSALS_DB.prepare(
     `SELECT proposal_kind, author_account_id, current_revision, current_admin_state
@@ -355,7 +367,7 @@ export async function createRevision(request, env, authorization, proposalId, ra
     .bind(proposalId)
     .first()
   if (!proposal) throw new ResponseError(404, 'proposal_not_found', 'The proposal does not exist')
-  if (proposal.author_account_id !== authorization.session.account_id) {
+  if (!(await isCurrentAuthorPrincipal(env.PROPOSALS_DB, proposal.author_account_id, authorization.session.account_id))) {
     throw new ResponseError(403, 'author_required', 'Only the proposal author may append a submitted revision')
   }
   if (proposal.current_admin_state !== 'submitted') {
@@ -636,7 +648,7 @@ export async function withdrawProposal(request, env, authorization, proposalId, 
     .bind(proposalId)
     .first()
   if (!proposal) throw new ResponseError(404, 'proposal_not_found', 'The proposal does not exist')
-  if (proposal.author_account_id !== authorization.session.account_id) {
+  if (!(await isCurrentAuthorPrincipal(env.PROPOSALS_DB, proposal.author_account_id, authorization.session.account_id))) {
     throw new ResponseError(403, 'proposal_author_required', 'Only the proposal author may withdraw it')
   }
   if (!withdrawableProposalStates.has(proposal.current_admin_state)) {
@@ -823,17 +835,33 @@ async function moderationTarget(database, rawBody) {
       values.target_interpretation_id = text(rawBody.interpretation_id, 'interpretation_id', { max: 100 })
       break
     case 'account':
-      if (rawBody.target_account_id !== undefined || rawBody.account_id !== undefined) {
-        throw new InputError('Internal account identifiers are not accepted', 'target_github_login')
+      if (
+        rawBody.target_account_id !== undefined || rawBody.account_id !== undefined ||
+        rawBody.target_principal_id !== undefined || rawBody.principal_id !== undefined
+      ) {
+        throw new InputError('Internal contributor identifiers are not accepted', 'target_github_login')
       }
       {
-        const login = text(rawBody.target_github_login, 'target_github_login', { max: 39 })
-        const account = await database
-          .prepare('SELECT account_id FROM public_accounts WHERE github_login = ? COLLATE NOCASE')
-          .bind(login)
-          .first()
-        if (!account) throw new ResponseError(404, 'contributor_not_found', 'The public GitHub contributor does not exist')
-        values.target_account_id = account.account_id
+        const hasGithub = rawBody.target_github_login !== undefined
+        const hasPseudonym = rawBody.target_public_pseudonym !== undefined
+        if (hasGithub === hasPseudonym) {
+          throw new ResponseError(
+            400,
+            'contributor_lookup_ambiguous',
+            'Provide exactly one public GitHub login or exact wallet pseudonym',
+          )
+        }
+        const profile = hasGithub
+          ? await database.prepare(
+            `SELECT principal_id FROM public_contributor_profiles
+             WHERE principal_kind = 'github' AND github_login = ? COLLATE NOCASE`,
+          ).bind(text(rawBody.target_github_login, 'target_github_login', { max: 39 })).first()
+          : await database.prepare(
+            `SELECT principal_id FROM public_contributor_profiles
+             WHERE principal_kind = 'base-wallet' AND public_pseudonym = ?`,
+          ).bind(text(rawBody.target_public_pseudonym, 'target_public_pseudonym', { max: 69 })).first()
+        if (!profile) throw new ResponseError(404, 'contributor_not_found', 'The public contributor does not exist')
+        values.target_account_id = profile.principal_id
       }
       break
     default:
@@ -852,7 +880,7 @@ export async function createModerationAction(request, env, operator, rawBody) {
     throw new InputError('Listing actions must target a public proposal or content record', 'target_kind')
   }
   if (['lock-contributor', 'unlock-contributor'].includes(actionKind) && target.kind !== 'account') {
-    throw new InputError('Contributor lock actions must target a public GitHub login', 'target_kind')
+    throw new InputError('Contributor lock actions must target a public contributor handle', 'target_kind')
   }
   const actionId = `moderation-${randomToken(18)}`
   const current = nowIso(env)
@@ -937,7 +965,7 @@ export async function transitionAppeal(request, env, operator, appealId, rawBody
 }
 
 function publicAccountColumns(alias = 'a') {
-  return `${alias}.github_login, ${alias}.github_profile_url, ${alias}.github_avatar_url`
+  return `${alias}.principal_kind, ${alias}.public_pseudonym, ${alias}.github_login, ${alias}.github_profile_url, ${alias}.github_avatar_url`
 }
 
 async function all(database, sql, ...bindings) {
@@ -969,7 +997,7 @@ export async function listProposals(env, url) {
             ${publicAccountColumns()}, p.parent_proposal_id, p.parent_revision
      FROM proposals p
      JOIN proposal_revisions r ON r.proposal_id = p.proposal_id AND r.revision = p.current_revision
-     JOIN public_accounts a ON a.account_id = p.author_account_id
+     JOIN public_contributor_profiles a ON a.principal_id = p.author_account_id
      WHERE ${clauses.join(' AND ')}
        AND NOT EXISTS (
          SELECT 1 FROM current_listing_moderation visibility
@@ -1007,7 +1035,7 @@ export async function readProposal(env, proposalId) {
     `SELECT p.proposal_id, p.proposal_kind, p.parent_proposal_id, p.parent_revision,
             p.created_at, p.current_revision, p.current_state_event_sequence,
             p.current_admin_state, ${publicAccountColumns()}
-     FROM proposals p JOIN public_accounts a ON a.account_id = p.author_account_id
+     FROM proposals p JOIN public_contributor_profiles a ON a.principal_id = p.author_account_id
      WHERE p.proposal_id = ?`,
   )
     .bind(proposalId)
@@ -1018,7 +1046,7 @@ export async function readProposal(env, proposalId) {
     `SELECT r.proposal_id, r.revision, r.revision_id, r.title, r.summary,
             r.rationale, r.scope, r.content_sha256, r.source_timestamp, r.recorded_at,
             ${publicAccountColumns()}
-     FROM proposal_revisions r JOIN public_accounts a ON a.account_id = r.author_account_id
+     FROM proposal_revisions r JOIN public_contributor_profiles a ON a.principal_id = r.author_account_id
      WHERE r.proposal_id = ? ORDER BY r.revision`,
     proposalId,
   )
@@ -1028,7 +1056,7 @@ export async function readProposal(env, proposalId) {
       env.PROPOSALS_DB,
       `SELECT e.evidence_id, e.evidence_kind, e.summary, e.source_timestamp, e.recorded_at,
               ${publicAccountColumns()}
-       FROM proposal_evidence e JOIN public_accounts a ON a.account_id = e.author_account_id
+       FROM proposal_evidence e JOIN public_contributor_profiles a ON a.principal_id = e.author_account_id
        WHERE e.proposal_id = ? AND e.revision = ? ORDER BY e.evidence_id`,
       proposalId,
       revision.revision,
@@ -1046,7 +1074,7 @@ export async function readProposal(env, proposalId) {
     `SELECT e.proposal_id, e.event_sequence, e.state_event_id, e.from_state, e.to_state,
             e.selected_revision, e.rationale, e.source_timestamp, e.recorded_at,
             ${publicAccountColumns()}
-     FROM proposal_state_events e JOIN public_accounts a ON a.account_id = e.actor_account_id
+     FROM proposal_state_events e JOIN public_contributor_profiles a ON a.principal_id = e.actor_account_id
      WHERE e.proposal_id = ? ORDER BY e.event_sequence`,
     proposalId,
   )
@@ -1054,7 +1082,7 @@ export async function readProposal(env, proposalId) {
     env.PROPOSALS_DB,
     `SELECT c.criticism_id, c.proposal_id, c.target_revision, c.title, c.criticism,
             c.scope, c.source_timestamp, c.recorded_at, ${publicAccountColumns()}
-     FROM criticisms c JOIN public_accounts a ON a.account_id = c.author_account_id
+     FROM criticisms c JOIN public_contributor_profiles a ON a.principal_id = c.author_account_id
      WHERE c.proposal_id = ? ORDER BY c.target_revision, c.criticism_id`,
     proposalId,
   )
@@ -1063,7 +1091,7 @@ export async function readProposal(env, proposalId) {
       env.PROPOSALS_DB,
       `SELECT r.reply_id, r.criticism_id, r.proposal_id, r.target_revision, r.reply,
               r.source_timestamp, r.recorded_at, ${publicAccountColumns()}
-       FROM criticism_replies r JOIN public_accounts a ON a.account_id = r.author_account_id
+       FROM criticism_replies r JOIN public_contributor_profiles a ON a.principal_id = r.author_account_id
        WHERE r.criticism_id = ? ORDER BY r.reply_id`,
       criticism.criticism_id,
     )
@@ -1078,7 +1106,7 @@ export async function readProposal(env, proposalId) {
     `SELECT t.test_report_id, t.proposal_id, t.target_revision, t.test_name,
             t.protocol, t.result, t.interpretation, t.test_relation,
             t.source_timestamp, t.recorded_at, ${publicAccountColumns()}
-     FROM scoped_test_reports t JOIN public_accounts a ON a.account_id = t.author_account_id
+     FROM scoped_test_reports t JOIN public_contributor_profiles a ON a.principal_id = t.author_account_id
      WHERE t.proposal_id = ? ORDER BY t.target_revision, t.test_report_id`,
     proposalId,
   )
@@ -1094,7 +1122,7 @@ export async function readProposal(env, proposalId) {
     `SELECT i.interpretation_id, i.proposal_id, i.target_revision, i.title,
             i.interpretation, i.scope, i.source_timestamp, i.recorded_at,
             ${publicAccountColumns()}
-     FROM competing_interpretations i JOIN public_accounts a ON a.account_id = i.author_account_id
+     FROM competing_interpretations i JOIN public_contributor_profiles a ON a.principal_id = i.author_account_id
      WHERE i.proposal_id = ? ORDER BY i.target_revision, i.interpretation_id`,
     proposalId,
   )
@@ -1103,10 +1131,14 @@ export async function readProposal(env, proposalId) {
     `SELECT m.action_sequence, m.moderation_action_id, m.action_kind, m.target_kind,
             m.target_proposal_id, m.target_revision, m.target_criticism_id,
             m.target_reply_id, m.target_test_report_id, m.target_interpretation_id,
-            ta.github_login AS target_github_login, m.reason_code, m.explanation,
+            ta.github_login AS target_github_login,
+            ta.public_pseudonym AS target_public_pseudonym,
+            ta.principal_kind AS target_principal_kind,
+            m.reason_code, m.explanation,
             m.source_timestamp, m.recorded_at, ${publicAccountColumns()}
-     FROM moderation_actions m JOIN public_accounts a ON a.account_id = m.moderator_account_id
-     LEFT JOIN public_accounts ta ON ta.account_id = m.target_account_id
+     FROM moderation_actions m
+     JOIN public_contributor_profiles a ON a.principal_id = m.moderator_account_id
+     LEFT JOIN public_contributor_profiles ta ON ta.principal_id = m.target_account_id
      WHERE m.target_proposal_id = ?
         OR m.target_criticism_id IN (SELECT criticism_id FROM criticisms WHERE proposal_id = ?)
         OR m.target_reply_id IN (SELECT reply_id FROM criticism_replies WHERE proposal_id = ?)
@@ -1143,10 +1175,13 @@ export async function readProposal(env, proposalId) {
   const contributorLock = await env.PROPOSALS_DB.prepare(
     `SELECT lock.action_sequence, lock.moderation_action_id, lock.action_kind,
             lock.is_locked, lock.reason_code, lock.explanation,
-            lock.source_timestamp, lock.recorded_at, account.github_login AS target_github_login
+            lock.source_timestamp, lock.recorded_at,
+            account.github_login AS target_github_login,
+            account.public_pseudonym AS target_public_pseudonym,
+            account.principal_kind AS target_principal_kind
      FROM proposals proposal
-     JOIN public_accounts account ON account.account_id = proposal.author_account_id
-     LEFT JOIN current_account_locks lock ON lock.target_account_id = proposal.author_account_id
+     JOIN public_contributor_profiles account ON account.principal_id = proposal.author_account_id
+     LEFT JOIN current_principal_locks lock ON lock.target_principal_id = proposal.author_account_id
      WHERE proposal.proposal_id = ?`,
   )
     .bind(proposalId)
@@ -1159,7 +1194,7 @@ export async function readProposal(env, proposalId) {
       env.PROPOSALS_DB,
       `SELECT ap.appeal_id, ap.moderation_action_id, ap.appeal,
               ap.source_timestamp, ap.recorded_at, ${publicAccountColumns()}
-       FROM appeals ap JOIN public_accounts a ON a.account_id = ap.appellant_account_id
+       FROM appeals ap JOIN public_contributor_profiles a ON a.principal_id = ap.appellant_account_id
        WHERE ap.moderation_action_id = ? ORDER BY ap.appeal_id`,
       action.moderation_action_id,
     )
@@ -1168,7 +1203,7 @@ export async function readProposal(env, proposalId) {
         env.PROPOSALS_DB,
         `SELECT e.event_sequence, e.appeal_state_event_id, e.from_state, e.to_state,
                 e.rationale, e.source_timestamp, e.recorded_at, ${publicAccountColumns()}
-         FROM appeal_state_events e JOIN public_accounts a ON a.account_id = e.actor_account_id
+         FROM appeal_state_events e JOIN public_contributor_profiles a ON a.principal_id = e.actor_account_id
          WHERE e.appeal_id = ? ORDER BY e.event_sequence`,
         appeal.appeal_id,
       )
@@ -1197,6 +1232,8 @@ export async function readProposal(env, proposalId) {
             source_timestamp: contributorLock.source_timestamp,
             recorded_at: contributorLock.recorded_at,
             target_github_login: contributorLock.target_github_login,
+            target_public_pseudonym: contributorLock.target_public_pseudonym,
+            target_principal_kind: contributorLock.target_principal_kind,
           }
         : null,
       proposal_listing_visibility:
@@ -1232,6 +1269,8 @@ async function buildCanonicalExport(env, proposalId, selection, scope) {
       parent_revision: full.proposal.parent_revision,
       created_at: full.proposal.created_at,
       author: {
+        principal_kind: full.proposal.principal_kind,
+        public_pseudonym: full.proposal.public_pseudonym,
         github_login: full.proposal.github_login,
         github_profile_url: full.proposal.github_profile_url,
         github_avatar_url: full.proposal.github_avatar_url,

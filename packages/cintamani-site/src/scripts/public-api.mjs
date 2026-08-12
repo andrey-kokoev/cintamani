@@ -61,7 +61,7 @@ export function renderContributorSession(root, session) {
     showOnlySessionState(strip, signedOut)
     return
   }
-  strip.querySelector('[data-login-name]').textContent = `@${session.contributor.github_login}`
+  strip.querySelector('[data-login-name]').textContent = contributorLabel(session.contributor)
   strip.querySelector('[data-operator-state]').hidden = !session.operator
   strip.querySelector('[data-lock-state]').hidden = !session.contributor_locked
   showOnlySessionState(strip, signedIn)
@@ -111,7 +111,7 @@ export async function loadSessionWithStatus(root = document) {
 }
 
 export async function writeJson(path, body, session) {
-  if (!session?.authenticated) throw new Error('Sign in with GitHub before publishing.')
+  if (!session?.authenticated) throw new Error('Authenticate as a contributor before publishing.')
   return readJson(path, {
     method: 'POST',
     headers: {
@@ -158,10 +158,27 @@ export function renderTurnstileSlots(root, siteKey) {
   render()
 }
 
+export function contributorLabel(record) {
+  if (record?.principal_kind === 'base-wallet') return record.public_pseudonym ?? 'base:unavailable'
+  if (record?.github_login) return `@${record.github_login}`
+  return record?.public_pseudonym ?? 'contributor unavailable'
+}
+
+export function samePublicContributor(left, right) {
+  if (!left || !right || left.principal_kind !== right.principal_kind) return false
+  if (left.principal_kind === 'base-wallet') {
+    return Boolean(left.public_pseudonym) && left.public_pseudonym === right.public_pseudonym
+  }
+  return Boolean(left.github_login) && left.github_login.toLowerCase() === right.github_login?.toLowerCase()
+}
+
 export function publicAuthor(record) {
-  const link = element('a', {
-    text: `@${record.github_login}`,
-    attributes: { href: record.github_profile_url, rel: 'noreferrer', target: '_blank' },
-  })
-  return link
+  const label = contributorLabel(record)
+  if (record.principal_kind !== 'base-wallet' && record.github_profile_url) {
+    return element('a', {
+      text: label,
+      attributes: { href: record.github_profile_url, rel: 'noreferrer', target: '_blank' },
+    })
+  }
+  return element('span', { className: 'wallet-pseudonym', text: label })
 }

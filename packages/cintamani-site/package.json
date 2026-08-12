@@ -11,6 +11,7 @@
     "db:migrate:local": "wrangler d1 migrations apply PROPOSALS_DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply PROPOSALS_DB --remote",
     "operator:bootstrap": "node scripts/bootstrap-operator.mjs",
+    "x402:agent": "node scripts/x402-agent-fixture.mjs",
     "prepare:admission": "node scripts/prepare-domain-admission.mjs",
     "dev:astro": "pnpm run generate:data && astro dev",
     "dev": "pnpm run build && pnpm run db:migrate:local && wrangler dev --local",
@@ -23,6 +24,15 @@
     "preview": "pnpm run dev",
     "worker:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run",
     "ship": "pnpm run build && pnpm run db:migrate:remote && wrangler deploy"
+  },
+  "dependencies": {
+    "@base-org/account": "2.5.9",
+    "@coinbase/x402": "2.1.0",
+    "@x402/core": "2.22.0",
+    "@x402/evm": "2.22.0",
+    "@x402/extensions": "2.22.0",
+    "@x402/fetch": "2.22.0",
+    "viem": "2.55.13"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

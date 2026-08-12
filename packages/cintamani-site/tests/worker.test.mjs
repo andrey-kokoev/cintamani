@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 import worker from '../worker/index.mjs'
-import { canonicalize } from '../worker/repository.mjs'
+import { canonicalize, isCurrentAuthorPrincipal } from '../worker/repository.mjs'
 import { csrfForSession, sha256Hex } from '../worker/security.mjs'
 import { SQLiteD1 } from './helpers/sqlite-d1.mjs'
 
@@ -37,14 +37,29 @@ async function addActor(database, env, login, { operator = false } = {}) {
   const identity = await sha256Hex(`identity:${login}`)
   database.database
     .prepare(
-      `INSERT INTO public_accounts VALUES (?, ?, ?, ?, NULL, ?, ?)`,
+      `INSERT INTO public_accounts (
+        account_id, github_identity_hmac_sha256, github_login,
+        github_profile_url, github_avatar_url, created_at, last_authenticated_at
+      ) VALUES (?, ?, ?, ?, NULL, ?, ?)`,
     )
     .run(accountId, identity, login, `https://github.com/${login}`, env.TEST_NOW, env.TEST_NOW)
+  const sessionHash = await sha256Hex(token)
   database.database
     .prepare(
-      `INSERT INTO public_sessions VALUES (?, ?, ?, ?, '2026-08-18T18:00:00.000Z', NULL, NULL)`,
+      `INSERT INTO public_sessions (
+        session_token_sha256, csrf_token_sha256, account_id, created_at,
+        expires_at, revoked_at, rotated_to_sha256
+      ) VALUES (?, ?, ?, ?, '2026-08-18T18:00:00.000Z', NULL, NULL)`,
     )
-    .run(await sha256Hex(token), await sha256Hex(csrf), accountId, env.TEST_NOW)
+    .run(sessionHash, await sha256Hex(csrf), accountId, env.TEST_NOW)
+  database.database
+    .prepare(
+      `INSERT INTO principal_session_events (
+        session_token_sha256, event_sequence, session_event_id, principal_id,
+        event_kind, rotated_to_sha256, rationale, source_timestamp, recorded_at
+      ) VALUES (?, 1, ?, ?, 'issued', NULL, 'Issued by test harness', ?, ?)`,
+    )
+    .run(sessionHash, `session-event-${login}-1`, accountId, env.TEST_NOW, env.TEST_NOW)
   if (operator) {
     database.database
       .prepare(
@@ -201,6 +216,8 @@ test('anonymous reads stay diagnostic with absent production secrets and carry s
   assert.equal(health.status, 200)
   assert.equal((await health.json()).canonical_registry_writes, false)
   assert.match(health.headers.get('content-security-policy'), /frame-ancestors 'none'/)
+  assert.equal(health.headers.get('cross-origin-opener-policy'), 'same-origin-allow-popups')
+  assert.match(health.headers.get('content-security-policy'), /connect-src[^;]*https:\/\/rpc\.wallet\.coinbase\.com[^;]*https:\/\/chain-proxy\.wallet\.coinbase\.com/u)
   assert.equal(health.headers.get('x-content-type-options'), 'nosniff')
 
   const list = await worker.fetch(new Request(`${origin}/api/proposals`), env)
@@ -1079,6 +1096,24 @@ test('OAuth state is cookie-bound, expiring, and single-use; session rotation, l
       .getSetCookie()
       .find((cookie) => cookie.startsWith('__Host-cintamani_session='))
       .split(';')[0]
+    const firstHash = await sha256Hex(firstSessionCookie.split('=')[1])
+    const secondHash = await sha256Hex(secondSessionCookie.split('=')[1])
+    const sessionEvents = h.database.database.prepare(
+      `SELECT session_token_sha256, event_sequence, event_kind, rotated_to_sha256
+       FROM principal_session_events
+       WHERE session_token_sha256 IN (?, ?)
+       ORDER BY session_token_sha256, event_sequence`,
+    ).all(firstHash, secondHash)
+    assert.equal(sessionEvents.length, 3)
+    assert.deepEqual(
+      sessionEvents.filter((event) => event.session_token_sha256 === firstHash).map((event) => event.event_kind),
+      ['issued', 'rotated'],
+    )
+    assert.equal(sessionEvents.find((event) => event.event_kind === 'rotated').rotated_to_sha256, secondHash)
+    assert.deepEqual(
+      sessionEvents.filter((event) => event.session_token_sha256 === secondHash).map((event) => event.event_kind),
+      ['issued'],
+    )
     let session = await worker.fetch(new Request(`${origin}/api/session`, { headers: { cookie: firstSessionCookie } }), h.env)
     assert.equal((await session.json()).authenticated, false)
     session = await worker.fetch(new Request(`${origin}/api/session`, { headers: { cookie: secondSessionCookie } }), h.env)
@@ -1100,6 +1135,11 @@ test('OAuth state is cookie-bound, expiring, and single-use; session rotation, l
       h.env,
     )
     assert.equal(logout.status, 200)
+    const logoutEvents = h.database.database.prepare(
+      'SELECT event_kind, session_event_id FROM principal_session_events WHERE session_token_sha256 = ? ORDER BY event_sequence',
+    ).all(secondHash)
+    assert.deepEqual(logoutEvents.map((event) => event.event_kind), ['issued', 'revoked'])
+    assert.equal(JSON.stringify(logoutEvents).includes(secondSessionCookie.split('=')[1]), false)
     session = await worker.fetch(new Request(`${origin}/api/session`, { headers: { cookie: secondSessionCookie } }), h.env)
     assert.equal((await session.json()).authenticated, false)
 
@@ -1126,4 +1166,146 @@ test('OAuth state is cookie-bound, expiring, and single-use; session rotation, l
     globalThis.fetch = originalFetch
     h.database.close()
   }
+})
+
+test('moderation resolves exactly one public GitHub or wallet handle and rejects internal IDs', async () => {
+  const h = await harness()
+  const walletId = 'principal-wallet-moderation-test'
+  const pseudonym = 'base:123456789abc'
+  h.database.database.prepare(
+    `INSERT INTO contributor_principals
+     (principal_id, principal_kind, public_pseudonym, pseudonym_key_version, created_at)
+     VALUES (?, 'base-wallet', ?, 1, ?)`,
+  ).run(walletId, pseudonym, h.env.TEST_NOW)
+  h.database.database.prepare(
+    `INSERT INTO base_wallet_identities
+     (principal_id, address_hmac_sha256, created_at, last_verified_at) VALUES (?, ?, ?, ?)`,
+  ).run(walletId, 'f'.repeat(64), h.env.TEST_NOW, h.env.TEST_NOW)
+
+  const walletLock = await responseJson(await h.call('/api/admin/moderation-actions', {
+    method: 'POST', actor: h.operator,
+    body: {
+      action_kind: 'lock-contributor', target_kind: 'account', target_public_pseudonym: pseudonym,
+      reason_code: 'wallet-lock-test', explanation: 'Resolve an exact public wallet pseudonym.',
+    },
+  }))
+  assert.equal(walletLock.response.status, 201)
+  assert.equal(JSON.stringify(walletLock.body).includes(walletId), false)
+  assert.equal(
+    h.database.database.prepare('SELECT target_account_id FROM moderation_actions WHERE moderation_action_id = ?')
+      .get(walletLock.body.moderation_action_id).target_account_id,
+    walletId,
+  )
+
+  const githubLock = await h.call('/api/admin/moderation-actions', {
+    method: 'POST', actor: h.operator,
+    body: {
+      action_kind: 'lock-contributor', target_kind: 'account', target_github_login: 'outsider',
+      reason_code: 'github-lock-test', explanation: 'Resolve a public GitHub login.',
+    },
+  })
+  assert.equal(githubLock.status, 201)
+
+  const ambiguous = await responseJson(await h.call('/api/admin/moderation-actions', {
+    method: 'POST', actor: h.operator,
+    body: {
+      action_kind: 'lock-contributor', target_kind: 'account',
+      target_github_login: 'author', target_public_pseudonym: pseudonym,
+      reason_code: 'ambiguous', explanation: 'Must reject two lookup keys.',
+    },
+  }))
+  assert.equal(ambiguous.response.status, 400)
+  assert.equal(ambiguous.body.error.code, 'contributor_lookup_ambiguous')
+
+  for (const internalField of ['target_account_id', 'target_principal_id']) {
+    const rejected = await h.call('/api/admin/moderation-actions', {
+      method: 'POST', actor: h.operator,
+      body: {
+        action_kind: 'lock-contributor', target_kind: 'account', [internalField]: walletId,
+        reason_code: 'internal-id', explanation: 'Internal IDs are not public lookup keys.',
+      },
+    })
+    assert.equal(rejected.status, 400)
+  }
+  const missing = await h.call('/api/admin/moderation-actions', {
+    method: 'POST', actor: h.operator,
+    body: {
+      action_kind: 'lock-contributor', target_kind: 'account', target_public_pseudonym: 'base:000000000000',
+      reason_code: 'missing', explanation: 'Unknown public handle.',
+    },
+  })
+  assert.equal(missing.status, 404)
+})
+
+test('direct current identity links grant author access, propagate locks, and revoke future access', async () => {
+  const h = await harness()
+  const created = await createOne(h)
+  const walletId = 'principal-wallet-linked-author'
+  const walletToken = 'linked-wallet-agent-bearer-token-with-enough-randomness'
+  const walletTokenHash = await sha256Hex(walletToken)
+  h.database.database.prepare(
+    `INSERT INTO contributor_principals
+     (principal_id, principal_kind, public_pseudonym, pseudonym_key_version, created_at)
+     VALUES (?, 'base-wallet', 'base:abcdef123456', 1, ?)`,
+  ).run(walletId, h.env.TEST_NOW)
+  h.database.database.prepare(
+    `INSERT INTO base_wallet_identities
+     (principal_id, address_hmac_sha256, created_at, last_verified_at) VALUES (?, ?, ?, ?)`,
+  ).run(walletId, 'a'.repeat(64), h.env.TEST_NOW, h.env.TEST_NOW)
+  h.database.database.prepare(
+    `INSERT INTO public_sessions (
+      session_token_sha256, csrf_token_sha256, account_id, created_at, expires_at,
+      revoked_at, rotated_to_sha256, auth_kind, transport, scope
+    ) VALUES (?, NULL, ?, ?, '2026-08-18T18:00:00.000Z', NULL, NULL, 'siwx', 'agent-bearer', 'public-contributor')`,
+  ).run(walletTokenHash, walletId, h.env.TEST_NOW)
+  h.database.database.prepare(
+    `INSERT INTO principal_session_events (
+      session_token_sha256, event_sequence, session_event_id, principal_id, event_kind,
+      rotated_to_sha256, rationale, source_timestamp, recorded_at
+    ) VALUES (?, 1, ?, ?, 'issued', NULL, 'Linked author test session', ?, ?)`,
+  ).run(walletTokenHash, 'linked-wallet-session-issued', walletId, h.env.TEST_NOW, h.env.TEST_NOW)
+  const linkSql = `INSERT INTO principal_identity_link_events (
+    link_id, event_sequence, link_event_id, github_principal_id, github_principal_kind,
+    wallet_principal_id, wallet_principal_kind, action_kind, actor_principal_id,
+    siwx_message_sha256, signature_sha256, rationale, source_timestamp, recorded_at
+  ) VALUES ('link-author-wallet', ?, ?, ?, 'github', ?, 'base-wallet', ?, ?, ?, ?, ?, ?, ?)`
+  h.database.database.prepare(linkSql).run(
+    1, 'link-author-wallet-1', h.author.accountId, walletId, 'verified', h.author.accountId,
+    'b'.repeat(64), 'c'.repeat(64), 'Verified direct link', h.env.TEST_NOW, h.env.TEST_NOW,
+  )
+  assert.equal(await isCurrentAuthorPrincipal(h.database, h.author.accountId, walletId), true)
+  assert.equal(await isCurrentAuthorPrincipal(h.database, h.outsider.accountId, walletId), false)
+
+  const lock = await h.call('/api/admin/moderation-actions', {
+    method: 'POST', actor: h.operator,
+    body: { action_kind: 'lock-contributor', target_kind: 'account', target_github_login: 'author', reason_code: 'linked-lock', explanation: 'Lock propagates across the direct link.' },
+  })
+  assert.equal(lock.status, 201)
+  const linkedHeaders = { authorization: `Bearer ${walletToken}` }
+  const blocked = await h.call(`/api/proposals/${created.proposal_id}/revisions`, {
+    method: 'POST', headers: linkedHeaders, body: proposal('theoretical-model-member', 'linked-blocked'),
+  })
+  assert.equal(blocked.status, 423)
+  const unlock = await h.call('/api/admin/moderation-actions', {
+    method: 'POST', actor: h.operator,
+    body: { action_kind: 'unlock-contributor', target_kind: 'account', target_github_login: 'author', reason_code: 'linked-unlock', explanation: 'Restore linked author writes.' },
+  })
+  assert.equal(unlock.status, 201)
+  const revision = await h.call(`/api/proposals/${created.proposal_id}/revisions`, {
+    method: 'POST', headers: linkedHeaders,
+    body: { ...proposal('theoretical-model-member', 'linked-revision'), kind: undefined },
+  })
+  assert.equal(revision.status, 201, await revision.text())
+  assert.equal(h.database.database.prepare('SELECT author_account_id FROM proposals WHERE proposal_id = ?').get(created.proposal_id).author_account_id, h.author.accountId)
+
+  h.database.database.prepare(linkSql).run(
+    2, 'link-author-wallet-2', h.author.accountId, walletId, 'revoked', walletId,
+    'd'.repeat(64), 'e'.repeat(64), 'Revoked direct link', h.env.TEST_NOW, h.env.TEST_NOW,
+  )
+  assert.equal(await isCurrentAuthorPrincipal(h.database, h.author.accountId, walletId), false)
+  const denied = await h.call(`/api/proposals/${created.proposal_id}/withdrawal`, {
+    method: 'POST', headers: linkedHeaders,
+    body: { rationale: 'Revoked counterpart must no longer act as author.' },
+  })
+  assert.equal(denied.status, 403)
 })

@@ -33,6 +33,7 @@ The browser-visible static registry has separate wrappers:
 
 ```text
 pnpm site:generate
+pnpm site:x402-agent      # discovery-only unless an authorized operator adds --pay
 pnpm site:dev
 pnpm site:check
 pnpm site:test
@@ -47,7 +48,14 @@ pnpm site:prepare-admission -- --export <file> --out <draft> --record-id <id> --
 authorized Cloudflare shipping step. The Worker name is `cintamani`. Tracked registry JSON is still
 deterministically regenerated from the checked Rust/SQLite domain CLI. Public proposals reside in a
 separate D1 and cannot mutate that canonical registry. See `packages/cintamani-site/README.md` for
-the security, authority, handoff, provisioning, and deployment boundaries.
+the generic contributor/SIWX identity model, optional x402 publication lane, security, authority,
+handoff, provisioning, recovery, and deployment boundaries. The x402 agent wrapper reads config and
+health only by default; paid mode is a real wallet mutation and requires separate authorization.
+
+Task 5 is intentionally suspended at a disabled isolated-testnet checkpoint. The public Worker at
+`cintamani-x402-testnet.andrei-kokoev.workers.dev` is not accepting x402 payments, its disposable
+payer is unfunded, and neither the Base-Sepolia paid acceptance gate nor any production payment gate
+has been claimed. The exact retained resources and restart sequence are recorded in the site README.
 
 Its generated projection is `.narada/db/cintamani-domain.sqlite`, which is intentionally ignored.
 The schema migrations, immutable admission generations, and manifest chain remain tracked. The four

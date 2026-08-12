@@ -1,10 +1,12 @@
 import {
   announce,
+  contributorLabel,
   element,
   loadSessionWithStatus,
   publicAuthor,
   readJson,
   renderTurnstileSlots,
+  samePublicContributor,
   turnstileToken,
   writeJson,
 } from './public-api.mjs'
@@ -566,8 +568,13 @@ function operatorPanel(root, data, session, reload) {
       },
     },
     {
-      label: `Contributor @${data.proposal.github_login}`,
-      body: { target_kind: 'account', target_github_login: data.proposal.github_login },
+      label: `Contributor ${contributorLabel(data.proposal)}`,
+      body: {
+        target_kind: 'account',
+        ...(data.proposal.principal_kind === 'base-wallet'
+          ? { target_public_pseudonym: data.proposal.public_pseudonym }
+          : { target_github_login: data.proposal.github_login }),
+      },
     },
     ...data.criticisms.flatMap((criticism) => [
       { label: `Criticism ${criticism.criticism_id}`, body: { target_kind: 'criticism', criticism_id: criticism.criticism_id } },
@@ -707,9 +714,7 @@ export async function initializeProposalDetail(root = document) {
     renderModeration(root, data, session, load)
     const authorTools = root.querySelector('[data-author-tools]')
     authorTools.replaceChildren()
-    const isAuthor =
-      session.authenticated &&
-      session.contributor.github_login.toLowerCase() === data.proposal.github_login.toLowerCase()
+    const isAuthor = session.authenticated && samePublicContributor(session.contributor, data.proposal)
     if (isAuthor && session.contributor_locked) {
       authorTools.append(
         element('p', {

@@ -19,8 +19,19 @@ const hash = (character) => character.repeat(64);
 
 function openDatabase() {
   const database = new DatabaseSync(":memory:");
-  migrations.forEach((migration) => database.exec(migration));
   database.exec("PRAGMA foreign_keys = ON");
+  migrations.forEach((migration) => {
+    database.exec("BEGIN IMMEDIATE");
+    try {
+      for (const statement of unstable_splitSqlQuery(migration)) {
+        if (statement.trim()) database.exec(statement);
+      }
+      database.exec("COMMIT");
+    } catch (error) {
+      database.exec("ROLLBACK");
+      throw error;
+    }
+  });
   return database;
 }
 
@@ -710,9 +721,13 @@ test("OAuth nonce and session tables retain only digests and enforce operational
     .run(hash("1"));
   database
     .prepare(
-      `INSERT INTO public_sessions VALUES
-       (?, ?, 'account-author', '2026-08-11T18:00:00.000Z',
-        '2026-08-12T18:00:00.000Z', NULL, NULL)`,
+      `INSERT INTO public_sessions (
+         session_token_sha256, csrf_token_sha256, account_id, created_at,
+         expires_at, revoked_at, rotated_to_sha256
+       ) VALUES (
+         ?, ?, 'account-author', '2026-08-11T18:00:00.000Z',
+         '2026-08-12T18:00:00.000Z', NULL, NULL
+       )`,
     )
     .run(hash("2"), hash("3"));
   const nonceColumns = database

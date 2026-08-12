@@ -3,6 +3,7 @@
   "name": "cintamani",
   "main": "worker/index.mjs",
   "compatibility_date": "2026-08-11",
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_do_not_populate_process_env"],
   "d1_databases": [
     {
       "binding": "PROPOSALS_DB",
@@ -21,6 +22,11 @@
   "vars": {
     "ENVIRONMENT": "production",
     "PUBLIC_WRITE_LIMIT_PER_HOUR": "30",
+    "PUBLIC_GLOBAL_WRITE_LIMIT_PER_HOUR": "300",
+    "X402_PRECHALLENGE_IP_LIMIT_PER_HOUR": "30",
+    "X402_PRECHALLENGE_GLOBAL_LIMIT_PER_HOUR": "300",
+    "X402_ENABLED": "false",
+    "X402_MODE": "testnet",
     "PUBLIC_ORIGIN": "https://cintamani.andrei-kokoev.workers.dev",
     "MODERATOR_GITHUB_LOGINS": "andrey-kokoev",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAENUfPxF9YQlzAqL",

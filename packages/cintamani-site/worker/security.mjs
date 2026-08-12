@@ -119,41 +119,76 @@ export function nowIso(env) {
   return env.TEST_NOW ?? new Date().toISOString()
 }
 
+function sessionCredential(request) {
+  const authorization = request.headers.get('authorization')
+  const bearer = authorization?.match(/^Bearer ([A-Za-z0-9_-]{32,300})$/u)?.[1] ?? null
+  const cookie = parseCookies(request)[sessionCookie] ?? null
+  if (bearer && cookie && bearer !== cookie) {
+    throw new ResponseError(400, 'ambiguous_session', 'Use either a bearer session or a browser cookie, not both')
+  }
+  if (bearer) return { token: bearer, transport: 'agent-bearer' }
+  if (cookie) return { token: cookie, transport: 'browser-cookie' }
+  return null
+}
+
 export async function findSession(request, env) {
-  const token = parseCookies(request)[sessionCookie]
-  if (!token) return null
-  const tokenHash = await sha256Hex(token)
+  const credential = sessionCredential(request)
+  if (!credential) return null
+  const tokenHash = await sha256Hex(credential.token)
   const current = nowIso(env)
   const row = await env.PROPOSALS_DB.prepare(
-    `SELECT s.account_id, s.csrf_token_sha256, s.expires_at, s.revoked_at,
-            a.github_login, a.github_profile_url, a.github_avatar_url,
+    `SELECT s.account_id, s.csrf_token_sha256, s.created_at, s.expires_at,
+            s.revoked_at, s.auth_kind, s.transport, s.scope,
+            profile.principal_kind, profile.public_pseudonym,
+            profile.github_login, profile.github_profile_url,
+            profile.github_avatar_url,
             EXISTS(
-              SELECT 1 FROM current_account_roles role
-              WHERE role.account_id = s.account_id AND role.role = 'operator'
+              SELECT 1 FROM current_principal_roles role
+              WHERE role.principal_id = s.account_id AND role.role = 'operator'
             ) AS is_operator
-     FROM public_sessions s JOIN public_accounts a USING (account_id)
+     FROM public_sessions s
+     JOIN public_contributor_profiles profile ON profile.principal_id = s.account_id
      WHERE s.session_token_sha256 = ?`,
   )
     .bind(tokenHash)
     .first()
-  if (!row || row.revoked_at !== null || row.expires_at <= current) return null
-  const csrf = await csrfForSession(env, token)
-  if (!constantTimeEqual(await sha256Hex(csrf), row.csrf_token_sha256)) return null
+  if (
+    !row ||
+    row.revoked_at !== null ||
+    row.expires_at <= current ||
+    row.transport !== credential.transport
+  ) {
+    return null
+  }
+  let csrf = null
+  if (row.transport === 'browser-cookie') {
+    csrf = await csrfForSession(env, credential.token)
+    if (!constantTimeEqual(await sha256Hex(csrf), row.csrf_token_sha256)) return null
+  } else if (row.csrf_token_sha256 !== null) {
+    return null
+  }
   return {
     account_id: row.account_id,
+    principal_id: row.account_id,
+    principal_kind: row.principal_kind,
+    public_pseudonym: row.public_pseudonym,
     github_login: row.github_login,
     github_profile_url: row.github_profile_url,
     github_avatar_url: row.github_avatar_url,
+    auth_kind: row.auth_kind,
+    transport: row.transport,
+    scope: row.scope,
+    created_at: row.created_at,
     operator: row.is_operator === 1,
     csrf,
-    session_token: token,
+    session_token: credential.token,
     session_token_sha256: tokenHash,
   }
 }
 
 export async function requireSession(request, env) {
   const session = await findSession(request, env)
-  if (!session) throw new ResponseError(401, 'authentication_required', 'GitHub authentication is required')
+  if (!session) throw new ResponseError(401, 'authentication_required', 'Contributor authentication is required')
   return session
 }
 
@@ -161,11 +196,37 @@ export async function currentAccountLock(env, accountId) {
   const row = await env.PROPOSALS_DB.prepare(
     `SELECT moderation_action_id, action_sequence, action_kind, is_locked,
             reason_code, explanation, source_timestamp, recorded_at
-     FROM current_account_locks WHERE target_account_id = ?`,
+     FROM current_principal_locks WHERE target_principal_id = ?`,
   )
     .bind(accountId)
     .first()
   return row?.is_locked === 1 ? row : null
+}
+
+export async function currentContributorLock(env, principalId) {
+  const row = await env.PROPOSALS_DB.prepare(
+    `SELECT lock.moderation_action_id, lock.action_sequence, lock.action_kind,
+            lock.is_locked, lock.reason_code, lock.explanation,
+            lock.source_timestamp, lock.recorded_at,
+            lock.target_principal_id
+     FROM current_principal_locks lock
+     WHERE lock.is_locked = 1
+       AND (
+         lock.target_principal_id = ?
+         OR lock.target_principal_id IN (
+           SELECT github_principal_id FROM current_principal_identity_links
+           WHERE wallet_principal_id = ?
+           UNION
+           SELECT wallet_principal_id FROM current_principal_identity_links
+           WHERE github_principal_id = ?
+         )
+       )
+     ORDER BY lock.action_sequence DESC
+     LIMIT 1`,
+  )
+    .bind(principalId, principalId, principalId)
+    .first()
+  return row ?? null
 }
 
 export function enforceSameOrigin(request) {
@@ -208,15 +269,20 @@ export async function authorizeMutation(request, env, body, mutationKind, { oper
   if (!publicMutationKinds.includes(mutationKind) && !operator) {
     throw new Error(`unsupported mutation kind: ${mutationKind}`)
   }
-  enforceSameOrigin(request)
   const session = await requireSession(request, env)
-  enforceCsrf(request, session)
+  // Browser cookies are ambient credentials and therefore always retain the
+  // Origin/CSRF boundary. Agent bearer credentials are supplied explicitly and
+  // are not subject to browser CSRF.
+  if (session.transport === 'browser-cookie') {
+    enforceSameOrigin(request)
+    enforceCsrf(request, session)
+  }
   if (operator) {
     if (!session.operator) throw new ResponseError(403, 'operator_required', 'Operator authorization is required')
     return { session }
   }
   if (mutationKind !== 'appeal') {
-    const lock = await currentAccountLock(env, session.account_id)
+    const lock = await currentContributorLock(env, session.account_id)
     if (lock) {
       throw new ResponseError(
         423,
@@ -226,7 +292,12 @@ export async function authorizeMutation(request, env, body, mutationKind, { oper
       )
     }
   }
-  await verifyTurnstile(request, env, body.turnstile_token)
+  // Turnstile protects the free GitHub/browser lane. Wallet authentication and
+  // agent bearer credentials use principal/IP/global quotas without a browser
+  // human challenge.
+  if (session.transport === 'browser-cookie' && session.auth_kind === 'github') {
+    await verifyTurnstile(request, env, body.turnstile_token)
+  }
   const ipAddress = request.headers.get('cf-connecting-ip') ?? 'unavailable'
   const ipHash = await hmacHex(requiredSecret(env, 'IP_HASH_SECRET'), ipAddress)
   const cutoff = new Date(Date.parse(nowIso(env)) - 60 * 60 * 1000).toISOString()
@@ -240,8 +311,14 @@ export async function authorizeMutation(request, env, body, mutationKind, { oper
   )
     .bind(ipHash, cutoff)
     .first('count')
+  const globalCount = await env.PROPOSALS_DB.prepare(
+    'SELECT COUNT(*) AS count FROM quota_events WHERE recorded_at >= ?',
+  )
+    .bind(cutoff)
+    .first('count')
   const limit = Number.parseInt(env.PUBLIC_WRITE_LIMIT_PER_HOUR ?? '30', 10)
-  if (accountCount >= limit || ipCount >= limit) {
+  const globalLimit = Number.parseInt(env.PUBLIC_GLOBAL_WRITE_LIMIT_PER_HOUR ?? '300', 10)
+  if (accountCount >= limit || ipCount >= limit || globalCount >= globalLimit) {
     throw new ResponseError(429, 'quota_exceeded', 'The bounded public write quota has been reached')
   }
   return { session, ip_hash: ipHash }

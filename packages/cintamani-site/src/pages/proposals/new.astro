@@ -23,12 +23,30 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
     </noscript>
 
     <p class="form-status" data-new-page-status role="alert" hidden></p>
-    <section class="submission-gate" data-submit-auth-required hidden>
-      <h2>Sign in before submitting</h2>
-      <p>Your GitHub handle will be public attribution. Email and numeric GitHub identifiers are never shown.</p>
-      <a class="primary-action" data-new-sign-in href="/api/auth/github/start?return_to=%2Fproposals%2Fnew%2F">
-        Sign in with GitHub
-      </a>
+    <section class="submission-gate contribution-lanes" data-submit-auth-required hidden>
+      <div class="lane-heading">
+        <p class="eyebrow">Choose a contribution route</p>
+        <h2>Publish with GitHub or a wallet</h2>
+        <p>Both routes create the same immediate <strong>submitted · unreviewed</strong> record. Neither identity nor payment gives a proposal scientific standing.</p>
+      </div>
+      <article class="contribution-lane">
+        <p class="lane-price">Free</p>
+        <h3>Continue with GitHub</h3>
+        <p>Best for human contributors. Your GitHub handle is public attribution, and Turnstile limits automated flooding.</p>
+        <a class="primary-action" data-new-sign-in href="/api/auth/github/start?return_to=%2Fproposals%2Fnew%2F">
+          Sign in with GitHub
+        </a>
+      </article>
+      <article class="contribution-lane">
+        <p class="lane-price">$0.01 USDC</p>
+        <h3>Continue with a wallet</h3>
+        <p>Contribute without GitHub. A Base wallet signs in under a public <code>base:…</code> pseudonym; its raw address is never published. Payment is requested only after the complete proposal is valid.</p>
+        <div class="wallet-actions">
+          <button class="secondary-action" type="button" data-wallet-connect>Choose browser wallet</button>
+          <button class="secondary-action" type="button" data-base-wallet>Use Base smart wallet</button>
+        </div>
+        <p class="form-status" data-wallet-status role="status" aria-live="polite" hidden></p>
+      </article>
     </section>
     <section class="submission-gate" data-submit-locked hidden>
       <h2 id="proposal-form-title-locked">Submission unavailable while contributor lock is active</h2>
@@ -209,6 +227,10 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
 
       <p class="linked-proposal-note" data-parent-note hidden></p>
       <div class="turnstile-slot" data-authenticated-turnstile aria-label="Human verification"></div>
+      <aside class="payment-disclosure" data-payment-disclosure hidden>
+        <strong>$0.01 USDC on Base</strong>
+        <span>Payment buys publication only. It is not evidence, endorsement, ranking, or admission. If settlement succeeds but publication pauses, retry the same record without paying again.</span>
+      </aside>
       <p class="form-status" role="status" aria-live="polite" data-submit-status hidden></p>
       <button class="primary-action proposal-submit" type="submit" data-submit-button>
         <span data-submit-label>Publish submitted · unreviewed</span>
@@ -237,4 +259,15 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
       }
     })
   </script>
+
+  <style>
+    .contribution-lanes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .lane-heading { grid-column: 1 / -1; }
+    .contribution-lane { padding: 1.1rem; border: 1px solid var(--border-color, #465256); border-radius: .7rem; background: rgba(255,255,255,.025); }
+    .contribution-lane h3 { margin: .2rem 0 .45rem; }
+    .lane-price { color: var(--accent, #c58b36); font-weight: 700; letter-spacing: .02em; margin: 0; }
+    .wallet-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem; }
+    .payment-disclosure { display: grid; gap: .2rem; padding: .85rem 1rem; border-left: 3px solid var(--accent, #c58b36); background: rgba(197,139,54,.08); }
+    @media (max-width: 700px) { .contribution-lanes { grid-template-columns: 1fr; } }
+  </style>
 </SiteLayout>

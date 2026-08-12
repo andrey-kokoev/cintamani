@@ -1,4 +1,4 @@
-import { axisMetadata, proposalKinds, text } from '../src/lib/proposals.mjs'
+import { axisMetadata, proposalKinds, text, validateProposal } from '../src/lib/proposals.mjs'
 import {
   changeOperatorRole,
   createAppeal,
@@ -25,10 +25,11 @@ import {
   clearSessionCookie,
   createOAuthState,
   csrfForSession,
-  currentAccountLock,
+  currentContributorLock,
   enforceCsrf,
   enforceSameOrigin,
   findSession,
+  hmacHex,
   normalizeError,
   nowIso,
   oauthSetCookie,
@@ -41,6 +42,36 @@ import {
   sha256Hex,
   verifyOAuthState,
 } from './security.mjs'
+import { createSIWxChallenge, verifySIWxChallenge } from './siwx.mjs'
+import {
+  X402_AMOUNT_ATOMIC,
+  X402_PRICE_USD,
+  createX402Facilitator,
+  paymentRequiredHeader,
+  paymentRequirements,
+  readPaymentSignature,
+  settlePayment,
+  verifyPayment,
+  x402Configuration,
+  x402Readiness,
+  X402ProtocolError,
+} from './x402-protocol.mjs'
+import {
+  beginSettlement,
+  expireX402IntentIfNeeded,
+  beginVerification,
+  finalizePaidProposal,
+  loadVerifiedSettlementContext,
+  paymentResumeState,
+  recordSettlementOutcome,
+  recordReplayChallenge,
+  recordUnpersistedSettlementSuccess,
+  recordVerifiedPayment,
+  rejectVerification,
+  reserveX402Intent,
+  resumePaidProposal,
+  retryStatus,
+} from './x402-repository.mjs'
 
 const apiHeaders = {
   'content-type': 'application/json; charset=utf-8',
@@ -61,10 +92,10 @@ function securityHeaders(response) {
   headers.set('x-content-type-options', 'nosniff')
   headers.set('referrer-policy', 'strict-origin-when-cross-origin')
   headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()')
-  headers.set('cross-origin-opener-policy', 'same-origin')
+  headers.set('cross-origin-opener-policy', 'same-origin-allow-popups')
   headers.set(
     'content-security-policy',
-    "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com https://github.com; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
+    "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com https://github.com https://rpc.wallet.coinbase.com https://chain-proxy.wallet.coinbase.com; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'",
   )
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
 }
@@ -193,15 +224,36 @@ async function completeGithubOAuth(request, env) {
   const expires = new Date(Date.parse(current) + 7 * 24 * 60 * 60 * 1000).toISOString()
   await env.PROPOSALS_DB.batch([
     env.PROPOSALS_DB.prepare(
-      `UPDATE public_sessions SET revoked_at = ?
-       WHERE account_id = ? AND revoked_at IS NULL AND expires_at > ?`,
-    ).bind(current, accountId, current),
-    env.PROPOSALS_DB.prepare(
       `INSERT INTO public_sessions (
         session_token_sha256, csrf_token_sha256, account_id,
         created_at, expires_at, revoked_at, rotated_to_sha256
       ) VALUES (?, ?, ?, ?, ?, NULL, NULL)`,
     ).bind(sessionHash, csrfHash, accountId, current, expires),
+    env.PROPOSALS_DB.prepare(
+      `INSERT INTO principal_session_events (
+        session_token_sha256, event_sequence, session_event_id, principal_id, event_kind,
+        rotated_to_sha256, rationale, source_timestamp, recorded_at
+      ) VALUES (?, 1, ?, ?, 'issued', NULL, 'GitHub OAuth session issued', ?, ?)`,
+    ).bind(sessionHash, `github-issued:${sessionHash}`, accountId, current, current),
+    env.PROPOSALS_DB.prepare(
+      `INSERT INTO principal_session_events (
+        session_token_sha256, event_sequence, session_event_id, principal_id, event_kind,
+        rotated_to_sha256, rationale, source_timestamp, recorded_at
+      )
+      SELECT s.session_token_sha256,
+        COALESCE((SELECT MAX(e.event_sequence) + 1 FROM principal_session_events e
+          WHERE e.session_token_sha256 = s.session_token_sha256), 1),
+        'github-rotated:' || s.session_token_sha256 || ':' || ?, s.account_id, 'rotated', ?,
+        'Replaced by a new GitHub OAuth session', ?, ?
+      FROM public_sessions s
+      WHERE s.account_id = ? AND s.session_token_sha256 != ?
+        AND s.revoked_at IS NULL AND s.expires_at > ?`,
+    ).bind(sessionHash, sessionHash, current, current, accountId, sessionHash, current),
+    env.PROPOSALS_DB.prepare(
+      `UPDATE public_sessions SET revoked_at = ?, rotated_to_sha256 = ?
+       WHERE account_id = ? AND session_token_sha256 != ?
+         AND revoked_at IS NULL AND expires_at > ?`,
+    ).bind(current, sessionHash, accountId, sessionHash, current),
   ])
   const headers = new Headers({ location: redirectPath, 'cache-control': 'no-store' })
   headers.append('set-cookie', sessionSetCookie(sessionToken, 7 * 24 * 60 * 60))
@@ -212,14 +264,17 @@ async function completeGithubOAuth(request, env) {
 async function sessionResponse(request, env) {
   const session = await findSession(request, env)
   if (!session) return json({ authenticated: false })
-  const lock = await currentAccountLock(env, session.account_id)
+  const lock = await currentContributorLock(env, session.account_id)
   return json({
     authenticated: true,
     contributor: {
+      principal_kind: session.principal_kind,
+      public_pseudonym: session.public_pseudonym,
       github_login: session.github_login,
       github_profile_url: session.github_profile_url,
       github_avatar_url: session.github_avatar_url,
     },
+    transport: session.transport,
     operator: session.operator,
     contributor_locked: lock !== null,
     lock_moderation_action_id: lock?.moderation_action_id ?? null,
@@ -229,16 +284,30 @@ async function sessionResponse(request, env) {
 
 async function logout(request, env) {
   await readBoundedJson(request, 1024)
-  enforceSameOrigin(request)
   const session = await requireSession(request, env)
-  enforceCsrf(request, session)
+  if (session.transport === 'browser-cookie') {
+    enforceSameOrigin(request)
+    enforceCsrf(request, session)
+  }
   const current = nowIso(env)
-  await env.PROPOSALS_DB.prepare(
-    `UPDATE public_sessions SET revoked_at = ?
-     WHERE session_token_sha256 = ? AND revoked_at IS NULL`,
-  )
-    .bind(current, session.session_token_sha256)
-    .run()
+  await env.PROPOSALS_DB.batch([
+    env.PROPOSALS_DB.prepare(
+      `INSERT INTO principal_session_events (
+        session_token_sha256, event_sequence, session_event_id, principal_id, event_kind,
+        rotated_to_sha256, rationale, source_timestamp, recorded_at
+      ) VALUES (?,
+        COALESCE((SELECT MAX(event_sequence) + 1 FROM principal_session_events
+          WHERE session_token_sha256 = ?), 1),
+        ?, ?, 'revoked', NULL, 'Contributor logout', ?, ?)`,
+    ).bind(
+      session.session_token_sha256, session.session_token_sha256,
+      `logout-revoked:${session.session_token_sha256}`, session.principal_id, current, current,
+    ),
+    env.PROPOSALS_DB.prepare(
+      `UPDATE public_sessions SET revoked_at = ?
+       WHERE session_token_sha256 = ? AND revoked_at IS NULL`,
+    ).bind(current, session.session_token_sha256),
+  ])
   return json({ authenticated: false }, 200, { 'set-cookie': clearSessionCookie() })
 }
 
@@ -247,13 +316,56 @@ async function health(env) {
     'SELECT metadata_key, metadata_value FROM public_schema_metadata ORDER BY metadata_key',
   ).all()
   const violations = await env.PROPOSALS_DB.prepare('SELECT COUNT(*) AS count FROM public_schema_violations').first('count')
+  const x402Violations = await env.PROPOSALS_DB.prepare('SELECT COUNT(*) AS count FROM x402_schema_violations').first('count')
+  const x402 = publicX402Configuration(env)
+  const degraded = violations !== 0 || x402Violations !== 0 || (x402.requested_enabled && !x402.enabled)
   return json({
-    status: violations === 0 ? 'ok' : 'degraded',
+    status: degraded ? 'degraded' : 'ok',
     public_plane: 'separate-d1',
     canonical_registry_writes: false,
     schema: Object.fromEntries(metadata.results.map((row) => [row.metadata_key, row.metadata_value])),
     invariant_violations: violations,
-  }, violations === 0 ? 200 : 503)
+    x402_invariant_violations: x402Violations,
+    x402_configuration: x402.configuration_status,
+  }, degraded ? 503 : 200)
+}
+
+function publicX402Configuration(env) {
+  const readiness = x402Readiness(env)
+  const requested = readiness.requested
+  const mode = env.X402_MODE ?? 'testnet'
+  const fallbackNetwork = mode === 'production' ? 'eip155:8453' : 'eip155:84532'
+  try {
+    const configured = requested ? x402Configuration(env) : null
+    return {
+      enabled: readiness.ready,
+      requested_enabled: requested,
+      configuration_status: readiness.ready ? 'ready' : (requested ? 'invalid' : 'disabled'),
+      readiness_reason_codes: readiness.reason_codes,
+      mode,
+      network: configured?.network ?? fallbackNetwork,
+      scheme: 'exact',
+      asset: 'USDC',
+      amount_atomic: X402_AMOUNT_ATOMIC,
+      price_usd: X402_PRICE_USD,
+      payment_is_publication_friction_only: true,
+      epistemic_standing: false,
+    }
+  } catch {
+    return {
+      enabled: false,
+      requested_enabled: requested,
+      configuration_status: 'invalid',
+      mode,
+      network: fallbackNetwork,
+      scheme: 'exact',
+      asset: 'USDC',
+      amount_atomic: X402_AMOUNT_ATOMIC,
+      price_usd: X402_PRICE_USD,
+      payment_is_publication_friction_only: true,
+      epistemic_standing: false,
+    }
+  }
 }
 
 function captures(pathname, pattern) {
@@ -273,6 +385,234 @@ async function operatorMutation(request, env, handler) {
   return resultResponse(await handler(body, session))
 }
 
+function canonicalPublicOrigin(env) {
+  if (typeof env.PUBLIC_ORIGIN !== 'string') throw new ResponseError(503, 'x402_misconfigured', 'PUBLIC_ORIGIN is required')
+  let url
+  try { url = new URL(env.PUBLIC_ORIGIN) } catch { throw new ResponseError(503, 'x402_misconfigured', 'PUBLIC_ORIGIN is invalid') }
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || url.pathname !== '/') {
+    throw new ResponseError(503, 'x402_misconfigured', 'PUBLIC_ORIGIN must be an exact HTTPS origin')
+  }
+  return url.origin
+}
+
+function x402Json(result) {
+  const headers = result.payment_response_header
+    ? { 'payment-response': result.payment_response_header }
+    : undefined
+  return json(result.body, result.status, headers)
+}
+
+async function x402RequestContext(request, env, { newPayment = true } = {}) {
+  if (newPayment) {
+    const readiness = x402Readiness(env)
+    if (!readiness.requested) throw new ResponseError(503, 'x402_disabled', 'Accountless paid submissions are disabled')
+    if (!readiness.ready) throw new ResponseError(503, 'x402_misconfigured', 'The x402 payment lane is not ready')
+  }
+  const body = await readBoundedJson(request)
+  const input = validateProposal(body)
+  const idempotencyKey = request.headers.get('idempotency-key')
+  const ipAddress = request.headers.get('cf-connecting-ip') ?? 'unavailable'
+  const ipHash = await hmacHex(requiredSecret(env, 'IP_HASH_SECRET'), ipAddress)
+  let resourceUrl = null
+  let requirements = null
+  if (newPayment) {
+    const origin = canonicalPublicOrigin(env)
+    resourceUrl = `${origin}/api/x402/proposals`
+    try {
+      requirements = paymentRequirements(env, resourceUrl)
+    } catch {
+      throw new ResponseError(503, 'x402_misconfigured', 'The x402 payment lane is not configured')
+    }
+  }
+  return { body, input, idempotencyKey, ipHash, resourceUrl, requirements }
+}
+
+function paymentChallenge(requirements, resourceUrl, message = undefined) {
+  return json(
+    { error: { code: 'payment_required', message: message ?? 'A valid x402 v2 payment is required' } },
+    402,
+    { 'payment-required': paymentRequiredHeader(requirements, resourceUrl, message) },
+  )
+}
+
+async function paidProposal(request, env) {
+  const context = await x402RequestContext(request, env)
+  const authenticated = await findSession(request, env)
+  const expectedPayerPrincipalId = authenticated?.principal_kind === 'base-wallet'
+    ? authenticated.principal_id
+    : null
+  const config = x402Configuration(env)
+  const reservation = await reserveX402Intent(env, {
+    idempotencyKey: context.idempotencyKey,
+    normalizedRequest: context.input,
+    requirements: context.requirements,
+    ipHash: context.ipHash,
+    mode: config.mode,
+  })
+  let state = await paymentResumeState(env, reservation.payment_intent_id)
+  const expiry = await expireX402IntentIfNeeded(env, reservation.payment_intent_id)
+  if (expiry.expired) {
+    throw new ResponseError(409, 'payment_attempt_expired', 'This payment attempt expired; submit again with a new idempotency key')
+  }
+  if (expiry.state !== state.payment_state) state = await paymentResumeState(env, reservation.payment_intent_id)
+  const signature = readPaymentSignature(request)
+
+  if (state.payment_state === 'reserved' || state.payment_state === 'verifying') {
+    if (!signature) {
+      if (reservation.replay) await recordReplayChallenge(env, { ipHash: context.ipHash, mode: config.mode })
+      return paymentChallenge(
+        context.requirements,
+        context.resourceUrl,
+        state.payment_state === 'verifying' ? 'Payment authorization can be retried for this unchanged attempt' : undefined,
+      )
+    }
+    if (state.payment_state === 'reserved') await beginVerification(env, reservation.payment_intent_id)
+    const facilitator = createX402Facilitator(env)
+    let verified
+    try {
+      verified = await verifyPayment(facilitator, signature, context.requirements)
+    } catch (error) {
+      if (error instanceof X402ProtocolError) {
+        await rejectVerification(env, reservation.payment_intent_id)
+        return paymentChallenge(context.requirements, context.resourceUrl, error.message)
+      }
+      return json({
+        error: {
+          code: 'payment_verification_unavailable',
+          message: 'Payment verification is temporarily unavailable; retry the unchanged attempt',
+        },
+      }, 503)
+    }
+    await recordVerifiedPayment(env, {
+      paymentIntentId: reservation.payment_intent_id,
+      paymentPayload: signature,
+      payer: verified.payer,
+      ipHash: context.ipHash,
+      expectedPayerPrincipalId,
+    })
+    state = await paymentResumeState(env, reservation.payment_intent_id)
+  }
+
+  if (state.payment_state === 'settling') {
+    const unknown = await recordSettlementOutcome(env, {
+      paymentIntentId: reservation.payment_intent_id, outcome: 'indeterminate',
+    })
+    return json({
+      error: { code: 'settlement_unknown', message: 'Settlement dispatch may have completed and requires reconciliation' },
+      retry_reference: unknown.public_retry_reference,
+    }, 503)
+  }
+
+  if (state.payment_state === 'verified') {
+    const verified = await loadVerifiedSettlementContext(env, reservation.payment_intent_id)
+    const started = await beginSettlement(env, reservation.payment_intent_id)
+    if (started.replay) {
+      const unknown = await recordSettlementOutcome(env, {
+        paymentIntentId: reservation.payment_intent_id, outcome: 'indeterminate',
+      })
+      return json({
+        error: { code: 'settlement_unknown', message: 'Settlement dispatch may have completed and requires reconciliation' },
+        retry_reference: unknown.public_retry_reference,
+      }, 503)
+    }
+    const settlement = await settlePayment(createX402Facilitator(env), verified)
+    if (settlement.outcome === 'indeterminate') {
+      const unknown = await recordSettlementOutcome(env, {
+        paymentIntentId: reservation.payment_intent_id, outcome: 'indeterminate',
+      })
+      return json({
+        error: { code: 'settlement_unknown', message: 'Settlement outcome requires reconciliation' },
+        retry_reference: unknown.public_retry_reference,
+      }, 503)
+    }
+    if (settlement.outcome === 'rejected') {
+      await recordSettlementOutcome(env, {
+        paymentIntentId: reservation.payment_intent_id, outcome: 'rejected', settlement: settlement.settlement,
+      })
+      return json(
+        { error: { code: 'settlement_rejected', message: 'Settlement was rejected' } },
+        402,
+        settlement.headers,
+      )
+    }
+    let stored
+    try {
+      stored = await recordSettlementOutcome(env, {
+        paymentIntentId: reservation.payment_intent_id,
+        outcome: 'settled',
+        settlement: settlement.settlement,
+        paymentResponseHeader: settlement.headers['payment-response'],
+      })
+    } catch {
+      try {
+        return x402Json(await recordUnpersistedSettlementSuccess(env, {
+          paymentIntentId: reservation.payment_intent_id,
+          paymentResponseHeader: settlement.headers['payment-response'],
+        }))
+      } catch {
+        return json({
+          error: { code: 'settlement_receipt_persistence_unknown', message: 'Settlement succeeded but durable receipt persistence requires reconciliation' },
+          retry_reference: state.public_retry_reference,
+        }, 503, { 'payment-response': settlement.headers['payment-response'] })
+      }
+    }
+    return x402Json(await finalizePaidProposal(env, {
+      paymentIntentId: reservation.payment_intent_id,
+      publicRetryReference: stored.public_retry_reference,
+      rawBody: context.body,
+      ipHash: context.ipHash,
+    }))
+  }
+
+  if (state.payment_state === 'settled' || state.payment_state === 'finalized') {
+    return x402Json(await resumePaidProposal(env, {
+      publicRetryReference: state.public_retry_reference,
+      idempotencyKey: context.idempotencyKey,
+      rawBody: context.body,
+      ipHash: context.ipHash,
+    }))
+  }
+  if (state.payment_state === 'settlement-unknown') {
+    return json({
+      error: { code: 'settlement_unknown', message: 'Settlement requires reconciliation' },
+      retry_reference: state.public_retry_reference,
+    }, 503)
+  }
+  if (state.payment_state === 'rejected') {
+    throw new ResponseError(409, 'payment_attempt_terminal', 'This payment attempt is terminal; submit again with a new idempotency key')
+  }
+  if (state.payment_state === 'expired') {
+    throw new ResponseError(409, 'payment_attempt_expired', 'This payment attempt expired; submit again with a new idempotency key')
+  }
+  throw new ResponseError(409, 'payment_state_conflict', `Payment cannot continue from ${state.payment_state}`)
+}
+
+async function x402Status(request, env, publicRetryReference) {
+  const context = await x402RequestContext(request, env, { newPayment: false })
+  const status = await retryStatus(env, {
+    publicRetryReference,
+    idempotencyKey: context.idempotencyKey,
+    normalizedRequest: context.input,
+  })
+  return json({
+    payment_state: status.payment_state,
+    entitlement_state: status.entitlement_state,
+    proposal_id: status.proposal_id,
+    retryable_without_payment: status.retryable_without_payment,
+    terminal: status.terminal,
+  })
+}
+
+async function x402Retry(request, env, publicRetryReference) {
+  const context = await x402RequestContext(request, env, { newPayment: false })
+  return x402Json(await resumePaidProposal(env, {
+    publicRetryReference,
+    idempotencyKey: context.idempotencyKey,
+    rawBody: context.body,
+    ipHash: context.ipHash,
+  }))
+}
+
 async function routeApi(request, env) {
   const url = new URL(request.url)
   const { pathname } = url
@@ -282,7 +622,8 @@ async function routeApi(request, env) {
       proposal_kinds: proposalKinds,
       dimensions: axisMetadata,
       turnstile_site_key: env.TURNSTILE_SITE_KEY ?? null,
-      authentication: 'github-required-for-writes',
+      authentication: 'github-or-base-wallet',
+      x402: publicX402Configuration(env),
       immediate_visibility: 'submitted-unreviewed',
       voting: false,
       epistemic_ranking: false,
@@ -292,6 +633,13 @@ async function routeApi(request, env) {
   if (request.method === 'GET' && pathname === '/api/auth/github/callback') return completeGithubOAuth(request, env)
   if (request.method === 'GET' && pathname === '/api/session') return sessionResponse(request, env)
   if (request.method === 'POST' && pathname === '/api/session/logout') return logout(request, env)
+  if ((request.method === 'GET' || request.method === 'POST') && pathname === '/api/auth/wallet/challenge') return createSIWxChallenge(request, env)
+  if (request.method === 'POST' && pathname === '/api/auth/wallet/verify') return verifySIWxChallenge(request, env)
+  if (request.method === 'POST' && pathname === '/api/x402/proposals') return paidProposal(request, env)
+  let x402Values = captures(pathname, /^\/api\/x402\/proposals\/status\/([^/]+)$/u)
+  if (request.method === 'POST' && x402Values) return x402Status(request, env, x402Values[0])
+  x402Values = captures(pathname, /^\/api\/x402\/proposals\/retry\/([^/]+)$/u)
+  if (request.method === 'POST' && x402Values) return x402Retry(request, env, x402Values[0])
   if (request.method === 'GET' && pathname === '/api/proposals') return resultResponse(await listProposals(env, url))
   if (request.method === 'POST' && pathname === '/api/proposals') {
     return publicMutation(request, env, 'proposal', (body, authorization) =>
@@ -391,11 +739,17 @@ export default {
         : await env.ASSETS.fetch(request)
       return securityHeaders(response)
     } catch (caught) {
+      if (caught instanceof X402ProtocolError) {
+        return securityHeaders(json({ error: { code: caught.code, message: caught.message } }, caught.status))
+      }
       const error = normalizeError(caught)
       if (error instanceof ResponseError) {
         return securityHeaders(json({ error: { code: error.code, message: error.message, details: error.details } }, error.status))
       }
-      console.error('unhandled request failure', error)
+      const safeName = new Set(['Error', 'TypeError', 'AbortError']).has(error?.name)
+        ? error.name
+        : 'UnexpectedError'
+      console.error('unhandled request failure', { name: safeName })
       return securityHeaders(json({ error: { code: 'internal_error', message: 'The request could not be completed' } }, 500))
     }
   },

@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { DatabaseSync } from 'node:sqlite'
 import { resolve } from 'node:path'
+import { unstable_splitSqlQuery } from 'wrangler'
 
 function row(value) {
   return value ? { ...value } : null
@@ -62,10 +63,22 @@ export class SQLiteD1 {
     }
   }
 
+  executeMigrationSql(sql) {
+    const statements = unstable_splitSqlQuery(sql).filter((statement) => statement.trim().length > 0)
+    this.database.exec('BEGIN IMMEDIATE')
+    try {
+      for (const statement of statements) this.database.exec(statement)
+      this.database.exec('COMMIT')
+    } catch (error) {
+      this.database.exec('ROLLBACK')
+      throw error
+    }
+  }
+
   migrate(siteRoot) {
     const migrationRoot = resolve(siteRoot, 'migrations')
     for (const name of readdirSync(migrationRoot).filter((file) => file.endsWith('.sql')).sort()) {
-      this.database.exec(readFileSync(resolve(migrationRoot, name), 'utf8'))
+      this.executeMigrationSql(readFileSync(resolve(migrationRoot, name), 'utf8'))
     }
   }
 

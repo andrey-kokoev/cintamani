@@ -41,7 +41,7 @@ try {
   )
   assert.deepEqual(metadata, [
     { metadata_key: 'projection_kind', metadata_value: 'cintamani-public-proposals' },
-    { metadata_key: 'schema_version', metadata_value: '2' },
+    { metadata_key: 'schema_version', metadata_value: '4' },
   ])
 
   const violations = wrangler(
@@ -49,6 +49,26 @@ try {
     { json: true },
   )
   assert.equal(violations[0].count, 0)
+
+  const x402Violations = wrangler(
+    ['execute', 'PROPOSALS_DB', '--command', 'SELECT COUNT(*) AS count FROM x402_schema_violations', '--json'],
+    { json: true },
+  )
+  assert.equal(x402Violations[0].count, 0)
+
+  for (const table of [
+    'contributor_principals',
+    'base_wallet_identities',
+    'principal_identity_link_events',
+    'current_principal_identity_links',
+    'principal_session_events',
+  ]) {
+    const rows = wrangler(
+      ['execute', 'PROPOSALS_DB', '--command', `SELECT COUNT(*) AS count FROM ${table}`, '--json'],
+      { json: true },
+    )
+    assert.deepEqual(rows, [{ count: 0 }], `${table} should be empty after a fresh migration`)
+  }
 
   const operatorRoles = wrangler(
     [
@@ -67,7 +87,7 @@ try {
     { json: true },
   )
   assert.deepEqual(foreignKeys, [])
-  process.stdout.write('public D1 schema: migration, identity, operator roles, invariants, and foreign keys verified\n')
+  process.stdout.write('public D1 schema: migrations, contributor identity, x402, operator roles, invariants, and foreign keys verified\n')
 } finally {
   rmSync(stateRoot, { recursive: true, force: true })
 }

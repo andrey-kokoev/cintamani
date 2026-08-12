@@ -23,6 +23,7 @@
     "domain:mcp": "pnpm --filter @cintamani/domain domain:mcp",
     "site:generate": "pnpm --filter @cintamani/site generate:data",
     "site:prepare-admission": "pnpm --filter @cintamani/site prepare:admission",
+    "site:x402-agent": "pnpm --filter @cintamani/site x402:agent",
     "site:dev": "pnpm --filter @cintamani/site dev",
     "site:check": "pnpm --filter @cintamani/site check",
     "site:test": "pnpm --filter @cintamani/site test",
