@@ -672,6 +672,222 @@ pub(crate) fn insert_change(
                 ],
             )?;
         }
+        Change::ResearchTopic { topic_id, label } => {
+            transaction.execute(
+                "INSERT INTO research_topics VALUES (?1,?2,'problem-derived-research-topic',?3)",
+                params![topic_id, label, admission],
+            )?;
+        }
+        Change::ResearchTopicVersion {
+            topic_version_id,
+            topic_id,
+            revision,
+            event_kind,
+            occurred_at,
+            title,
+            open_problem,
+            why_open,
+            scope,
+            next_discriminating_criticism_or_test,
+            non_claims,
+        } => {
+            transaction.execute(
+                "INSERT INTO research_topic_versions VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                params![
+                    topic_version_id,
+                    topic_id,
+                    revision,
+                    event_kind,
+                    occurred_at,
+                    title,
+                    open_problem,
+                    why_open,
+                    scope,
+                    next_discriminating_criticism_or_test,
+                    non_claims,
+                    admission
+                ],
+            )?;
+        }
+        Change::ResearchTopicLocus {
+            locus_id,
+            topic_version_id,
+            locus_order,
+            locus_kind,
+        } => {
+            transaction.execute(
+                "INSERT INTO research_topic_loci VALUES (?1,?2,?3,?4,?5)",
+                params![
+                    locus_id,
+                    topic_version_id,
+                    locus_order,
+                    locus_kind,
+                    admission
+                ],
+            )?;
+        }
+        Change::ResearchTopicOrigin {
+            origin_id,
+            topic_version_id,
+            origin_order,
+            origin_kind,
+            problem_version_id,
+            conjecture_version_id,
+            relationship,
+            rationale,
+        } => {
+            if problem_version_id.is_none() == conjecture_version_id.is_none() {
+                bail!(
+                    "research topic origin {origin_id} must target exactly one problem or conjecture version"
+                );
+            }
+            transaction.execute(
+                "INSERT INTO research_topic_origins VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                params![
+                    origin_id,
+                    topic_version_id,
+                    origin_order,
+                    origin_kind,
+                    problem_version_id,
+                    conjecture_version_id,
+                    relationship,
+                    rationale,
+                    admission
+                ],
+            )?;
+        }
+        Change::ResearchTopicFramingLink {
+            framing_link_id,
+            topic_version_id,
+            conjecture_framing_id,
+            relationship,
+            rationale,
+        } => {
+            transaction.execute(
+                "INSERT INTO research_topic_framing_links VALUES (?1,?2,?3,?4,?5,?6)",
+                params![
+                    framing_link_id,
+                    topic_version_id,
+                    conjecture_framing_id,
+                    relationship,
+                    rationale,
+                    admission
+                ],
+            )?;
+        }
+        Change::ResearchTopicEvidenceLink {
+            evidence_link_id,
+            topic_version_id,
+            artifact_id,
+            relationship,
+            rationale,
+        } => {
+            transaction.execute(
+                "INSERT INTO research_topic_evidence_links VALUES (?1,?2,?3,?4,?5,?6)",
+                params![
+                    evidence_link_id,
+                    topic_version_id,
+                    artifact_id,
+                    relationship,
+                    rationale,
+                    admission
+                ],
+            )?;
+        }
+        Change::ResearchTopicTestLink {
+            test_link_id,
+            topic_version_id,
+            criterion_id,
+            relationship,
+            rationale,
+        } => {
+            transaction.execute(
+                "INSERT INTO research_topic_test_links VALUES (?1,?2,?3,?4,?5,?6)",
+                params![
+                    test_link_id,
+                    topic_version_id,
+                    criterion_id,
+                    relationship,
+                    rationale,
+                    admission
+                ],
+            )?;
+        }
+        Change::ResearchTopicPublicLink {
+            public_link_id,
+            topic_version_id,
+            link_order,
+            link_kind,
+            public_record_id,
+            target_proposal_id,
+            target_revision,
+            content_sha256,
+            relationship,
+            rationale,
+        } => {
+            transaction.execute(
+                "INSERT INTO research_topic_public_links VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
+                params![
+                    public_link_id,
+                    topic_version_id,
+                    link_order,
+                    link_kind,
+                    public_record_id,
+                    target_proposal_id,
+                    target_revision,
+                    content_sha256,
+                    relationship,
+                    rationale,
+                    admission
+                ],
+            )?;
+        }
+        Change::ResearchTopicRelation {
+            relation_id,
+            source_topic_version_id,
+            target_topic_version_id,
+            relation_kind,
+            relation_claim,
+            relation_scope,
+        } => {
+            transaction.execute(
+                "INSERT INTO research_topic_relations VALUES (?1,?2,?3,?4,?5,?6,?7)",
+                params![
+                    relation_id,
+                    source_topic_version_id,
+                    target_topic_version_id,
+                    relation_kind,
+                    relation_claim,
+                    relation_scope,
+                    admission
+                ],
+            )?;
+        }
+        Change::ResearchTopicWorkflowEvent {
+            workflow_event_id,
+            topic_id,
+            revision,
+            event_kind,
+            occurred_at,
+            status,
+            rationale,
+            scope,
+        } => {
+            transaction.execute(
+                "INSERT INTO research_topic_workflow_events VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                params![
+                    workflow_event_id,
+                    topic_id,
+                    revision,
+                    event_kind,
+                    occurred_at,
+                    status,
+                    rationale,
+                    scope,
+                    admission
+                ],
+            )?;
+        }
         Change::FalsificationCriterion {
             criterion_id,
             conjecture_version_id,

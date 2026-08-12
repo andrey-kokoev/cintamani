@@ -6,10 +6,10 @@ CREATE TABLE metadata (
 CREATE TABLE migration_lineage (
     migration_id TEXT PRIMARY KEY,
     source_schema_version TEXT NOT NULL,
-    target_schema_version TEXT NOT NULL CHECK (target_schema_version IN ('2', '3')),
+    target_schema_version TEXT NOT NULL CHECK (target_schema_version IN ('2', '3', '4')),
     migration_kind TEXT NOT NULL CHECK (migration_kind IN (
-        'clean-v2', 'clean-v3', 'owned-v1-upgrade', 'owned-v2-rebuild',
-        'owned-v2-upgrade', 'owned-v3-rebuild'
+        'clean-v2', 'clean-v3', 'clean-v4', 'owned-v1-upgrade', 'owned-v2-rebuild',
+        'owned-v2-upgrade', 'owned-v3-rebuild', 'owned-v4-rebuild'
     )),
     chain_head TEXT NOT NULL,
     applied_at TEXT NOT NULL

@@ -123,7 +123,7 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
             placeholder="e.g., The current coordinate cannot distinguish phase-sensitive observation from intensity-only readout."
             aria-describedby="proposal-problem-help"
           ></textarea>
-          <p class="form-field-help" id="proposal-problem-help">What is missing, mistaken, or worth testing in the current siege space?</p>
+          <p class="form-field-help" id="proposal-problem-help">What is missing, mistaken, or worth testing in the current search space?</p>
           <p class="form-field-error" data-field-error-for="problem" hidden></p>
         </div>
         <div class="form-field">
@@ -163,14 +163,14 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
       </fieldset>
 
       <fieldset class="proposal-form-section conjecture-framings" data-conjecture-framings hidden>
-        <legend><span>5</span> Frame the conjecture in the frontier</legend>
+        <legend><span>5</span> Add optional search-coordinate framing</legend>
         <p class="form-section-help">
           Coordinates are optional conjectural framings, not evidence or admissions. Leave this empty for a
-          general, unclassified conjecture.
+          general, unclassified conjecture or topic.
         </p>
         <div data-framing-list></div>
         <button class="secondary-action" type="button" data-add-framing>Add coordinate framing</button>
-        <details class="optional-support conjecture-relations">
+        <details class="optional-support conjecture-relations" data-conjecture-relations>
           <summary>Optional exact-version conjecture relations</summary>
           <p class="form-section-help">
             A relation is itself a criticizable claim. It links exact public revisions and never merges,
@@ -179,6 +179,34 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
           <div data-relation-list></div>
           <button class="secondary-action" type="button" data-add-relation>Add conjecture relation</button>
         </details>
+        <div class="topic-proposal-fields" data-topic-fields hidden>
+          <fieldset>
+            <legend>Research loci <span class="required-marker">Required</span></legend>
+            <p class="form-section-help">Choose every applicable locus; this is multi-classification, not a physical/theoretical binary.</p>
+            <div class="topic-locus-options">
+              <label><input type="checkbox" name="topic_locus" value="theoretical" /> Theoretical</label>
+              <label><input type="checkbox" name="topic_locus" value="simulation" /> Simulation</label>
+              <label><input type="checkbox" name="topic_locus" value="physical-material" /> Physical material</label>
+              <label><input type="checkbox" name="topic_locus" value="mechanism" /> Mechanism</label>
+              <label><input type="checkbox" name="topic_locus" value="observation" /> Observation</label>
+              <label><input type="checkbox" name="topic_locus" value="control-resource" /> Control resource</label>
+              <label><input type="checkbox" name="topic_locus" value="experimental" /> Experimental</label>
+              <label><input type="checkbox" name="topic_locus" value="ontology" /> Ontology</label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Exact problem or conjecture origins <span class="required-marker">Required</span></legend>
+            <p class="form-section-help">Every topic needs at least one exact origin. A public conjecture remains public-only until governed admission.</p>
+            <div data-topic-origin-list></div>
+            <button class="secondary-action" type="button" data-add-topic-origin>Add exact origin</button>
+          </fieldset>
+          <details class="optional-support">
+            <summary>Optional exact-version topic relations</summary>
+            <p class="form-section-help">Relations are criticizable claims; they never merge, rank, replace, or change either topic automatically.</p>
+            <div data-topic-relation-list></div>
+            <button class="secondary-action" type="button" data-add-topic-relation>Add topic relation</button>
+          </details>
+        </div>
       </fieldset>
 
       <details class="optional-support" data-optional-support>

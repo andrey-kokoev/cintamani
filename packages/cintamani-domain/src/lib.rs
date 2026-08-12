@@ -22,7 +22,7 @@ pub use projection::{
 };
 pub use query::{
     COORDINATE_KEY_VERSION, Collection, CoordinateMetadata, FrontierFilters, Page, QueryFilters,
-    SiegeSpaceDimension, SiegeSpaceDimensionMember, SiegeSpaceDimensions, coordinate_key,
+    SearchSpaceDimension, SearchSpaceDimensionMember, SearchSpaceDimensions, coordinate_key,
     dimensions, entity_history, entity_show, frontier, list_page, why,
 };
 pub use v2_records::{AdmissionV2, Change, ProvenanceTarget};

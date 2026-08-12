@@ -21,10 +21,11 @@ use std::os::windows::ffi::OsStrExt;
 #[cfg(windows)]
 use windows_sys::Win32::Storage::FileSystem::ReplaceFileW;
 
-pub const SCHEMA_VERSION: &str = "3";
+pub const SCHEMA_VERSION: &str = "4";
 pub const PROJECTION_KIND: &str = "rebuildable-site-domain-registry";
 const MIGRATION_V2: &str = include_str!("../migrations/002_v2.sql");
 const MIGRATION_V3: &str = include_str!("../migrations/003_v3.sql");
+const MIGRATION_V4: &str = include_str!("../migrations/004_v4.sql");
 const DEFAULT_DATABASE: &str = ".narada/db/cintamani-domain.sqlite";
 
 const DOMAIN_TABLES: &[&str] = &[
@@ -57,6 +58,16 @@ const DOMAIN_TABLES: &[&str] = &[
     "conjecture_versions",
     "conjecture_framings",
     "conjecture_dispositions",
+    "research_topics",
+    "research_topic_versions",
+    "research_topic_loci",
+    "research_topic_origins",
+    "research_topic_framing_links",
+    "research_topic_evidence_links",
+    "research_topic_test_links",
+    "research_topic_public_links",
+    "research_topic_relations",
+    "research_topic_workflow_events",
     "falsification_criteria",
     "protocols",
     "protocol_versions",
@@ -203,7 +214,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         transaction.execute(
             "INSERT INTO migration_lineage VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             params![
-                format!("migration-{}-to-v3", chain.generation),
+                format!("migration-{}-to-v4", chain.generation),
                 source_schema,
                 SCHEMA_VERSION,
                 migration_kind,
@@ -245,6 +256,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         }
         transaction.commit()?;
         connection.execute_batch(MIGRATION_V3)?;
+        connection.execute_batch(MIGRATION_V4)?;
         let transaction = connection.transaction()?;
         for record in &v2 {
             insert_v2_record(&transaction, record)?;
@@ -256,7 +268,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
     if let Err(error) = build_result {
         let _ = fs::remove_file(&stage);
         return Err(error)
-            .context("failed to build sibling v3 projection; live database preserved");
+            .context("failed to build sibling v4 projection; live database preserved");
     }
 
     let stage_paths = paths.clone().with_database(&stage);
@@ -265,7 +277,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         Ok(report) => {
             let _ = fs::remove_file(&stage);
             bail!(
-                "sibling v3 projection failed validation (history={}, paths={}, provenance={}, ledger={}, config={}, artifacts={}); live database preserved",
+                "sibling v4 projection failed validation (history={}, paths={}, provenance={}, ledger={}, config={}, artifacts={}); live database preserved",
                 report.history_violations,
                 report.path_violations,
                 report.provenance_violations,
@@ -277,7 +289,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         Err(error) => {
             let _ = fs::remove_file(&stage);
             return Err(error)
-                .context("failed to inspect sibling v3 projection; live database preserved");
+                .context("failed to inspect sibling v4 projection; live database preserved");
         }
     };
     atomic_replace(&stage, &paths.database_path)?;
@@ -406,7 +418,7 @@ fn existing_projection_posture(path: &Path) -> Result<(&'static str, &'static st
         .map(|metadata| metadata.len() > 0)
         .unwrap_or(false);
     if !nonempty {
-        return Ok(("none", "clean-v3"));
+        return Ok(("none", "clean-v4"));
     }
     let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)
         .with_context(|| format!("refusing non-SQLite live projection {}", path.display()))?;
@@ -433,7 +445,7 @@ fn existing_projection_posture(path: &Path) -> Result<(&'static str, &'static st
         )
         .optional()?;
     if kind.as_deref() != Some(PROJECTION_KIND)
-        || !matches!(schema.as_deref(), Some("1" | "2" | "3"))
+        || !matches!(schema.as_deref(), Some("1" | "2" | "3" | "4"))
     {
         bail!(
             "refusing incompatible database ownership metadata (schema={schema:?}, projection={kind:?})"
@@ -443,6 +455,7 @@ fn existing_projection_posture(path: &Path) -> Result<(&'static str, &'static st
         Some("1") => ("1", "owned-v1-upgrade"),
         Some("2") => ("2", "owned-v2-upgrade"),
         Some("3") => ("3", "owned-v3-rebuild"),
+        Some("4") => ("4", "owned-v4-rebuild"),
         _ => unreachable!(),
     })
 }
@@ -1169,6 +1182,28 @@ fn insert_v2_record(transaction: &Transaction<'_>, record: &AdmissionV2) -> Resu
         }
     }
     for change in &record.changes {
+        if let Change::ResearchTopicVersion {
+            topic_version_id, ..
+        } = change
+        {
+            let locus_count: i64 = transaction.query_row(
+                "SELECT COUNT(*) FROM research_topic_loci WHERE topic_version_id=?1 AND source_admission_id=?2",
+                params![topic_version_id, record.record_id],
+                |row| row.get(0),
+            )?;
+            let origin_count: i64 = transaction.query_row(
+                "SELECT COUNT(*) FROM research_topic_origins WHERE topic_version_id=?1 AND source_admission_id=?2",
+                params![topic_version_id, record.record_id],
+                |row| row.get(0),
+            )?;
+            if locus_count == 0 || origin_count == 0 {
+                bail!(
+                    "research topic version {topic_version_id} requires at least one same-admission locus and exact origin"
+                );
+            }
+        }
+    }
+    for change in &record.changes {
         if let Change::ProvenanceClaim {
             provenance_id,
             provenance_kind,
@@ -1309,10 +1344,11 @@ fn migration_violations(
         }
         let valid = matches!(
             (source.as_str(), kind.as_str()),
-            ("none", "clean-v3")
+            ("none", "clean-v4")
                 | ("1", "owned-v1-upgrade")
                 | ("2", "owned-v2-upgrade")
                 | ("3", "owned-v3-rebuild")
+                | ("4", "owned-v4-rebuild")
         );
         if !valid {
             errors.push(format!(
@@ -1328,8 +1364,18 @@ fn migration_violations(
     )?;
     if dimension_view_present != 1 {
         errors.push(
-            "schema-3 projection is missing siege_space_dimensions; rebuild required".to_owned(),
+            "schema-4 projection is missing legacy compatibility view siege_space_dimensions; rebuild required".to_owned(),
         );
+    }
+    let topic_invariant_violations: i64 = connection.query_row(
+        "SELECT COUNT(*) FROM research_topic_invariant_violations",
+        [],
+        |row| row.get(0),
+    )?;
+    if topic_invariant_violations != 0 {
+        errors.push(format!(
+            "research topic projection has {topic_invariant_violations} origin/locus invariant violation(s)"
+        ));
     }
     Ok(errors)
 }
@@ -1415,6 +1461,7 @@ fn history_violations(connection: &Connection) -> Result<Vec<String>> {
                     "parameter_region_versions"
                         | "problem_versions"
                         | "conjecture_versions"
+                        | "research_topic_versions"
                         | "protocol_versions"
                 )
                 && event_kind == "definition"
@@ -1528,6 +1575,20 @@ fn history_families() -> Vec<HistoryFamily> {
             status_column: "status",
             identity_table: Some("conjectures"),
             identity_column: "conjecture_id",
+        },
+        HistoryFamily {
+            table: "research_topic_versions",
+            parent_column: "topic_id",
+            status_column: "event_kind",
+            identity_table: Some("research_topics"),
+            identity_column: "topic_id",
+        },
+        HistoryFamily {
+            table: "research_topic_workflow_events",
+            parent_column: "topic_id",
+            status_column: "status",
+            identity_table: Some("research_topics"),
+            identity_column: "topic_id",
         },
         HistoryFamily {
             table: "protocol_versions",
@@ -1646,9 +1707,16 @@ fn legal_transition(table: &str, from: &str, to: &str) -> bool {
                 | ("recorded-unverified", "recorded-verified")
         ),
         "run_assessments" => matches!((from, to), ("partial", "completed" | "failed")),
-        "problem_versions" | "conjecture_versions" | "protocol_versions" => matches!(
+        "problem_versions"
+        | "conjecture_versions"
+        | "research_topic_versions"
+        | "protocol_versions" => matches!(
             (from, to),
             ("definition", "correction" | "supersession") | ("correction", "supersession")
+        ),
+        "research_topic_workflow_events" => matches!(
+            (from, to),
+            ("active", "paused" | "retired") | ("paused", "active" | "retired")
         ),
         _ => false,
     }
@@ -1852,6 +1920,25 @@ fn provenance_violations(connection: &Connection) -> Result<Vec<String>> {
             "disposition_id",
             "conjecture_disposition_id",
             "t.status!='open'",
+        ),
+        ("research_topics", "topic_id", "research_topic_id", "0"),
+        (
+            "research_topic_versions",
+            "topic_version_id",
+            "research_topic_version_id",
+            "0",
+        ),
+        (
+            "research_topic_workflow_events",
+            "workflow_event_id",
+            "research_topic_workflow_event_id",
+            "0",
+        ),
+        (
+            "research_topic_relations",
+            "relation_id",
+            "research_topic_relation_id",
+            "0",
         ),
         (
             "falsification_criteria",
@@ -2189,6 +2276,12 @@ fn provenance_target(target: &ProvenanceTarget) -> (&'static str, &str) {
         ProvenanceTarget::ConjectureVersion(id) => ("conjecture_version_id", id),
         ProvenanceTarget::ConjectureFraming(id) => ("conjecture_framing_id", id),
         ProvenanceTarget::ConjectureDisposition(id) => ("conjecture_disposition_id", id),
+        ProvenanceTarget::ResearchTopic(id) => ("research_topic_id", id),
+        ProvenanceTarget::ResearchTopicVersion(id) => ("research_topic_version_id", id),
+        ProvenanceTarget::ResearchTopicWorkflowEvent(id) => {
+            ("research_topic_workflow_event_id", id)
+        }
+        ProvenanceTarget::ResearchTopicRelation(id) => ("research_topic_relation_id", id),
         ProvenanceTarget::Criterion(id) => ("criterion_id", id),
         ProvenanceTarget::Protocol(id) => ("protocol_id", id),
         ProvenanceTarget::ProtocolVersion(id) => ("protocol_version_id", id),
@@ -2229,6 +2322,10 @@ fn provenance_target_columns() -> Vec<&'static str> {
         "conjecture_version_id",
         "conjecture_framing_id",
         "conjecture_disposition_id",
+        "research_topic_id",
+        "research_topic_version_id",
+        "research_topic_workflow_event_id",
+        "research_topic_relation_id",
         "criterion_id",
         "protocol_id",
         "protocol_version_id",

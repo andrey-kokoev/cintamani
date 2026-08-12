@@ -1174,7 +1174,7 @@ button.primary-action,
   font-size: 0.88rem;
 }
 
-.siege-overlay {
+.search-overlay {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
@@ -1735,7 +1735,7 @@ button.primary-action,
     width: 13.5rem;
   }
 
-  .siege-overlay {
+  .search-overlay {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1821,7 +1821,7 @@ button.primary-action,
     justify-self: start;
   }
 
-  .siege-overlay,
+  .search-overlay,
   .proposal-filters,
   .typed-detail-list,
   .contribution-form-grid,

@@ -10,6 +10,7 @@ export const proposalKinds = Object.freeze([
   'existing-member-correction',
   'ontology-change',
   'explanatory-conjecture',
+  'research-topic',
 ])
 
 export const criticismFocusKinds = Object.freeze([
@@ -22,6 +23,15 @@ export const criticismFocusKinds = Object.freeze([
   'assumption',
   'coordinate-framing',
   'conjecture-relation',
+  'topic-open-problem',
+  'topic-why-open',
+  'topic-scope',
+  'topic-next-test',
+  'topic-non-claims',
+  'topic-locus',
+  'topic-origin',
+  'topic-coordinate-framing',
+  'topic-relation',
   'other-explicit',
 ])
 
@@ -31,6 +41,32 @@ export const conjectureRelationKinds = Object.freeze([
   'equivalent-to',
   'incompatible-with',
   'supersedes',
+  'addresses-same-problem',
+])
+
+export const researchTopicLoci = Object.freeze([
+  'theoretical',
+  'simulation',
+  'physical-material',
+  'mechanism',
+  'observation',
+  'control-resource',
+  'experimental',
+  'ontology',
+])
+
+export const researchTopicOriginKinds = Object.freeze([
+  'canonical-problem-version',
+  'canonical-conjecture-version',
+  'public-explanatory-conjecture-revision',
+])
+
+export const researchTopicRelationKinds = Object.freeze([
+  'depends-on',
+  'rival-to',
+  'complements',
+  'refines',
+  'reclassifies',
   'addresses-same-problem',
 ])
 
@@ -290,6 +326,18 @@ function validateDetail(kind, raw) {
         explanation_scope: text(detail.explanation_scope, 'detail.explanation_scope', { max: 8000 }),
         failure_condition: text(detail.failure_condition, 'detail.failure_condition', { max: 12000 }),
       }
+    case 'research-topic':
+      return {
+        open_problem: text(detail.open_problem, 'detail.open_problem', { max: 12000 }),
+        why_open: text(detail.why_open, 'detail.why_open', { max: 12000 }),
+        topic_scope: text(detail.topic_scope, 'detail.topic_scope', { max: 4000 }),
+        next_discriminating_criticism_or_test: text(
+          detail.next_discriminating_criticism_or_test,
+          'detail.next_discriminating_criticism_or_test',
+          { max: 12000 },
+        ),
+        non_claims: text(detail.non_claims, 'detail.non_claims', { max: 12000 }),
+      }
     default:
       throw new InputError('proposal kind is not supported', 'kind')
   }
@@ -307,8 +355,8 @@ function validateAssumptions(kind, values) {
 }
 
 function validateFramings(kind, values) {
-  if (kind !== 'explanatory-conjecture') {
-    if (values !== undefined) throw new InputError('coordinate framings belong only to explanatory conjectures', 'framings')
+  if (!['explanatory-conjecture', 'research-topic'].includes(kind)) {
+    if (values !== undefined) throw new InputError('coordinate framings belong only to conjectures or research topics', 'framings')
     return []
   }
   if (values === undefined) return []
@@ -343,6 +391,83 @@ function validateFramings(kind, values) {
       coordinate_classification: coordinate.classification,
       cell_id: coordinate.cell_id,
       framing_rationale: text(framing.framing_rationale, `framings[${index}].framing_rationale`, { max: 4000 }),
+    }
+  })
+}
+
+function validateTopicLoci(kind, values) {
+  if (kind !== 'research-topic') {
+    if (values !== undefined) throw new InputError('topic loci belong only to research topics', 'loci')
+    return []
+  }
+  if (!Array.isArray(values) || values.length < 1 || values.length > researchTopicLoci.length) {
+    throw new InputError('loci must contain 1-8 research loci', 'loci')
+  }
+  const parsed = values.map((value, index) => oneOf(value, `loci[${index}]`, researchTopicLoci))
+  if (new Set(parsed).size !== parsed.length) throw new InputError('topic loci must be distinct', 'loci')
+  return parsed
+}
+
+function validateTopicOrigins(kind, values) {
+  if (kind !== 'research-topic') {
+    if (values !== undefined) throw new InputError('topic origins belong only to research topics', 'origins')
+    return []
+  }
+  if (!Array.isArray(values) || values.length < 1 || values.length > 32) {
+    throw new InputError('origins must contain 1-32 exact origins', 'origins')
+  }
+  return values.map((raw, index) => {
+    const origin = object(raw, `origins[${index}]`)
+    const originKind = oneOf(origin.origin_kind, `origins[${index}].origin_kind`, researchTopicOriginKinds)
+    const parsed = {
+      origin_kind: originKind,
+      canonical_problem_version_id: null,
+      canonical_conjecture_version_id: null,
+      target_proposal_id: null,
+      target_revision: null,
+      relationship: oneOf(origin.relationship, `origins[${index}].relationship`, [
+        'derived-from',
+        'motivated-by',
+        'criticizes',
+        'tests',
+      ]),
+      origin_rationale: text(origin.origin_rationale, `origins[${index}].origin_rationale`, { max: 4000 }),
+    }
+    if (originKind === 'canonical-problem-version') {
+      parsed.canonical_problem_version_id = text(origin.canonical_problem_version_id, `origins[${index}].canonical_problem_version_id`, { max: 160 })
+    } else if (originKind === 'canonical-conjecture-version') {
+      parsed.canonical_conjecture_version_id = text(origin.canonical_conjecture_version_id, `origins[${index}].canonical_conjecture_version_id`, { max: 160 })
+    } else {
+      parsed.target_proposal_id = text(origin.target_proposal_id, `origins[${index}].target_proposal_id`, { max: 100 })
+      if (!Number.isInteger(origin.target_revision) || origin.target_revision < 1) {
+        throw new InputError('target_revision must be a positive integer', `origins[${index}].target_revision`)
+      }
+      parsed.target_revision = origin.target_revision
+    }
+    return parsed
+  })
+}
+
+function validateTopicRelations(kind, values) {
+  if (kind !== 'research-topic') {
+    if (values !== undefined) throw new InputError('topic relations belong only to research topics', 'topic_relations')
+    return []
+  }
+  if (values === undefined) return []
+  if (!Array.isArray(values) || values.length > 16) {
+    throw new InputError('topic_relations must contain at most 16 exact-version links', 'topic_relations')
+  }
+  return values.map((raw, index) => {
+    const relation = object(raw, `topic_relations[${index}]`)
+    if (!Number.isInteger(relation.target_revision) || relation.target_revision < 1) {
+      throw new InputError('target_revision must be a positive integer', `topic_relations[${index}].target_revision`)
+    }
+    return {
+      relation_kind: oneOf(relation.relation_kind, `topic_relations[${index}].relation_kind`, researchTopicRelationKinds),
+      target_proposal_id: text(relation.target_proposal_id, `topic_relations[${index}].target_proposal_id`, { max: 100 }),
+      target_revision: relation.target_revision,
+      relation_claim: text(relation.relation_claim, `topic_relations[${index}].relation_claim`, { max: 12000 }),
+      relation_scope: text(relation.relation_scope, `topic_relations[${index}].relation_scope`, { max: 4000 }),
     }
   })
 }
@@ -427,6 +552,9 @@ export function validateProposalRevision(kind, raw) {
     assumptions: validateAssumptions(kind, input.assumptions),
     framings: validateFramings(kind, input.framings),
     relations: validateConjectureRelations(kind, input.relations),
+    loci: validateTopicLoci(kind, input.loci),
+    origins: validateTopicOrigins(kind, input.origins),
+    topic_relations: validateTopicRelations(kind, input.topic_relations),
     evidence: validateEvidence(input.evidence),
     references: validateReferences(input.references),
   }
@@ -457,9 +585,17 @@ export function validateProposal(raw) {
 export function validateCriticism(raw) {
   const input = object(raw, 'criticism')
   const focusKind = oneOf(input.focus_kind ?? 'whole-proposal', 'focus_kind', criticismFocusKinds)
-  const requiresRef = ['assumption', 'coordinate-framing', 'conjecture-relation'].includes(focusKind)
+  const requiresRef = [
+    'assumption',
+    'coordinate-framing',
+    'conjecture-relation',
+    'topic-locus',
+    'topic-origin',
+    'topic-coordinate-framing',
+    'topic-relation',
+  ].includes(focusKind)
   if (!requiresRef && input.focus_ref !== undefined && input.focus_ref !== null && input.focus_ref !== '') {
-    throw new InputError('focus_ref is allowed only for an exact assumption, framing, or relation', 'focus_ref')
+    throw new InputError('focus_ref is allowed only for an exact nested revision item', 'focus_ref')
   }
   return {
     title: text(input.title, 'title', { max: 160 }),

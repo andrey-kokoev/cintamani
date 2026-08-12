@@ -1,5 +1,7 @@
 import frontier from '../src/data/frontier.json' with { type: 'json' }
-import { axisMetadata, proposalKinds, text, validateProposal } from '../src/lib/proposals.mjs'
+import admittedTopics from '../src/data/research-topics.json' with { type: 'json' }
+import illustrativeTopics from '../src/data/research-topic-fixture.json' with { type: 'json' }
+import { axisMetadata, proposalKinds, researchTopicLoci, text, validateProposal } from '../src/lib/proposals.mjs'
 import {
   changeOperatorRole,
   createAppeal,
@@ -374,6 +376,144 @@ function captures(pathname, pattern) {
   return match ? match.slice(1).map((value) => decodeURIComponent(value)) : null
 }
 
+function topicCursorState(url) {
+  return Object.fromEntries(['locus', 'status', 'origin', 'coordinate', 'q'].map((key) => [key, url.searchParams.get(key) ?? '']))
+}
+
+function topicCursorEncode(after, filters) {
+  return [...new TextEncoder().encode(JSON.stringify({ version: 1, filters, after }))]
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+function topicCursorDecode(raw, filters) {
+  if (!raw) return ''
+  if (raw.length > 4_000 || raw.length % 2 !== 0 || !/^[0-9a-f]+$/u.test(raw)) {
+    throw new ResponseError(400, 'invalid_topic_cursor', 'The research-topic cursor is malformed')
+  }
+  try {
+    const bytes = Uint8Array.from(raw.match(/../gu).map((pair) => Number.parseInt(pair, 16)))
+    const parsed = JSON.parse(new TextDecoder().decode(bytes))
+    if (parsed.version !== 1 || typeof parsed.after !== 'string' || JSON.stringify(parsed.filters) !== JSON.stringify(filters)) {
+      throw new Error('cursor contract mismatch')
+    }
+    return parsed.after
+  } catch {
+    throw new ResponseError(400, 'invalid_topic_cursor', 'The research-topic cursor does not match this filter set')
+  }
+}
+
+function boundedTopicCollection(url) {
+  const limit = Math.min(Math.max(Number.parseInt(url.searchParams.get('limit') ?? '20', 10) || 20, 1), 50)
+  const filterState = topicCursorState(url)
+  const cursor = topicCursorDecode(url.searchParams.get('cursor') ?? '', filterState)
+  const locus = url.searchParams.get('locus')
+  const status = url.searchParams.get('status')
+  const origin = url.searchParams.get('origin')
+  const coordinate = url.searchParams.get('coordinate')
+  const query = (url.searchParams.get('q') ?? '').trim().toLowerCase()
+  if (status && !['active', 'paused', 'retired'].includes(status)) {
+    throw new ResponseError(400, 'invalid_topic_status', 'Topic status must be active, paused, or retired')
+  }
+  if (locus && !researchTopicLoci.includes(locus)) {
+    throw new ResponseError(400, 'invalid_topic_locus', 'The research locus is not supported')
+  }
+  const canonical = admittedTopics.items.map((item) => ({
+    ...item,
+    authority: 'governed-domain-registry',
+    canonical_admission: true,
+  }))
+  const fixture = illustrativeTopics.items.map((item) => ({
+    ...item,
+    status: illustrativeTopics.workflow_status,
+    authority: illustrativeTopics.authority,
+    canonical_admission: false,
+    source_fixture: illustrativeTopics.fixture_schema,
+  }))
+  const items = [...canonical, ...fixture]
+    .filter((item) => item.topic_id > cursor)
+    .filter((item) => !locus || item.loci?.includes(locus))
+    .filter((item) => !status || item.status === status)
+    .filter((item) => !origin || item.origins?.some((candidate) =>
+      candidate.id === origin || candidate.kind === origin || candidate.relationship === origin))
+    .filter((item) => !coordinate || item.coordinate?.coordinate_key === coordinate ||
+      item.coordinate_framings?.some((candidate) => candidate.coordinate_key === coordinate))
+    .filter((item) => !query || [
+      item.title,
+      item.open_problem,
+      item.why_open,
+      item.scope,
+      item.next_discriminating_criticism_or_test,
+      item.non_claims,
+    ].some((value) => value?.toLowerCase().includes(query)))
+    .sort((left, right) => left.topic_id.localeCompare(right.topic_id))
+  const page = items.slice(0, limit + 1)
+  const hasMore = page.length > limit
+  const selected = hasMore ? page.slice(0, limit) : page
+  return {
+    collection: 'research-topics',
+    items: selected,
+    next_cursor: hasMore ? topicCursorEncode(selected.at(-1).topic_id, filterState) : null,
+    bounded: true,
+    workflow_states_only: true,
+    epistemic_ranking: false,
+    fixture_authority: illustrativeTopics.authority,
+  }
+}
+
+function exactTopic(topicId) {
+  const canonical = admittedTopics.items.find((item) => item.topic_id === topicId)
+  if (canonical) return { ...canonical, authority: 'governed-domain-registry', canonical_admission: true }
+  const fixture = illustrativeTopics.items.find((item) => item.topic_id === topicId)
+  if (!fixture) throw new ResponseError(404, 'research_topic_not_found', 'The research topic does not exist')
+  return {
+    ...fixture,
+    status: illustrativeTopics.workflow_status,
+    authority: illustrativeTopics.authority,
+    canonical_admission: false,
+    source_fixture: illustrativeTopics.fixture_schema,
+    bounded_conjecture: illustrativeTopics.bounded_conjecture,
+    sources: illustrativeTopics.sources,
+    relations: illustrativeTopics.relations.filter((relation) =>
+      relation.source.startsWith(`${topicId}@`) || relation.target.startsWith(`${topicId}@`)),
+  }
+}
+
+function topicHistory(topicId) {
+  const topic = exactTopic(topicId)
+  if (topic.authority === 'governed-domain-registry') {
+    return {
+      collection: `research-topic-history:${topicId}`,
+      items: topic.history ?? [],
+      next_cursor: topic.history_next_cursor ?? null,
+      bounded: true,
+    }
+  }
+  return {
+    collection: `research-topic-history:${topicId}`,
+    items: [
+      { history_family: 'version', revision: topic.revision, status: 'illustrative-unadmitted' },
+      { history_family: 'administrative-workflow', revision: 1, status: topic.status },
+    ],
+    next_cursor: null,
+    bounded: true,
+    authority: topic.authority,
+  }
+}
+
+function topicProvenance(topicId) {
+  const topic = exactTopic(topicId)
+  return {
+    collection: `research-topic-provenance:${topicId}`,
+    authority: topic.authority,
+    canonical_admission: topic.canonical_admission,
+    exact_origins: topic.origins ?? [],
+    provenance: topic.provenance ?? [],
+    sources: topic.sources ?? [],
+    bounded: true,
+  }
+}
+
 async function publicMutation(request, env, mutationKind, handler) {
   const body = await readBoundedJson(request)
   const authorization = await authorizeMutation(request, env, body, mutationKind)
@@ -637,6 +777,15 @@ async function routeApi(request, env) {
       epistemic_ranking: false,
     })
   }
+  if (request.method === 'GET' && pathname === '/api/research-topics') {
+    return json(boundedTopicCollection(url))
+  }
+  let topicValues = captures(pathname, /^\/api\/research-topics\/([^/]+)$/u)
+  if (request.method === 'GET' && topicValues) return json(exactTopic(topicValues[0]))
+  topicValues = captures(pathname, /^\/api\/research-topics\/([^/]+)\/history$/u)
+  if (request.method === 'GET' && topicValues) return json(topicHistory(topicValues[0]))
+  topicValues = captures(pathname, /^\/api\/research-topics\/([^/]+)\/provenance$/u)
+  if (request.method === 'GET' && topicValues) return json(topicProvenance(topicValues[0]))
   if (request.method === 'GET' && pathname === '/api/auth/github/start') return beginGithubOAuth(request, env)
   if (request.method === 'GET' && pathname === '/api/auth/github/callback') return completeGithubOAuth(request, env)
   if (request.method === 'GET' && pathname === '/api/session') return sessionResponse(request, env)

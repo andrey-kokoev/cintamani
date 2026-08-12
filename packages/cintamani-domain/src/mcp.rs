@@ -98,7 +98,7 @@ pub fn tool_descriptors() -> Vec<Value> {
         ),
         tool(
             "cintamani_domain_dimensions",
-            "Show the ordered siege-space axes and their currently assessed members.",
+            "Show the ordered search-space axes and their currently assessed members.",
             json!({"type":"object","additionalProperties":false}),
             true,
         ),
@@ -337,7 +337,9 @@ fn filter_schema() -> Value {
     "model_id":{"type":["string","null"]},"material_id":{"type":["string","null"]},
     "mechanism_id":{"type":["string","null"]},"interface_id":{"type":["string","null"]},
     "status":{"type":["string","null"]},"source_admission_id":{"type":["string","null"]},
-    "ledger_number":{"type":["integer","null"]},"text":{"type":["string","null"]}}})
+    "ledger_number":{"type":["integer","null"]},"text":{"type":["string","null"]},
+    "locus":{"type":["string","null"]},"origin":{"type":["string","null"]},
+    "coordinate":{"type":["string","null"]}}})
 }
 fn string_array() -> Value {
     json!({"type":"array","maxItems":100,"items":{"type":"string"}})

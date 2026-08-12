@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import test from 'node:test'
-import { readFrontier } from '../scripts/generate-domain-snapshots.mjs'
+import { readFrontier, readResearchTopics } from '../scripts/generate-domain-snapshots.mjs'
 import {
   buildRevisionPayload,
   criticismFocusOptions,
@@ -12,13 +12,13 @@ import {
 } from '../src/scripts/proposal-detail.mjs'
 import { detailFieldPlaceholders, focusFirstInvalid } from '../src/scripts/proposal-new.mjs'
 import { contributorLabel, samePublicContributor } from '../src/scripts/public-api.mjs'
-import { conjectureRelationKinds } from '../src/lib/proposals.mjs'
+import { conjectureRelationKinds, researchTopicLoci, researchTopicRelationKinds } from '../src/lib/proposals.mjs'
 
 const testRoot = dirname(fileURLToPath(import.meta.url))
 const siteRoot = resolve(testRoot, '..')
 const readJson = (relative) => JSON.parse(readFileSync(resolve(siteRoot, relative), 'utf8'))
 
-test('tracked snapshots preserve the ordered siege and scientific boundary', () => {
+test('tracked snapshots preserve the ordered search space and scientific boundary', () => {
   const dimensions = readJson('src/data/dimensions.json')
   assert.deepEqual(
     dimensions.items.map((axis) => [axis.dimension_order, axis.dimension_key, axis.dimension_role]),
@@ -58,6 +58,28 @@ test('tracked snapshots preserve the ordered siege and scientific boundary', () 
   assert.equal(summary.check_status, 'passed')
   assert.equal(summary.integrity, 'ok')
   assert.ok(Object.values(summary.invariant_counts).every((count) => count === 0))
+})
+
+test('research-topic snapshot pagination rejects repeated identities and cursors', () => {
+  const pages = [
+    { collection: 'research-topics', items: [{ topic_id: 'topic-a' }], next_cursor: 'cursor-a' },
+    { collection: 'research-topics', items: [{ topic_id: 'topic-b' }], next_cursor: null },
+  ]
+  const history = { items: [], next_cursor: null }
+  const why = { collection: 'research-topics', provenance: [], bounded_limit: 100 }
+  let index = 0
+  const items = readResearchTopics((command) => command === 'list' ? pages[index++] : (command === 'history' ? history : why))
+  assert.deepEqual(items.map((item) => item.topic_id), ['topic-a', 'topic-b'])
+
+  assert.throws(
+    () => {
+      let page = 0
+      return readResearchTopics((command) => command === 'list'
+        ? { collection: 'research-topics', items: [{ topic_id: `topic-${page += 1}` }], next_cursor: 'same' }
+        : (command === 'history' ? history : why), { maxPages: 3 })
+    },
+    /repeated a cursor/u,
+  )
 })
 
 test('snapshot generator check mode is byte-deterministic and fail-closed', () => {
@@ -156,6 +178,19 @@ test('Astro page and Worker config state the canonical/public authority boundary
   assert.match(astro, /PUBLIC_SITE_URL/)
 })
 
+test('the public site presents VRC prominently as the originating open conjecture', () => {
+  const home = readFileSync(resolve(siteRoot, 'src/pages/index.astro'), 'utf8')
+  const vrc = readFileSync(resolve(siteRoot, 'src/pages/volumetric-recurrent-computing.astro'), 'utf8')
+  assert.match(home, /The originating conjecture/u)
+  assert.match(home, /Volumetric Recurrent Computing started this search/u)
+  assert.match(home, /\/volumetric-recurrent-computing\//u)
+  assert.match(vrc, /The conjecture that started this effort/u)
+  assert.match(vrc, /fixed configurable nonlinear 3D physical operator/u)
+  assert.match(vrc, /first selected simulated regime failed/u)
+  assert.match(vrc, /falsified the\s+selected substrate-and-training regime/u)
+  assert.doesNotMatch(vrc, /proved|validated architecture|established that VRC works/iu)
+})
+
 test('public proposal UI exposes accessible typed, history, criticism, test, and review surfaces without voting', () => {
   const hub = readFileSync(resolve(siteRoot, 'src/pages/proposals/index.astro'), 'utf8')
   const submission = readFileSync(resolve(siteRoot, 'src/pages/proposals/new.astro'), 'utf8')
@@ -169,7 +204,7 @@ test('public proposal UI exposes accessible typed, history, criticism, test, and
   for (const statement of [
     'submitted · unreviewed',
     'Submit proposal',
-    'Siege-space overlay',
+    'Search-space overlay',
     'no votes',
   ]) {
     assert.ok(hub.includes(statement), `missing proposal-hub boundary: ${statement}`)
@@ -387,6 +422,7 @@ test('public-write examples cover core, every typed family, and exact-revision c
     'existing-member-correction': ['target_dimension', 'target_member_id', 'corrected_name', 'corrected_definition', 'corrected_assessment_status', 'corrected_assessment_detail', 'correction_rationale'],
     'ontology-change': ['change_kind', 'target_key', 'proposed_definition', 'compatibility_effect', 'migration_requirements'],
     'explanatory-conjecture': ['problem_statement', 'explanatory_claim', 'essential_mechanism', 'explanation_scope', 'failure_condition', 'assumptions'],
+    'research-topic': ['open_problem', 'why_open', 'topic_scope', 'next_discriminating_criticism_or_test', 'non_claims'],
   }
   assert.deepEqual(Object.keys(detailFieldPlaceholders), Object.keys(expectedKinds))
   for (const [kind, fields] of Object.entries(expectedKinds)) {
@@ -429,6 +465,41 @@ test('public-write examples cover core, every typed family, and exact-revision c
   assert.match(newController, /attributes: \{ id, name, type: 'text', placeholder \}/u)
   assert.match(newController, /\.map\(\(control\) => \[control\.name, control\.value\]\)/u)
   assert.doesNotMatch(`${newController}\n${detailController}`, /\.value\s*=\s*[^\n]*placeholder/u)
+})
+
+test('research-topic UI contracts expose exact typed classification, focus, and non-epistemic publication boundaries', () => {
+  assert.deepEqual(researchTopicLoci, [
+    'theoretical', 'simulation', 'physical-material', 'mechanism',
+    'observation', 'control-resource', 'experimental', 'ontology',
+  ])
+  assert.deepEqual(researchTopicRelationKinds, [
+    'depends-on', 'rival-to', 'complements', 'refines', 'reclassifies', 'addresses-same-problem',
+  ])
+  const focus = criticismFocusOptions({
+    open_problem: 'A bounded open problem.',
+    loci: [{ topic_locus_id: 'locus-one', locus_kind: 'simulation' }],
+    origins: [{ topic_origin_id: 'origin-one', origin_order: 1 }],
+    framings: [{ framing_id: 'framing-one', framing_order: 1 }],
+    topic_relations: [{ topic_relation_id: 'relation-one', relation_kind: 'rival-to' }],
+  })
+  assert.ok(focus.some((item) => item.value === 'topic-open-problem|'))
+  assert.ok(focus.some((item) => item.value === 'topic-locus|locus-one'))
+  assert.ok(focus.some((item) => item.value === 'topic-origin|origin-one'))
+  assert.ok(focus.some((item) => item.value === 'topic-coordinate-framing|framing-one'))
+  assert.ok(focus.some((item) => item.value === 'topic-relation|relation-one'))
+
+  const collection = readFileSync(resolve(siteRoot, 'src/pages/research-topics/index.astro'), 'utf8')
+  const detail = readFileSync(resolve(siteRoot, 'src/pages/research-topics/[topic_id].astro'), 'utf8')
+  const fixture = readJson('src/data/research-topic-fixture.json')
+  assert.match(collection, /not evidence, confidence,[\s\S]*roadmap authority/u)
+  assert.match(collection, /data-topic-filters/u)
+  assert.match(detail, /History and provenance/u)
+  assert.equal(fixture.items.length, 6)
+  assert.equal(fixture.canonical_admission, false)
+  assert.equal(fixture.public_d1_seed, false)
+  assert.ok(fixture.items.every((topic) => topic.coordinate === null))
+  assert.match(fixture.sources[0].url, /arxiv\.org\/abs\/2410\.19293/u)
+  assert.match(fixture.sources[1].url, /s41567-025-03107-0/u)
 })
 
 test('explanatory revision and criticism helpers preserve typed exact-version structure', () => {

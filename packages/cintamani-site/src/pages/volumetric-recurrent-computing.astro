@@ -1,0 +1,89 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro'
+---
+<SiteLayout
+  title="Volumetric Recurrent Computing · Cintamani's originating conjecture"
+  description="The conjecture that started Cintamani: recurrent evolution of persistent physical state through one configured nonlinear three-dimensional medium."
+>
+  <article class="vrc-origin-page">
+    <header class="vrc-origin-hero">
+      <p class="eyebrow">The conjecture that started this effort</p>
+      <h1>Volumetric Recurrent Computing</h1>
+      <p class="lede">
+        Can useful computational depth arise by repeatedly evolving a persistent physical field through
+        the <em>same</em> configured nonlinear three-dimensional medium?
+      </p>
+      <p class="origin-status"><strong>Status:</strong> open architectural conjecture; its first selected simulated regime failed its task-level test.</p>
+    </header>
+
+    <section aria-labelledby="core-conjecture">
+      <p class="eyebrow">Core conjecture</p>
+      <h2 id="core-conjecture">Reuse matter as an operator; preserve the field as state</h2>
+      <blockquote>
+        A fixed configurable nonlinear 3D physical operator can be reused recurrently on persistent
+        physical state, providing additional computational depth without recurrence-indexed parameters
+        or increasing state size.
+      </blockquote>
+      <p>
+        If the configured medium implements <code>Fθ</code> and the transient field is <code>xₜ</code>, the
+        proposed computation is <code>xₜ₊₁ = Fθ(xₜ, uₜ)</code>. Additional recurrence should produce
+        genuinely useful transformations—not merely repeated filtering, decay, or controller-side work.
+      </p>
+    </section>
+
+    <section aria-labelledby="distinction">
+      <p class="eyebrow">Decisive distinction</p>
+      <h2 id="distinction">What would make it more than an optical neural-network layer?</h2>
+      <ul>
+        <li>The same physical operator is reused at every recurrent step.</li>
+        <li>The evolving physical field carries computational state between steps.</li>
+        <li>Increasing recurrence adds effective computation at fixed operator and fixed state size.</li>
+        <li>Encoding, control, and readout costs are counted rather than hidden outside the substrate.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="results">
+      <p class="eyebrow">What has been learned</p>
+      <h2 id="results">A failed regime is criticism, not erasure</h2>
+      <p>
+        The first recursive-MNIST experiment reused one simulated local volumetric operator. Recurrence
+        changed state and confidence but did not reliably improve correctness. That result falsified the
+        selected substrate-and-training regime; it did not establish that every recurrent physical
+        substrate must fail.
+      </p>
+      <p>
+        The effort therefore shifted toward measuring effective controllable dimension, dynamical
+        capacity, observation boundaries, and explicit material–mechanism–interface combinations before
+        interpreting task performance.
+      </p>
+    </section>
+
+    <section aria-labelledby="falsification">
+      <p class="eyebrow">Falsification posture</p>
+      <h2 id="falsification">What evidence would weaken the architecture?</h2>
+      <p>
+        The central motivation is weakened if additional recurrence, under fixed operator and fixed state
+        size, repeatedly fails to increase effective computation on increasingly compositional tasks—or
+        if any apparent gain is explained by external control, extra parameters, readout, or encoding.
+      </p>
+    </section>
+
+    <nav class="vrc-origin-links" aria-label="VRC research paths">
+      <a class="primary-action" href="/research-topics/">Browse derived research topics</a>
+      <a class="primary-action primary-action--quiet" href="/proposals/">Criticize or propose</a>
+      <a class="text-action" href="/#frontier">Inspect the physical-computation search space</a>
+    </nav>
+  </article>
+</SiteLayout>
+
+<style>
+  .vrc-origin-page { width: min(54rem, calc(100% - 2rem)); margin: 0 auto; padding: clamp(3rem, 8vw, 7rem) 0; }
+  .vrc-origin-hero { padding-bottom: 2.5rem; border-bottom: 1px solid var(--line); }
+  .vrc-origin-page h1 { max-width: 13ch; margin: .55rem 0 1rem; font-size: clamp(3rem, 8vw, 6.5rem); line-height: .92; letter-spacing: -.055em; }
+  .vrc-origin-page h2 { max-width: 23ch; margin: .4rem 0 1rem; font-size: clamp(1.65rem, 4vw, 2.6rem); }
+  .vrc-origin-page section { padding: 2.7rem 0; border-bottom: 1px solid var(--line); }
+  .vrc-origin-page p, .vrc-origin-page li { max-width: 70ch; line-height: 1.72; }
+  .vrc-origin-page blockquote { margin: 1.4rem 0; padding: 1.4rem 1.6rem; border-left: .25rem solid var(--ochre); background: var(--panel); font-size: 1.2rem; line-height: 1.6; }
+  .origin-status { padding: .85rem 1rem; background: var(--ochre-soft); border-radius: .4rem; }
+  .vrc-origin-links { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; padding-top: 2.5rem; }
+</style>

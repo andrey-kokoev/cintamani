@@ -14,7 +14,7 @@ use std::{
 #[derive(Debug, Parser)]
 #[command(
     name = "cintamani-domain",
-    about = "Govern and query the Cintamani categorical siege registry"
+    about = "Govern and query the Cintamani categorical search registry"
 )]
 struct Cli {
     #[arg(long, global = true, value_name = "PATH")]
@@ -100,6 +100,12 @@ struct FilterArgs {
     ledger: Option<u32>,
     #[arg(long)]
     text: Option<String>,
+    #[arg(long)]
+    locus: Option<String>,
+    #[arg(long)]
+    origin: Option<String>,
+    #[arg(long)]
+    coordinate: Option<String>,
 }
 
 impl From<FilterArgs> for QueryFilters {
@@ -113,6 +119,9 @@ impl From<FilterArgs> for QueryFilters {
             source_admission_id: value.admission,
             ledger_number: value.ledger,
             text: value.text,
+            locus: value.locus,
+            origin: value.origin,
+            coordinate: value.coordinate,
         }
     }
 }

@@ -36,6 +36,7 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefin
       <nav aria-label="Primary navigation">
         <a href="/#dimensions">Dimensions</a>
         <a href="/#frontier">Frontier</a>
+        <a href="/research-topics/">Topics</a>
         <a href="/proposals/">Proposals</a>
         <a href="/proposals/new/" target="_blank" rel="noopener">Submit</a>
       </nav>
@@ -45,7 +46,7 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefin
       <slot />
     </main>
     <footer class="site-footer">
-      <p><strong>Cintamani</strong> maps conjectures into bounded, criticizable siege coordinates.</p>
+      <p><strong>Cintamani</strong> maps problems and conjectures into bounded, criticizable search coordinates.</p>
       <p>The checked Rust/SQLite registry remains canonical; public proposals live in a separate D1 plane.</p>
     </footer>
     <script>

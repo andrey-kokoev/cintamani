@@ -1,0 +1,122 @@
+{
+  "fixture_schema": "cintamani.illustrative-research-topics.v1",
+  "authority": "illustrative-unadmitted-fixture",
+  "canonical_admission": false,
+  "public_d1_seed": false,
+  "coordinate": null,
+  "workflow_status": "active",
+  "workflow_status_semantics": "Administrative discoverability only; not truth, confidence, consensus, importance, priority, or completion.",
+  "bounded_conjecture": {
+    "conjecture_id": "illustrative-chiral-nematic-interaction-net-conjecture",
+    "revision": 1,
+    "statement": "Two typed trivalent junctions joined through distinguished principal arms undergo, under non-pair-selective global drive, a deterministic local 2→2 four-boundary topological rewrite whose output depends only on junction states and boundary.",
+    "status": "entirely-unvalidated-as-interaction-net-mechanism",
+    "non_claims": [
+      "The cited work does not establish interaction-net rewriting.",
+      "The cited work does not establish a unique pair-indexed local rule or local rule selection.",
+      "No proposed public-only coordinate is canonical or admitted."
+    ]
+  },
+  "sources": [
+    {
+      "source_id": "wu-valenzuela-bowick-smalyukh-2024",
+      "citation": "Wu, Valenzuela, Bowick, and Smalyukh, Topological Rigidity and Non-Abelian defect junctions in chiral nematic systems with effective biaxial symmetry, arXiv:2410.19293.",
+      "url": "https://arxiv.org/abs/2410.19293",
+      "supported_claim": "The work reports Q8-classified non-Abelian defect algebra, topologically rigid bound pairs, and trivalent junctions as building blocks of multi-junction trivalent networks in laboratory chiral nematics, with analysis and modeling.",
+      "excluded_inference": "It does not establish interaction-net rewriting."
+    },
+    {
+      "source_id": "hall-tai-kauffman-smalyukh-2026",
+      "citation": "Hall, Tai, Kauffman, and Smalyukh, Fusion and fission of particle-like chiral nematic vortex knots, Nature Physics 22, 103–111 (2026), DOI 10.1038/s41567-025-03107-0.",
+      "url": "https://www.nature.com/articles/s41567-025-03107-0",
+      "supported_claim": "The work reports fusion, fission, and reconnection of chiral-nematic vortex knots under electric pulses, conservation of the reported topological invariant, graph-like intermediate structures, and laser-tweezer guidance of some reconnections.",
+      "excluded_inference": "It does not establish a unique pair-indexed interaction-net rule or local rule selection."
+    }
+  ],
+  "items": [
+    {
+      "topic_id": "illustrative-minimal-conservative-formal-fragment",
+      "revision": 1,
+      "title": "Define a minimal conservative formal fragment for the proposed junction rewrite",
+      "loci": ["theoretical"],
+      "open_problem": "Can the proposed two-junction 2→2 rewrite be stated as a finite typed local rule with an explicit conserved boundary and no hidden global selector?",
+      "why_open": "The cited defect algebra and observed reconnections do not supply an interaction-net signature, typing discipline, or reduction semantics.",
+      "scope": "A formal candidate language for typed trivalent junction states, distinguished arms, four-boundary interfaces, and one bounded rewrite family.",
+      "next_discriminating_criticism_or_test": "Attempt to construct two indistinguishable local inputs whose allowed outputs differ only because of global context; such a pair criticizes locality of the formal fragment.",
+      "non_claims": "This topic does not claim that the formal rule exists in chiral nematics, is universal, confluent, computationally complete, or physically implementable.",
+      "origins": [{ "kind": "illustrative-conjecture-revision", "id": "illustrative-chiral-nematic-interaction-net-conjecture@1", "relationship": "derived-from" }],
+      "coordinate": null
+    },
+    {
+      "topic_id": "illustrative-conditional-locality-diamond-tests",
+      "revision": 1,
+      "title": "Simulate conditional locality and diamond tests for overlapping rewrites",
+      "loci": ["simulation", "theoretical"],
+      "open_problem": "Do independently enabled local junction rewrites commute, or does their outcome depend on update order, remote state, or the applied pulse history?",
+      "why_open": "Neither cited source tests interaction-net confluence, conditional locality, or critical-pair behavior.",
+      "scope": "Finite defect-graph simulations over explicitly declared local states, boundaries, drive schedules, and overlapping redexes.",
+      "next_discriminating_criticism_or_test": "Enumerate bounded overlapping rewrite pairs and run a diamond test; record any pair whose terminal boundary state depends on reduction order.",
+      "non_claims": "Passing a finite simulation suite would not establish physical realization, general confluence, or computation beyond the simulated fragment.",
+      "origins": [{ "kind": "illustrative-conjecture-revision", "id": "illustrative-chiral-nematic-interaction-net-conjecture@1", "relationship": "tests" }],
+      "coordinate": null
+    },
+    {
+      "topic_id": "illustrative-q8-material-mechanism-experiment",
+      "revision": 1,
+      "title": "Test whether Q8 junction pairs support a repeatable local 2→2 material mechanism",
+      "loci": ["physical-material", "mechanism", "experimental"],
+      "open_problem": "Can selected Q8-classified trivalent junction pairs be prepared and driven so that the same typed local input and boundary repeatedly yield one 2→2 output?",
+      "why_open": "The cited laboratory work establishes rich defect structure and driven reconnections, not the conjectured deterministic pair-local mechanism.",
+      "scope": "Chiral-nematic samples, typed junction preparation, declared boundary conditions, non-pair-selective global electric drive, and repeat trials.",
+      "next_discriminating_criticism_or_test": "Blindly repeat matched preparations while varying remote graph context; failure of output invariance criticizes the proposed local mechanism.",
+      "non_claims": "This topic does not claim LiTaO3 relevance, a validated device, interaction-net computation, or detector calibration.",
+      "origins": [{ "kind": "illustrative-conjecture-revision", "id": "illustrative-chiral-nematic-interaction-net-conjecture@1", "relationship": "tests" }],
+      "coordinate": null
+    },
+    {
+      "topic_id": "illustrative-optical-defect-graph-measurement-validity",
+      "revision": 1,
+      "title": "Validate optical reconstruction of typed defect-graph rewrites",
+      "loci": ["observation", "experimental"],
+      "open_problem": "Can optical observations distinguish junction type, principal-arm connectivity, boundary state, and 2→2 outcomes without analysis-induced topology changes?",
+      "why_open": "Graph-like structures in imagery do not by themselves validate a typed defect-graph readout or exclude ambiguous projections.",
+      "scope": "Matched optical modalities, reconstruction algorithms, synthetic controls, blinded labels, and topology-preserving uncertainty reports.",
+      "next_discriminating_criticism_or_test": "Compare independent modalities and human-blinded reconstructions on the same event; systematic disagreement criticizes the observation interface.",
+      "non_claims": "This topic does not treat an image resemblance as evidence of interaction-net semantics or a correct local rewrite.",
+      "origins": [{ "kind": "illustrative-conjecture-revision", "id": "illustrative-chiral-nematic-interaction-net-conjecture@1", "relationship": "tests" }],
+      "coordinate": null
+    },
+    {
+      "topic_id": "illustrative-global-trigger-versus-external-selection",
+      "revision": 1,
+      "title": "Separate global triggering from hidden external rule selection",
+      "loci": ["control-resource", "mechanism", "experimental"],
+      "open_problem": "Does a non-pair-selective global pulse merely enable local state-dependent dynamics, or do spatial fields and guided intervention select which reconnection occurs?",
+      "why_open": "Electric pulses and laser-tweezer guidance are reported, but their roles do not establish autonomous local rule choice.",
+      "scope": "Mapped field gradients, pulse histories, intervention logs, matched local states, and controls with and without targeted guidance.",
+      "next_discriminating_criticism_or_test": "Hold the local pair and boundary fixed while randomizing remote field geometry and intervention; predictive dependence on those controls falsifies the claimed local sufficiency.",
+      "non_claims": "This topic does not assume global drive is computationally free, uniform, nonselective in practice, or separable from the mechanism.",
+      "origins": [{ "kind": "illustrative-conjecture-revision", "id": "illustrative-chiral-nematic-interaction-net-conjecture@1", "relationship": "criticizes" }],
+      "coordinate": null
+    },
+    {
+      "topic_id": "illustrative-recurring-actuation-fifth-axis",
+      "revision": 1,
+      "title": "Ask whether recurring actuation belongs in a fifth search-space axis",
+      "loci": ["ontology", "control-resource"],
+      "open_problem": "When a computation requires recurring drive or guided intervention, should that control resource be represented as a fifth categorical dimension rather than hidden inside mechanism or protocol?",
+      "why_open": "The current governed registry has four axes; repeated actuation can vary independently and may change comparative conclusions.",
+      "scope": "A compatibility-preserving ontology proposal distinguishing one-time preparation, global recurring drive, spatial selection, feedback, and measurement-conditioned control.",
+      "next_discriminating_criticism_or_test": "Classify existing and proposed experiments twice—with control embedded and with an explicit fifth axis—and test whether the latter resolves otherwise conflated comparisons without fragmenting identity.",
+      "non_claims": "This topic does not add a fifth axis, alter canonical coordinates, rank research programs, or admit the illustrative conjecture.",
+      "origins": [{ "kind": "illustrative-conjecture-revision", "id": "illustrative-chiral-nematic-interaction-net-conjecture@1", "relationship": "motivated-by" }],
+      "coordinate": null
+    }
+  ],
+  "relations": [
+    { "source": "illustrative-conditional-locality-diamond-tests@1", "target": "illustrative-minimal-conservative-formal-fragment@1", "kind": "depends-on" },
+    { "source": "illustrative-q8-material-mechanism-experiment@1", "target": "illustrative-optical-defect-graph-measurement-validity@1", "kind": "depends-on" },
+    { "source": "illustrative-global-trigger-versus-external-selection@1", "target": "illustrative-q8-material-mechanism-experiment@1", "kind": "complements" },
+    { "source": "illustrative-recurring-actuation-fifth-axis@1", "target": "illustrative-global-trigger-versus-external-selection@1", "kind": "reclassifies" }
+  ]
+}

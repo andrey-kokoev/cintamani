@@ -6,8 +6,8 @@ pnpm monorepo for experiments derived from the VRC ledger in `src/ledger`.
 
 - `packages/vrc-mnist` — Rust/Burn falsification experiment for a recurrent complex optical state.
 - `packages/kerr-capacity` — Rust Kerr coupled-mode/LLE simulator and held-out observable-capacity estimator.
-- `packages/cintamani-domain` — Rust/SQLite categorical siege registry with a tamper-evident
-  admission chain, typed histories/provenance, bounded siege queries, and a local stdio MCP.
+- `packages/cintamani-domain` — Rust/SQLite categorical search registry with a tamper-evident
+  admission chain, typed histories/provenance, bounded search queries, and a local stdio MCP.
 - `packages/cintamani-site` — static Astro registry presentation plus a separate public D1 proposal,
   criticism, and administrative-history plane served by a Cloudflare Worker.
 
@@ -57,7 +57,13 @@ essential mechanism, failure condition, unresolved assumptions, exact-version cr
 relations, and optional generation-pinned framings of the derived four-dimensional frontier. A
 framing is conjectural organization—not evidence, a physical possibility claim, or canonical
 admission. Selected exports can be validated and previewed as candidate canonical problems and
-open conjectures without creating a siege cell or advancing governed HEAD.
+open conjectures without creating a search cell or advancing governed HEAD.
+
+The public and CLI vocabulary is **search space**, **search coordinate**, **search cell**, and
+**search overlay**. Durable v1–v4 compatibility identifiers retain their original `siege_*` names:
+SQLite tables/views (including `siege_cells` and `siege_space_dimensions`), serialized admission
+fields/variants, and registry count keys. Those internal names are not product terminology and are
+not rewritten because doing so would invalidate historical admissions, hashes, and consumers.
 
 Task 5 is intentionally suspended at a disabled isolated-testnet checkpoint. The public Worker at
 `cintamani-x402-testnet.andrei-kokoev.workers.dev` is not accepting x402 payments, its disposable

@@ -1,0 +1,88 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import admitted from '../../data/research-topics.json'
+import fixture from '../../data/research-topic-fixture.json'
+import type { ResearchTopicView } from '../../lib/research-topics'
+
+const topics = [
+  ...(admitted.items as ResearchTopicView[]).map((item) => ({ ...item, authority: 'governed-domain-registry', status: item.status ?? 'active' })),
+  ...(fixture.items as ResearchTopicView[]).map((item) => ({ ...item, authority: fixture.authority, status: fixture.workflow_status as 'active' })),
+]
+const loci = ['theoretical', 'simulation', 'physical-material', 'mechanism', 'observation', 'control-resource', 'experimental', 'ontology']
+const label = (value: string) => value.replaceAll('-', ' ')
+---
+<SiteLayout
+  title="Cintamani · Problem-derived research topics"
+  description="Fallible theoretical, simulation, physical, measurement, control, experimental, and ontology prompts derived from exact Cintamani problems and conjectures."
+>
+  <section class="topic-hero section-shell" aria-labelledby="topics-title">
+    <p class="eyebrow">Problem-derived research graph</p>
+    <h1 id="topics-title">Open questions,<br /><em>made criticizable.</em></h1>
+    <p class="lede">
+      Topics organize the next discriminating criticism or test. They are not evidence, confidence,
+      consensus, priority, importance, or roadmap authority.
+    </p>
+    <div class="hero-actions">
+      <a class="primary-action" href="/proposals/new/?kind=research-topic" target="_blank" rel="noopener">Propose a topic <span aria-hidden="true">↗</span></a>
+      <a class="text-action" href="/api/research-topics">Bounded JSON API</a>
+    </div>
+  </section>
+
+  <section class="section-shell topic-collection" aria-labelledby="topic-collection-title">
+    <div class="section-heading">
+      <div><p class="eyebrow">Published collection</p><h2 id="topic-collection-title">Research topics</h2></div>
+      <p>Workflow status is administrative only and is never “answered.” Exact origin and authority remain visible.</p>
+    </div>
+    <form class="topic-filters" data-topic-filters aria-label="Research topic filters">
+      <label>Locus<select name="locus"><option value="">All loci</option>{loci.map((item) => <option value={item}>{label(item)}</option>)}</select></label>
+      <label>Status<select name="status"><option value="">All states</option><option value="active">Active</option><option value="paused">Paused</option><option value="retired">Retired</option></select></label>
+      <label>Origin<input name="origin" type="search" placeholder="e.g., conjecture revision" /></label>
+      <label>Search<input name="q" type="search" placeholder="e.g., locality test" /></label>
+    </form>
+    <p class="topic-count" data-topic-count>{topics.length} topics shown</p>
+    <ol class="topic-list" data-topic-list>
+      {topics.map((topic) => (
+        <li data-topic-card data-loci={topic.loci.join(' ')} data-status={topic.status} data-origin={JSON.stringify(topic.origins)} data-search={`${topic.title} ${topic.open_problem} ${topic.why_open} ${topic.scope}`.toLowerCase()}>
+          <header><span class="status-pill">{topic.status}</span><span>{topic.authority === 'governed-domain-registry' ? 'Governed topic' : 'Illustrative · unadmitted'}</span></header>
+          <h3><a href={`/research-topics/${topic.topic_id}/`}>{topic.title}</a></h3>
+          <p>{topic.open_problem}</p>
+          <ul class="topic-loci" aria-label="Research loci">{topic.loci.map((item: string) => <li>{label(item)}</li>)}</ul>
+          <p class="topic-next"><strong>Next criticism or test:</strong> {topic.next_discriminating_criticism_or_test}</p>
+          {topic.coordinate === null && <p class="topic-boundary">Unclassified: no prospective coordinate is published.</p>}
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="section-shell topic-boundary-callout" aria-labelledby="fixture-title">
+    <p class="eyebrow">Illustrative fixture boundary</p>
+    <h2 id="fixture-title">Chiral-nematic questions are prompts, not admission.</h2>
+    <p>{fixture.bounded_conjecture.statement}</p>
+    <p><strong>Status:</strong> {label(fixture.bounded_conjecture.status)}. The fixture creates no canonical coordinate, D1 seed, evidence claim, or interaction-net inference from its sources.</p>
+  </section>
+
+  <script>
+    const form = document.querySelector<HTMLFormElement>('[data-topic-filters]')
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-topic-card]')]
+    const count = document.querySelector<HTMLElement>('[data-topic-count]')
+    const apply = () => {
+      if (!form) return
+      const values = new FormData(form)
+      const locus = String(values.get('locus') ?? '')
+      const status = String(values.get('status') ?? '')
+      const origin = String(values.get('origin') ?? '').trim().toLowerCase()
+      const query = String(values.get('q') ?? '').trim().toLowerCase()
+      let visible = 0
+      for (const card of cards) {
+        const show = (!locus || card.dataset.loci?.split(' ').includes(locus))
+          && (!status || card.dataset.status === status)
+          && (!origin || card.dataset.origin?.toLowerCase().includes(origin))
+          && (!query || card.dataset.search?.includes(query))
+        card.hidden = !show
+        if (show) visible += 1
+      }
+      if (count) count.textContent = `${visible} ${visible === 1 ? 'topic' : 'topics'} shown`
+    }
+    form?.addEventListener('input', apply)
+  </script>
+</SiteLayout>

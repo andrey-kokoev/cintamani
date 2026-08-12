@@ -2,7 +2,7 @@
 name = "cintamani-domain"
 version = "0.1.0"
 edition = "2024"
-description = "Rebuildable Site-owned categorical siege registry for Cintamani"
+description = "Rebuildable Site-owned categorical search registry for Cintamani"
 license = "Apache-2.0"
 default-run = "cintamani-domain"
 

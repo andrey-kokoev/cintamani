@@ -178,6 +178,14 @@ function detail(kind, suffix = 'candidate') {
         explanation_scope: 'The normalized local model and linear-memory target family only.',
         failure_condition: 'A predeclared matched control eliminates the positive lower-envelope advantage.',
       }
+    case 'research-topic':
+      return {
+        open_problem: 'Which bounded criticism would distinguish local rewriting from external selection?',
+        why_open: 'The exact motivating conjecture has not survived a conditional-locality test.',
+        topic_scope: 'One exact public conjecture revision and bounded finite graphs.',
+        next_discriminating_criticism_or_test: 'Vary remote context while holding the local pair and boundary fixed.',
+        non_claims: 'No evidence, canonical coordinate, priority, or interaction-net realization is claimed.',
+      }
     default:
       throw new Error(`unknown kind ${kind}`)
   }
@@ -201,6 +209,17 @@ function proposal(kind, suffix = 'candidate') {
     record.assumptions = ['The selected quadrature remains a declared observable.']
     record.framings = []
     record.relations = []
+  }
+  if (kind === 'research-topic') {
+    record.loci = ['theoretical', 'simulation']
+    record.origins = [{
+      origin_kind: 'canonical-conjecture-version',
+      canonical_conjecture_version_id: 'conjecture-kerr-quadrature-linear-memory-lead-v1',
+      relationship: 'criticizes',
+      origin_rationale: 'This exact admitted conjecture version supplies the bounded motivating question.',
+    }]
+    record.framings = []
+    record.topic_relations = []
   }
   return record
 }
@@ -339,7 +358,7 @@ test('operator authority is derived from append-only D1 role events', async () =
   h.database.close()
 })
 
-test('all eight typed proposal kinds publish immediately as submitted and unreviewed', async () => {
+test('all nine typed proposal kinds publish immediately as submitted and unreviewed', async () => {
   const h = await harness()
   const kinds = [
     'theoretical-model-member',
@@ -350,6 +369,7 @@ test('all eight typed proposal kinds publish immediately as submitted and unrevi
     'existing-member-correction',
     'ontology-change',
     'explanatory-conjecture',
+    'research-topic',
   ]
   for (const [index, kind] of kinds.entries()) {
     const created = await createOne(h, kind, `candidate-${index}`)
@@ -436,6 +456,86 @@ test('explanatory conjectures derive frontier framing metadata and support exact
   }))
   assert.equal(rejected.response.status, 400)
   assert.match(JSON.stringify(rejected.body), /framing generation does not match/u)
+  h.database.close()
+})
+
+test('research topics preserve typed origins, multi-locus framing, exact relations, and focused criticism', async () => {
+  const h = await harness()
+  const motivating = await createOne(h, 'explanatory-conjecture', 'topic-origin', { key: 'topic-origin-key' })
+  const targetBody = proposal('research-topic', 'target-topic')
+  targetBody.origins = [{
+    origin_kind: 'public-explanatory-conjecture-revision',
+    target_proposal_id: motivating.proposal_id,
+    target_revision: 1,
+    relationship: 'derived-from',
+    origin_rationale: 'The exact public conjecture revision supplies the unvalidated motivating problem.',
+  }]
+  const target = await createOne(h, 'research-topic', 'target-topic', { body: targetBody, key: 'target-topic-key' })
+
+  const sourceBody = structuredClone(targetBody)
+  sourceBody.title = 'A related bounded research topic'
+  sourceBody.topic_relations = [{
+    relation_kind: 'depends-on',
+    target_proposal_id: target.proposal_id,
+    target_revision: 1,
+    relation_claim: 'This exact simulation topic consumes the exact formal topic definition.',
+    relation_scope: 'These exact public revisions only.',
+  }]
+  const source = await createOne(h, 'research-topic', 'source-topic', { body: sourceBody, key: 'source-topic-key' })
+  const exact = await responseJson(await h.call(`/api/proposals/${source.proposal_id}`))
+  assert.equal(exact.response.status, 200)
+  const detail = exact.body.revisions[0].detail
+  assert.deepEqual(detail.loci.map((item) => item.locus_kind), ['theoretical', 'simulation'])
+  assert.equal(detail.origins[0].target_proposal_id, motivating.proposal_id)
+  assert.equal(detail.topic_relations[0].target_revision, 1)
+  assert.equal(detail.topic_relations[0].relation_kind, 'depends-on')
+
+  const criticism = await responseJson(await h.call(
+    `/api/proposals/${source.proposal_id}/revisions/1/criticisms`,
+    {
+      method: 'POST',
+      actor: h.outsider,
+      key: 'topic-focus-key',
+      body: {
+        title: 'The simulation locus may be premature',
+        criticism: 'No executable simulator is identified for this exact revision.',
+        scope: 'The simulation locus of revision 1 only.',
+        focus_kind: 'topic-locus',
+        focus_ref: detail.loci[1].topic_locus_id,
+        turnstile_token: 'test-pass',
+      },
+    },
+  ))
+  assert.equal(criticism.response.status, 201, JSON.stringify(criticism.body))
+  assert.equal(h.database.database.prepare('SELECT COUNT(*) count FROM public_schema_violations').get().count, 0)
+  h.database.close()
+})
+
+test('published topic API is bounded, filter-bound paginated, and exposes detail history provenance', async () => {
+  const h = await harness()
+  const first = await responseJson(await h.call('/api/research-topics?limit=2'))
+  assert.equal(first.response.status, 200)
+  assert.equal(first.body.items.length, 2)
+  assert.ok(first.body.next_cursor)
+
+  const second = await responseJson(await h.call(`/api/research-topics?limit=2&cursor=${first.body.next_cursor}`))
+  assert.equal(second.response.status, 200)
+  assert.equal(new Set([...first.body.items, ...second.body.items].map((item) => item.topic_id)).size,
+    first.body.items.length + second.body.items.length)
+  const wrongFilter = await responseJson(await h.call(`/api/research-topics?limit=2&locus=simulation&cursor=${first.body.next_cursor}`))
+  assert.equal(wrongFilter.response.status, 400)
+  assert.equal(wrongFilter.body.error.code, 'invalid_topic_cursor')
+
+  const topicId = first.body.items[0].topic_id
+  const detailResponse = await responseJson(await h.call(`/api/research-topics/${topicId}`))
+  const history = await responseJson(await h.call(`/api/research-topics/${topicId}/history`))
+  const provenance = await responseJson(await h.call(`/api/research-topics/${topicId}/provenance`))
+  assert.equal(detailResponse.response.status, 200)
+  assert.equal(history.body.bounded, true)
+  assert.ok(history.body.items.length >= 2)
+  assert.equal(provenance.body.bounded, true)
+  assert.equal(provenance.body.canonical_admission, false)
+  assert.ok(provenance.body.exact_origins.length >= 1)
   h.database.close()
 })
 

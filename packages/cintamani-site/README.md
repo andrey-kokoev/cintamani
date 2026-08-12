@@ -2,7 +2,7 @@
 
 This package serves two deliberately separate projections through one Cloudflare Worker:
 
-1. an accessible static Astro view generated from the canonical Rust/SQLite siege registry; and
+1. an accessible static Astro view generated from the canonical Rust/SQLite search registry; and
 2. an immediately public proposal, criticism, and administrative-history plane stored in D1.
 
 The public plane is not another canonical registry. A Worker route can write only `PROPOSALS_DB`.
@@ -36,6 +36,7 @@ The tracked snapshots remain:
 
 - `dimensions.json` — four ordered axes, current assessment revisions, and source admissions;
 - `frontier.json` — admitted cells and explicit bounded gaps;
+- `research-topics.json` — bounded current governed topics with exact history and provenance;
 - `registry-summary.json` — stable registry identity and clean invariant summary.
 
 The D1 proposal plane does not alter these files. A successful public submission therefore never
@@ -43,7 +44,7 @@ appears as a canonical member or cell merely because it is visible in the browse
 
 ## Public schema and behavior
 
-The nine ordered `migrations/*.sql` files define public schema version 5 in strict SQLite/D1. The
+The ten ordered `migrations/*.sql` files define public schema version 6 in strict SQLite/D1. The
 initial invariant migration is split because the
 local D1 engine rejects a seven-branch compound `UNION`; the cardinality invariant uses explicit
 `EXISTS` terms and a typed `CASE` instead. `scripts/check-public-d1.mjs` applies all migrations from
@@ -58,6 +59,10 @@ Migration 0009 losslessly rebuilds the proposal/revision/criticism core to add p
 explanatory conjectures, exact typed criticism focus, immutable assumptions, generation-pinned
 coordinate framings, and exact-version inter-conjecture relations. Its splitter regression proves
 that representative persisted prefixes either roll back or converge on replay.
+Migration 0010 losslessly rebuilds the same CHECK-constrained core to add research-topic proposals,
+typed topic detail/loci/origins/relations, topic coordinate framings, and exact focused criticism.
+It preserves every prior row and history, rejects incompatible typed unions, and is tested under
+Wrangler's SQL splitter, partial-prefix replay, and late-failure rollback.
 
 The schema has one stable proposal identity, immutable contiguous revisions, and a dedicated detail
 table for each of these kinds:
@@ -70,6 +75,7 @@ table for each of these kinds:
 - explicit existing-member correction;
 - ontology change;
 - explanatory conjecture.
+- research topic.
 
 Every new axis member declares a canonical-vocabulary, non-evidentiary initial status. Interface
 proposals also declare canonical observation kind and units; the maintainer bridge never invents
@@ -85,6 +91,23 @@ Exact-version conjecture relations use only `rival-to`, `reclassifies`, `equival
 `incompatible-with`, `supersedes`, and `addresses-same-problem`. Each relation is itself a public,
 criticizable claim. It does not merge identities, reclassify a canonical coordinate, supersede a
 state, or otherwise cause an automatic registry or administrative transition.
+
+A research topic is a stable fallible prompt rather than a free-form tag. Every revision requires
+an open problem, why it remains open, bounded scope, the next discriminating criticism or test,
+explicit non-claims, at least one locus, and at least one exact problem/conjecture origin. Loci are
+multi-valued: `theoretical`, `simulation`, `physical-material`, `mechanism`, `observation`,
+`control-resource`, `experimental`, and `ontology`. Optional search-coordinate framings remain
+conjectural organization. Topic relations are exact-version claims using only `depends-on`,
+`rival-to`, `complements`, `refines`, `reclassifies`, and `addresses-same-problem`; they never
+merge identities or change workflow. `active|paused|retired` is administrative visibility only,
+never answered, true, important, prioritized, ranked, or supported.
+
+`/research-topics/`, stable detail URLs, and `/api/research-topics` publish the bounded collection
+with locus/status/origin/coordinate/text filtering, filter-bound cursors, exact history, and
+provenance. The six chiral-nematic topics are an explicitly illustrative, unadmitted fixture. They
+cite Wu et al. (arXiv:2410.19293) and Hall et al. (Nature Physics 22, 103–111, 2026) only for their
+reported defect algebra/structures and driven reconnection observations; they do not infer or
+admit interaction-net rewriting, a prospective coordinate, evidence, or D1 proposal content.
 
 The public proposal hub is a reading and filtering surface. Its single content-level `Submit
 proposal` action opens the dedicated `/proposals/new/` page in a new tab; the hub does not contain an
@@ -122,7 +145,7 @@ Moderation actions have a SQLite-assigned immutable order. `hide-from-listing` a
 GitHub login resolved server-side. A proposal hide targets its exact current revision, not the
 stable proposal identity: if its author appends a later revision while still submitted, the new
 revision is listed unless separately hidden, while the originally hidden revision retains its
-tombstone. Hidden current revisions disappear from the proposal collection and siege-overlay
+tombstone. Hidden current revisions disappear from the proposal collection and search-overlay
 counts, but their exact detail, content, ordered moderation history, and tombstone remain public.
 No moderation action deletes a row.
 
@@ -239,6 +262,10 @@ For an explanatory conjecture, the bridge emits a candidate problem/version,
 conjecture/version, an explicitly `open` non-evidentiary disposition, zero or more exact framings,
 and definition/limitation provenance tied to the source proposal, revision, and export digest. It
 does not create a cell, morphism, path, assessment, or scientific status and never promotes HEAD.
+For a research topic with already governed exact origins, the bridge emits a candidate stable topic,
+revision 1, its multi-locus and origin links, an `active` non-epistemic workflow event, and exact
+export-digest provenance. It refuses public-only origins, prospective coordinate links, and public
+topic relations until the referenced identities are governed; it never invents those links.
 
 The Worker cannot promote an export. A maintainer downloads the public export wrapper and runs:
 
@@ -257,7 +284,7 @@ same-admission Ledger evidence mapping. Explicit corrections and ontology change
 not auto-translated: they require a maintainer-authored typed correction or schema migration.
 
 The script verifies the export hash and exact selection, refuses overwriting the output, and emits a
-  schema-2-compatible domain draft consumed by the schema-3 projection. Candidate axis-member drafts contain the identity, revision-1 non-evidentiary
+  schema-2-compatible domain draft consumed by the schema-4 projection. Candidate axis-member drafts contain the identity, revision-1 non-evidentiary
 assessment, and exact definition/limitation provenance naming proposal, revision, and export digest.
 The maintainer must still run the canonical commands with real authority:
 
@@ -275,9 +302,14 @@ Tests run real `validate` and non-mutating `preview` for all four axis mappings 
 HEAD and the live domain SQLite file remain byte-identical. Only after an external promotion may an
 operator append its receipt to `admission_links` in public D1.
 
-The problem-led UI, public schema, and bridge are organizational engineering, not new scientific
-evidence, so this change creates no Ledger entry. Concurrent computing-paradigms pages, layout, CSS,
-and tests are separate user work and are excluded from the Task 6 change boundary.
+The problem/topic-led UI, public schema, fixture, and bridge are organizational engineering, not
+new scientific evidence or roadmap authority, so this change creates no Ledger entry. Concurrent
+computing-paradigms pages and their unrelated layout/CSS/test hunks remain separate user work.
+
+Human-facing UI/docs and safe presentation symbols use **search space**, **search coordinate**,
+**search cell**, and **search overlay**. Frozen canonical admissions and durable internal contracts
+retain legacy `siege_*` SQLite/view, serialized admission, Rust variant, and registry-count names;
+renaming those identifiers would break historical hashes and consumers.
 
 ## Local commands
 
@@ -323,7 +355,7 @@ during local development.
 
 For x402 specifically, the operator must additionally:
 
-1. keep `X402_ENABLED=false` (or absent) through the current schema-v5 migration and ordinary deployment;
+1. keep `X402_ENABLED=false` (or absent) through the current schema-v6 migration and ordinary deployment;
 2. migrate a production-like local D1 and a disposable remote-style copy, checking preservation,
    partial-prefix replay, schema violations, and foreign keys before touching production D1;
 3. designate a dedicated user-controlled Base receiver and set `X402_PAY_TO` without putting wallet

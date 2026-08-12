@@ -231,6 +231,85 @@ test('bridge maps a selected explanatory conjecture to a candidate problem, open
   }
 })
 
+test('bridge maps a canonically grounded topic deterministically and refuses invented public-only identity', () => {
+  const document = wrapper('research-topic', {
+    open_problem: 'Which bounded criticism distinguishes local rewriting from external selection?',
+    why_open: 'The exact motivating conjecture has not survived a conditional-locality test.',
+    topic_scope: 'The admitted Kerr conjecture is used only as a deterministic bridge fixture.',
+    next_discriminating_criticism_or_test: 'Hold the local input fixed and vary context under a declared matched protocol.',
+    non_claims: 'No evidence, truth, importance, priority, or roadmap authority is implied.',
+    loci: [
+      { topic_locus_id: 'public-locus-1', locus_order: 1, locus_kind: 'theoretical' },
+      { topic_locus_id: 'public-locus-2', locus_order: 2, locus_kind: 'simulation' },
+    ],
+    origins: [{
+      topic_origin_id: 'public-origin-1',
+      origin_order: 1,
+      origin_kind: 'canonical-conjecture-version',
+      canonical_problem_version_id: null,
+      canonical_conjecture_version_id: 'conjecture-kerr-quadrature-linear-memory-lead-v1',
+      target_proposal_id: null,
+      target_revision: null,
+      relationship: 'criticizes',
+      origin_rationale: 'This exact governed conjecture version supplies the motivating open problem.',
+    }],
+    framings: [],
+    topic_relations: [],
+  })
+  const options = {
+    recordId: 'admission-public-research-topic',
+    admittedAt: '2026-08-12',
+  }
+  const admission = prepareAdmission(document, options)
+  assert.deepEqual(admission.changes.slice(0, 3).map((change) => change.kind), [
+    'research-topic', 'research-topic-version', 'research-topic-workflow-event',
+  ])
+  assert.deepEqual(
+    admission.changes.filter((change) => change.kind === 'research-topic-locus').map((change) => change.locus_kind),
+    ['theoretical', 'simulation'],
+  )
+  assert.equal(admission.changes.find((change) => change.kind === 'research-topic-origin').conjecture_version_id,
+    'conjecture-kerr-quadrature-linear-memory-lead-v1')
+  assert.ok(admission.changes.filter((change) => change.kind === 'provenance-claim')
+    .every((change) => change.claim_text.includes(document.content_sha256)))
+  assert.deepEqual(prepareAdmission(document, options), admission)
+
+  const temporaryRoot = mkdtempSync(resolve(tmpdir(), 'cintamani-topic-export-'))
+  const draft = resolve(temporaryRoot, 'draft.json')
+  writeFileSync(draft, `${JSON.stringify(admission, null, 2)}\n`)
+  try {
+    for (const command of ['validate', 'preview']) {
+      const args = [
+        'run', '--quiet', '--manifest-path', resolve(repositoryRoot, 'packages/cintamani-domain/Cargo.toml'), '--',
+        '--workspace-root', repositoryRoot, '--format', 'json', 'admission', command, draft,
+      ]
+      if (command === 'preview') {
+        const head = readFileSync(resolve(repositoryRoot, '.narada/kb/cintamani-domain/chain/HEAD'), 'utf8').trim()
+        args.push('--admitted-by', 'public-export-test-maintainer', '--authority-kind', 'verified-public-proposal-export',
+          '--authority-ref', document.export_id, '--expected-head', head)
+      }
+      const cargo = spawnSync('cargo', args, { cwd: repositoryRoot, encoding: 'utf8', windowsHide: true })
+      assert.equal(cargo.status, 0, `${cargo.stdout}\n${cargo.stderr}`)
+      if (command === 'preview') assert.equal(JSON.parse(cargo.stdout).mutates_governed_head, false)
+    }
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true })
+  }
+
+  const publicOnly = structuredClone(document)
+  publicOnly.canonical.selected_revision.detail.origins[0] = {
+    origin_kind: 'public-explanatory-conjecture-revision',
+    target_proposal_id: 'proposal-public-only',
+    target_revision: 1,
+    relationship: 'derived-from',
+    origin_rationale: 'Public-only conjecture.',
+  }
+  const canonicalJson = canonicalize(publicOnly.canonical)
+  publicOnly.content_sha256 = createHash('sha256').update(canonicalJson).digest('hex')
+  publicOnly.export_id = `sha256-${publicOnly.content_sha256}`
+  assert.throws(() => prepareAdmission(publicOnly, options), /must first be admitted/u)
+})
+
 test('tampered export fails before draft creation and generated draft passes the Rust admission validator', () => {
   const document = wrapper('theoretical-model-member', {
     member_id: 'public-model-validation-fixture',

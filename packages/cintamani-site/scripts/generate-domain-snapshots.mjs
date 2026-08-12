@@ -11,10 +11,13 @@ const domainManifest = resolve(workspaceRoot, 'packages/cintamani-domain/Cargo.t
 const dataRoot = resolve(siteRoot, 'src/data')
 const MAX_FRONTIER_PAGES = 1_000
 const MAX_FRONTIER_ROWS = 100_000
+const MAX_TOPIC_PAGES = 1_000
+const MAX_TOPIC_ROWS = 100_000
 
 const snapshotPaths = {
   dimensions: resolve(dataRoot, 'dimensions.json'),
   frontier: resolve(dataRoot, 'frontier.json'),
+  topics: resolve(dataRoot, 'research-topics.json'),
   summary: resolve(dataRoot, 'registry-summary.json'),
 }
 
@@ -75,7 +78,7 @@ function assertCleanCheck(report) {
     'artifact_observation_drift',
   ]
   if (
-    report.schema_version !== '3' ||
+    report.schema_version !== '4' ||
     report.projection_kind !== 'rebuildable-site-domain-registry' ||
     report.integrity !== 'ok' ||
     report.admission_chain_consistent !== true
@@ -151,10 +154,59 @@ export function readFrontier(
   fail(`frontier pagination exceeded the ${maxPages}-page safety bound`)
 }
 
+export function readResearchTopics(
+  run = runDomain,
+  { maxPages = MAX_TOPIC_PAGES, maxRows = MAX_TOPIC_ROWS } = {},
+) {
+  const items = []
+  const seenKeys = new Set()
+  const seenCursors = new Set()
+  let cursor = null
+
+  for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
+    const args = ['research-topics', '--limit', '100']
+    if (cursor) args.push('--cursor', cursor)
+    const page = run('list', args)
+    if (page.collection !== 'research-topics' || !Array.isArray(page.items)) {
+      fail(`research-topic page ${pageNumber} has an invalid shape`)
+    }
+    for (const item of page.items) {
+      if (typeof item.topic_id !== 'string' || seenKeys.has(item.topic_id)) {
+        fail(`research-topic pagination repeated or omitted a stable topic identity`)
+      }
+      seenKeys.add(item.topic_id)
+      const history = run('history', ['research-topics', item.topic_id, '--limit', '100'])
+      const why = run('why', ['research-topics', item.topic_id, '--limit', '100'])
+      if (
+        !Array.isArray(history.items) ||
+        why.collection !== 'research-topics' ||
+        !Array.isArray(why.provenance)
+      ) {
+        fail(`research-topic ${item.topic_id} history/provenance query has an invalid shape`)
+      }
+      items.push({
+        ...item,
+        history: history.items,
+        history_next_cursor: history.next_cursor ?? null,
+        provenance: why.provenance,
+        provenance_bounded_limit: why.bounded_limit,
+      })
+      if (items.length > maxRows) fail(`research-topic snapshot exceeded the ${maxRows}-row safety bound`)
+    }
+    const next = page.next_cursor ?? null
+    if (!next) return items
+    if (page.items.length === 0) fail('research-topic query returned a cursor without rows')
+    if (seenCursors.has(next)) fail('research-topic pagination repeated a cursor')
+    seenCursors.add(next)
+    cursor = next
+  }
+  fail(`research-topic pagination exceeded the ${maxPages}-page safety bound`)
+}
+
 function stableSummary(report) {
   const counts = report.relation_counts ?? {}
   return {
-    snapshot_schema: 'cintamani.site-registry-summary.v2',
+    snapshot_schema: 'cintamani.site-registry-summary.v3',
     snapshot_mode: 'build-time-static',
     registry_authority: 'Rust/SQLite Cintamani domain registry',
     mutable_edge_registry: false,
@@ -180,6 +232,7 @@ function stableSummary(report) {
       physical_mechanisms: counts.physical_mechanisms,
       interfaces: counts.interfaces,
       siege_cells: counts.siege_cells,
+      research_topics: counts.research_topics,
       provenance_claims: counts.provenance_claims,
     },
   }
@@ -196,12 +249,19 @@ export function generateSnapshots() {
   const dimensions = runDomain('dimensions')
   assertDimensions(dimensions)
   const frontierItems = readFrontier()
+  const topics = readResearchTopics()
   return {
     dimensions: serialize(dimensions),
     frontier: serialize({
       collection: 'frontier',
       item_count: frontierItems.length,
       items: frontierItems,
+    }),
+    topics: serialize({
+      collection: 'research-topics',
+      authority: 'governed-domain-registry',
+      item_count: topics.length,
+      items: topics,
     }),
     summary: serialize(stableSummary(report)),
   }

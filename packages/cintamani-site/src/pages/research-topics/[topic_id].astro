@@ -1,0 +1,37 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import admitted from '../../data/research-topics.json'
+import fixture from '../../data/research-topic-fixture.json'
+import type { ResearchTopicView } from '../../lib/research-topics'
+
+export function getStaticPaths() {
+  return [
+    ...(admitted.items as ResearchTopicView[]).map((topic) => ({ params: { topic_id: topic.topic_id }, props: { topic, authority: 'governed-domain-registry' } })),
+    ...(fixture.items as ResearchTopicView[]).map((topic) => ({ params: { topic_id: topic.topic_id }, props: { topic, authority: fixture.authority } })),
+  ]
+}
+
+const { topic, authority } = Astro.props as { topic: ResearchTopicView; authority: string }
+const label = (value: string) => value.replaceAll('-', ' ')
+const relations = fixture.relations.filter((relation) => relation.source.startsWith(`${topic.topic_id}@`) || relation.target.startsWith(`${topic.topic_id}@`))
+---
+<SiteLayout title={`Cintamani · ${topic.title}`} description={topic.open_problem}>
+  <article class="topic-detail section-shell">
+    <nav aria-label="Breadcrumb"><a href="/research-topics/">Research topics</a> / <span>{topic.topic_id}</span></nav>
+    <header>
+      <p class="eyebrow">{authority === 'governed-domain-registry' ? 'Governed research topic' : 'Illustrative · unadmitted fixture'}</p>
+      <h1>{topic.title}</h1>
+      <ul class="topic-loci" aria-label="Research loci">{topic.loci.map((item: string) => <li>{label(item)}</li>)}</ul>
+    </header>
+    <section><h2>Open problem</h2><p>{topic.open_problem}</p></section>
+    <section><h2>Why it remains open</h2><p>{topic.why_open}</p></section>
+    <section><h2>Scope</h2><p>{topic.scope}</p></section>
+    <section><h2>Next discriminating criticism or test</h2><p>{topic.next_discriminating_criticism_or_test}</p></section>
+    <section class="topic-nonclaims"><h2>Explicit non-claims</h2><p>{topic.non_claims}</p></section>
+    <section><h2>Exact origins</h2><ul>{topic.origins.map((origin: any) => <li><code>{origin.id}</code> · {label(origin.relationship)} · {label(origin.kind)}</li>)}</ul></section>
+    {topic.coordinate === null && <section><h2>Search coordinate</h2><p>Unclassified. No prospective coordinate is published or admitted for this topic.</p></section>}
+    <section><h2>Typed topic relations</h2>{relations.length ? <ul>{relations.map((relation) => <li><code>{relation.source}</code> {label(relation.kind)} <code>{relation.target}</code></li>)}</ul> : <p>No illustrative relation is recorded for this exact version.</p>}</section>
+    <details><summary>History and provenance</summary><dl class="provenance-list"><div><dt>Topic</dt><dd><code>{topic.topic_id}</code></dd></div><div><dt>Revision</dt><dd>{topic.revision}</dd></div><div><dt>Authority</dt><dd>{authority}</dd></div><div><dt>Canonical admission</dt><dd>{authority === 'governed-domain-registry' ? 'yes' : 'no'}</dd></div><div><dt>History rows</dt><dd>{topic.history?.length ?? 2}</dd></div><div><dt>Provenance claims</dt><dd>{topic.provenance?.length ?? 0}</dd></div></dl><p><a href={`/api/research-topics/${encodeURIComponent(topic.topic_id)}/history`}>Bounded history JSON</a> · <a href={`/api/research-topics/${encodeURIComponent(topic.topic_id)}/provenance`}>Bounded provenance JSON</a></p></details>
+    <p><a class="primary-action" href={`/proposals/new/?kind=research-topic&parent_topic=${encodeURIComponent(topic.topic_id)}&parent_revision=${topic.revision}`} target="_blank" rel="noopener">Propose a linked topic <span aria-hidden="true">↗</span></a></p>
+  </article>
+</SiteLayout>

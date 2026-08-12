@@ -14,12 +14,12 @@ import {
   discoverWallets,
   publishPaidProposal,
 } from './wallet-contribution.mjs'
-import { conjectureRelationKinds } from '../lib/proposals.mjs'
+import { conjectureRelationKinds, researchTopicRelationKinds } from '../lib/proposals.mjs'
 
 const fieldContracts = {
   'theoretical-model-member': [
     { name: 'member_id', label: 'Member identifier', kind: 'slug', max: 120, help: 'A stable lowercase identifier, for example delay-line-model.' },
-    { name: 'member_name', label: 'Member name', kind: 'input', max: 160, help: 'The readable name shown in the siege-space dimension.' },
+    { name: 'member_name', label: 'Member name', kind: 'input', max: 160, help: 'The readable name shown in the search-space dimension.' },
     { name: 'model_definition', label: 'Model definition', kind: 'textarea', max: 12000, rows: 6, help: 'Define the model precisely enough to distinguish it from neighboring computation models.' },
     { name: 'computational_claim', label: 'Bounded computational claim', kind: 'textarea', max: 8000, rows: 5, help: 'State the narrow capability being proposed, including the regime where it may fail.' },
     { name: 'initial_epistemic_status', label: 'Initial assessment status', kind: 'enum', values: ['unspecified', 'candidate', 'rejected'], help: 'This is a non-evidentiary starting classification, not a score.' },
@@ -78,6 +78,13 @@ const fieldContracts = {
     { name: 'explanation_scope', label: 'Explanation scope', kind: 'textarea', max: 8000, rows: 4, help: 'Bound the regimes and claims the explanation covers.' },
     { name: 'failure_condition', label: 'Failure condition', kind: 'textarea', max: 12000, rows: 5, help: 'Describe an observation or criticism that would show the explanation fails.' },
     { name: 'assumptions', label: 'Unresolved assumptions', kind: 'textarea', max: 12000, rows: 5, help: 'Enter one unresolved assumption per line. At least one is required.' },
+  ],
+  'research-topic': [
+    { name: 'open_problem', label: 'Open problem', kind: 'textarea', max: 12000, rows: 5, help: 'State the unresolved problem rather than only naming a field.' },
+    { name: 'why_open', label: 'Why it remains open', kind: 'textarea', max: 12000, rows: 5, help: 'Name the missing explanation, criticism, observation, or discriminating test.' },
+    { name: 'topic_scope', label: 'Topic scope', kind: 'textarea', max: 4000, rows: 4, help: 'Bound the systems, regimes, and exact versions this prompt concerns.' },
+    { name: 'next_discriminating_criticism_or_test', label: 'Next discriminating criticism or test', kind: 'textarea', max: 12000, rows: 5, help: 'Describe the next result that would distinguish live alternatives or expose a failure.' },
+    { name: 'non_claims', label: 'Explicit non-claims', kind: 'textarea', max: 12000, rows: 5, help: 'Say what publication does not establish, including evidence and roadmap authority.' },
   ],
 }
 
@@ -143,6 +150,13 @@ export const detailFieldPlaceholders = Object.freeze({
     explanation_scope: 'e.g., The declared normalized model, linear-memory targets, and frozen readout protocol only.',
     failure_condition: 'e.g., The matched Kerr-minus-disabled lower envelope is nonpositive under the predeclared bounded parameter region.',
     assumptions: 'e.g., The normalized state equation remains an adequate abstraction in the tested regime.\ne.g., The chosen quadrature is available without adding state information.',
+  }),
+  'research-topic': Object.freeze({
+    open_problem: 'e.g., Can the proposed local rewrite be stated without a hidden global selector?',
+    why_open: 'e.g., Existing observations do not supply a typed local rule or establish conditional locality.',
+    topic_scope: 'e.g., Exact public conjecture revision 1 and bounded finite defect graphs only.',
+    next_discriminating_criticism_or_test: 'e.g., Find matched local inputs whose outputs differ only with remote graph context.',
+    non_claims: 'e.g., No physical realization, canonical coordinate, truth, priority, or interaction-net computation is claimed.',
   }),
 })
 
@@ -228,6 +242,19 @@ function syncMemberSelect(container, config) {
   render()
 }
 
+function syncConditionalSections(form) {
+  const sections = [
+    form.querySelector('[data-conjecture-framings]'),
+    form.querySelector('[data-topic-fields]'),
+    form.querySelector('[data-conjecture-relations]'),
+  ].filter(Boolean)
+  for (const section of sections) {
+    for (const control of section.querySelectorAll('input, select, textarea, button')) {
+      control.disabled = Boolean(control.closest('[hidden]'))
+    }
+  }
+}
+
 function renderDetailFields(form, config) {
   const container = form.querySelector('[data-detail-fields]')
   const kind = form.elements.kind.value
@@ -239,7 +266,10 @@ function renderDetailFields(form, config) {
   }
   container.replaceChildren(...fieldContracts[kind].map((contract) => fieldNode(contract, config, kind)))
   syncMemberSelect(container, config)
-  form.querySelector('[data-conjecture-framings]').hidden = kind !== 'explanatory-conjecture'
+  form.querySelector('[data-conjecture-framings]').hidden = !['explanatory-conjecture', 'research-topic'].includes(kind)
+  form.querySelector('[data-topic-fields]').hidden = kind !== 'research-topic'
+  form.querySelector('[data-conjecture-relations]').hidden = kind !== 'explanatory-conjecture'
+  syncConditionalSections(form)
 }
 
 function coordinateLabel(item) {
@@ -284,7 +314,8 @@ function configureFramings(root, form, config) {
   if (selected) {
     const coordinate = config.frontier.items.find((item) => item.coordinate_key === selected)
     if (coordinate && (!generation || generation === coordinate.validation_generation)) {
-      form.elements.kind.value = 'explanatory-conjecture'
+      const requestedKind = url.searchParams.get('kind')
+      form.elements.kind.value = requestedKind === 'research-topic' ? requestedKind : 'explanatory-conjecture'
       renderDetailFields(form, config)
       appendFraming(form, config, selected)
     }
@@ -320,6 +351,95 @@ function configureFramings(root, form, config) {
     remove.addEventListener('click', () => row.remove())
     row.append(remove)
     list.append(row)
+  })
+  syncConditionalSections(form)
+}
+
+function appendTopicOrigin(form) {
+  const list = form.querySelector('[data-topic-origin-list]')
+  if (list.children.length >= 32) return
+  const row = element('fieldset', { className: 'topic-origin-row' })
+  const kind = element('select', { attributes: { name: 'topic_origin_kind', required: '' } })
+  kind.append(chooseOption('Choose an exact origin kind…'))
+  for (const value of ['canonical-problem-version', 'canonical-conjecture-version', 'public-explanatory-conjecture-revision']) {
+    kind.append(element('option', { text: labelText(value), attributes: { value } }))
+  }
+  const identifier = element('input', {
+    attributes: { name: 'topic_origin_id', required: '', placeholder: 'e.g., conjecture-example-version-1' },
+  })
+  const targetRevision = element('input', {
+    attributes: { name: 'topic_origin_revision', type: 'number', min: '1', placeholder: 'e.g., 1' },
+  })
+  const relationship = element('select', { attributes: { name: 'topic_origin_relationship', required: '' } })
+  relationship.append(chooseOption('Choose an origin relation…'))
+  for (const value of ['derived-from', 'motivated-by', 'criticizes', 'tests']) {
+    relationship.append(element('option', { text: labelText(value), attributes: { value } }))
+  }
+  const rationale = element('textarea', {
+    attributes: {
+      name: 'topic_origin_rationale',
+      rows: '3',
+      maxlength: '4000',
+      required: '',
+      placeholder: 'e.g., This exact conjecture revision motivates the bounded open problem without supplying evidence.',
+    },
+  })
+  for (const [label, control, optional] of [
+    ['Origin kind', kind, false],
+    ['Exact version ID or public proposal ID', identifier, false],
+    ['Public target revision (public origin only)', targetRevision, true],
+    ['Relationship', relationship, false],
+    ['Origin rationale', rationale, false],
+  ]) {
+    const wrapper = element('label', { className: 'form-field form-field--wide' })
+    wrapper.append(`${label} `, requiredMarker(optional), control)
+    row.append(wrapper)
+  }
+  const remove = element('button', { className: 'text-button', text: 'Remove origin', attributes: { type: 'button' } })
+  remove.addEventListener('click', () => row.remove())
+  row.append(remove)
+  list.append(row)
+}
+
+function appendTopicRelation(form) {
+  const list = form.querySelector('[data-topic-relation-list]')
+  if (list.children.length >= 16) return
+  const row = element('fieldset', { className: 'topic-relation-row' })
+  const kind = element('select', { attributes: { name: 'topic_relation_kind', required: '' } })
+  kind.append(chooseOption('Choose a topic relation…'))
+  for (const value of researchTopicRelationKinds) {
+    kind.append(element('option', { text: labelText(value), attributes: { value } }))
+  }
+  const kindWrapper = element('label', { className: 'form-field form-field--wide' })
+  kindWrapper.append('Relation ', requiredMarker(false), kind)
+  row.append(kindWrapper)
+  for (const [name, label, type, placeholder] of [
+    ['topic_target_proposal_id', 'Target topic proposal ID', 'text', 'e.g., proposal-AbCdEf123456'],
+    ['topic_target_revision', 'Target revision', 'number', 'e.g., 1'],
+    ['topic_relation_claim', 'Relation claim', 'textarea', 'e.g., This topic depends on the exact formal-fragment topic because its simulator consumes that rule set.'],
+    ['topic_relation_scope', 'Relation scope', 'textarea', 'e.g., These exact public revisions only; neither record is merged or replaced.'],
+  ]) {
+    const control = type === 'textarea'
+      ? element('textarea', { attributes: { name, rows: '3', maxlength: name === 'topic_relation_claim' ? '12000' : '4000', placeholder, required: '' } })
+      : element('input', { attributes: { name, type, min: type === 'number' ? '1' : undefined, placeholder, required: '' } })
+    const wrapper = element('label', { className: 'form-field form-field--wide' })
+    wrapper.append(`${label} `, requiredMarker(false), control)
+    row.append(wrapper)
+  }
+  const remove = element('button', { className: 'text-button', text: 'Remove topic relation', attributes: { type: 'button' } })
+  remove.addEventListener('click', () => row.remove())
+  row.append(remove)
+  list.append(row)
+}
+
+function configureTopics(root, form) {
+  root.querySelector('[data-add-topic-origin]').addEventListener('click', () => {
+    appendTopicOrigin(form)
+    syncConditionalSections(form)
+  })
+  root.querySelector('[data-add-topic-relation]').addEventListener('click', () => {
+    appendTopicRelation(form)
+    syncConditionalSections(form)
   })
 }
 
@@ -364,6 +484,15 @@ export function validateProposalForm(form) {
   }
   if (form.elements.reference_url.value && !form.elements.reference_label.value.trim()) {
     addInvalid(invalid, form.elements.reference_label, 'Add a readable label for this reference URL.')
+  }
+  if (form.elements.kind.value === 'research-topic') {
+    const loci = [...form.querySelectorAll('[name="topic_locus"]:checked')]
+    if (loci.length === 0) {
+      addInvalid(invalid, form.querySelector('[name="topic_locus"]'), 'Choose at least one research locus.')
+    }
+    if (form.querySelectorAll('[data-topic-origin-list] .topic-origin-row').length === 0) {
+      addInvalid(invalid, form.querySelector('[data-add-topic-origin]'), 'Add at least one exact problem or conjecture origin.')
+    }
   }
 
   for (const { control, message } of invalid) {
@@ -492,6 +621,41 @@ function proposalBody(form, parent, { includeTurnstile = true } = {}) {
       relation_scope: row.querySelector('[name="relation_scope"]').value,
     }))
   }
+  if (body.kind === 'research-topic') {
+    body.loci = [...form.querySelectorAll('[name="topic_locus"]:checked')].map((control) => control.value)
+    body.origins = [...form.querySelectorAll('[data-topic-origin-list] .topic-origin-row')].map((row) => {
+      const kind = row.querySelector('[name="topic_origin_kind"]').value
+      const id = row.querySelector('[name="topic_origin_id"]').value
+      const origin = {
+        origin_kind: kind,
+        relationship: row.querySelector('[name="topic_origin_relationship"]').value,
+        origin_rationale: row.querySelector('[name="topic_origin_rationale"]').value,
+      }
+      if (kind === 'canonical-problem-version') origin.canonical_problem_version_id = id
+      else if (kind === 'canonical-conjecture-version') origin.canonical_conjecture_version_id = id
+      else {
+        origin.target_proposal_id = id
+        origin.target_revision = Number.parseInt(row.querySelector('[name="topic_origin_revision"]').value, 10)
+      }
+      return origin
+    })
+    body.framings = [...form.querySelectorAll('[data-framing-list] .coordinate-framing-row')].map((row) => {
+      const coordinate = row.querySelector('[name="coordinate_key"]').value
+      const match = form._frontierItems.find((item) => item.coordinate_key === coordinate)
+      return {
+        coordinate_key: coordinate,
+        validation_generation: match?.validation_generation ?? '',
+        framing_rationale: row.querySelector('[name="framing_rationale"]').value,
+      }
+    })
+    body.topic_relations = [...form.querySelectorAll('[data-topic-relation-list] .topic-relation-row')].map((row) => ({
+      relation_kind: row.querySelector('[name="topic_relation_kind"]').value,
+      target_proposal_id: row.querySelector('[name="topic_target_proposal_id"]').value,
+      target_revision: Number.parseInt(row.querySelector('[name="topic_target_revision"]').value, 10),
+      relation_claim: row.querySelector('[name="topic_relation_claim"]').value,
+      relation_scope: row.querySelector('[name="topic_relation_scope"]').value,
+    }))
+  }
   if (includeTurnstile) body.turnstile_token = turnstileToken(form)
   if (parent) body.parent = parent
   return body
@@ -581,7 +745,13 @@ export async function initializeProposalNew(root = document) {
     form.querySelector('[data-error-summary]').hidden = true
   })
   renderDetailFields(form, config)
+  const requestedKind = new URL(globalThis.location.href).searchParams.get('kind')
+  if (requestedKind && config.proposal_kinds.includes(requestedKind)) {
+    kindSelect.value = requestedKind
+    renderDetailFields(form, config)
+  }
   configureFramings(root, form, config)
+  configureTopics(root, form)
   const walletLane = session.contributor?.principal_kind === 'base-wallet'
   if (walletLane) {
     root.querySelector('[data-authenticated-turnstile]').hidden = true

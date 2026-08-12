@@ -13,6 +13,7 @@ const proposalKinds = [
   'existing-member-correction',
   'ontology-change',
   'explanatory-conjecture',
+  'research-topic',
 ]
 
 async function mockSession(context, session) {
@@ -126,7 +127,7 @@ test('proposal hub is screenshot-ready and stable across signed-out and mocked s
   await signedIn.context.close()
 })
 
-test('dedicated proposal form exposes bounded examples for core and all eight typed families without prefilling values', async ({
+test('dedicated proposal form exposes bounded examples for core and all nine typed families without prefilling values', async ({
   browser,
 }, testInfo) => {
   const context = await browser.newContext({ viewport, colorScheme: 'dark', reducedMotion: 'reduce' })
@@ -168,6 +169,7 @@ test('dedicated proposal form exposes bounded examples for core and all eight ty
     'existing-member-correction': { count: 7, name: 'correction_rationale', example: 'e.g., The existing wording conflates normalized observation noise with calibrated detector noise.' },
     'ontology-change': { count: 5, name: 'proposed_definition', example: 'e.g., Observation interface denotes the declared map from modeled state to reported observable, separate from physical detector implementation.' },
     'explanatory-conjecture': { count: 6, name: 'failure_condition', example: 'e.g., The matched Kerr-minus-disabled lower envelope is nonpositive under the predeclared bounded parameter region.' },
+    'research-topic': { count: 5, name: 'next_discriminating_criticism_or_test', example: 'e.g., Find matched local inputs whose outputs differ only with remote graph context.' },
   }
   for (const [kind, contract] of Object.entries(typedFamilies)) {
     await page.locator('#proposal-kind').selectOption(kind)
@@ -207,7 +209,9 @@ test('every frontier coordinate opens an exact focused form while general entry 
   const cards = page.locator('.frontier-card')
   await expect(cards).toHaveCount(4)
   const links = page.locator('.frontier-conjecture-link')
+  const topicLinks = page.locator('.frontier-topic-link')
   await expect(links).toHaveCount(4)
+  await expect(topicLinks).toHaveCount(4)
   for (let index = 0; index < 4; index += 1) {
     const href = await links.nth(index).getAttribute('href')
     expect(href).toMatch(/\/proposals\/new\/\?coordinate=.*&generation=/u)
@@ -223,5 +227,15 @@ test('every frontier coordinate opens an exact focused form while general entry 
   await page.locator('#proposal-kind').selectOption('explanatory-conjecture')
   await expect(page.locator('[data-framing-list] .coordinate-framing-row')).toHaveCount(0)
   await expect(page.getByText('Leave this empty for a general, unclassified conjecture.')).toBeVisible()
+
+  const topicHref = await topicLinks.nth(1).getAttribute('href')
+  await page.goto(`${testInfo.project.use.baseURL}${topicHref}`, { waitUntil: 'networkidle' })
+  await expect(page.locator('#proposal-kind')).toHaveValue('research-topic')
+  await expect(page.locator('[data-framing-list] .coordinate-framing-row')).toHaveCount(1)
+
+  await page.goto(`${testInfo.project.use.baseURL}/proposals/new/?kind=research-topic`, { waitUntil: 'networkidle' })
+  await expect(page.locator('#proposal-kind')).toHaveValue('research-topic')
+  await expect(page.locator('[data-framing-list] .coordinate-framing-row')).toHaveCount(0)
+  await expect(page.getByText('Leave this empty for a general, unclassified conjecture or topic.')).toBeVisible()
   await context.close()
 })

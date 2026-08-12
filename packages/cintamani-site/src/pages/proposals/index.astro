@@ -3,7 +3,7 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
 ---
 <SiteLayout
   title="Cintamani · Public proposals and criticism"
-  description="Submit typed Cintamani siege proposals, criticism, scoped tests, and competing interpretations to a separate public review plane."
+  description="Submit typed Cintamani search-space proposals, criticism, scoped tests, and competing interpretations to a separate public review plane."
 >
   <section class="public-hero" aria-labelledby="public-title">
     <div>
@@ -45,12 +45,12 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
   <section class="section-shell public-hub-section public-hub-section--axes" aria-labelledby="overlay-title">
     <div class="section-heading">
       <div>
-        <p class="eyebrow">Siege-space overlay</p>
+        <p class="eyebrow">Search-space overlay</p>
         <h2 id="overlay-title">Canonical axes</h2>
       </div>
       <p>Counts show unreviewed public member proposals beside canonical members; they do not merge the planes.</p>
     </div>
-    <div class="siege-overlay" data-siege-overlay aria-live="polite"></div>
+    <div class="search-overlay" data-search-overlay aria-live="polite"></div>
   </section>
 
   <section class="section-shell public-hub-section public-proposals" aria-labelledby="public-list-title">
@@ -71,6 +71,7 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
             <option value="existing-member-correction">Explicit correction</option>
             <option value="ontology-change">Ontology change</option>
             <option value="explanatory-conjecture">Explanatory conjecture</option>
+            <option value="research-topic">Research topic</option>
           </select>
         </label>
         <label>Administrative state

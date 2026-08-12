@@ -99,6 +99,16 @@ const detailTables = Object.freeze({
       'failure_condition',
     ],
   },
+  'research-topic': {
+    table: 'research_topic_details',
+    fields: [
+      'open_problem',
+      'why_open',
+      'topic_scope',
+      'next_discriminating_criticism_or_test',
+      'non_claims',
+    ],
+  },
 })
 
 function insertDetail(database, proposalId, revision, kind, detail) {
@@ -150,6 +160,9 @@ export async function completeRevisionStatements(database, options) {
     assumptions: options.input.assumptions,
     framings: options.input.framings,
     relations: options.input.relations,
+    loci: options.input.loci,
+    origins: options.input.origins,
+    topic_relations: options.input.topic_relations,
   }
   const contentHash = await sha256Hex(canonicalize(content))
   const statements = insertRevisionStatements(database, options)
@@ -225,6 +238,67 @@ export async function completeRevisionStatements(database, options) {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).bind(
         `relation-${randomToken(18)}`,
+        options.proposalId,
+        options.revision,
+        relation.target_proposal_id,
+        relation.target_revision,
+        relation.relation_kind,
+        relation.relation_claim,
+        relation.relation_scope,
+        options.accountId,
+        options.current,
+        options.current,
+      ),
+    )
+  }
+  for (const [index, locusKind] of options.input.loci.entries()) {
+    statements.push(
+      database.prepare(
+        `INSERT INTO research_topic_loci (
+          topic_locus_id, proposal_id, revision, locus_order, locus_kind
+        ) VALUES (?, ?, ?, ?, ?)`,
+      ).bind(
+        `topic-locus-${randomToken(18)}`,
+        options.proposalId,
+        options.revision,
+        index + 1,
+        locusKind,
+      ),
+    )
+  }
+  for (const [index, origin] of options.input.origins.entries()) {
+    statements.push(
+      database.prepare(
+        `INSERT INTO research_topic_origins (
+          topic_origin_id, proposal_id, revision, origin_order, origin_kind,
+          canonical_problem_version_id, canonical_conjecture_version_id,
+          target_proposal_id, target_revision, relationship, origin_rationale
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).bind(
+        `topic-origin-${randomToken(18)}`,
+        options.proposalId,
+        options.revision,
+        index + 1,
+        origin.origin_kind,
+        origin.canonical_problem_version_id,
+        origin.canonical_conjecture_version_id,
+        origin.target_proposal_id,
+        origin.target_revision,
+        origin.relationship,
+        origin.origin_rationale,
+      ),
+    )
+  }
+  for (const relation of options.input.topic_relations) {
+    statements.push(
+      database.prepare(
+        `INSERT INTO research_topic_relations (
+          topic_relation_id, source_proposal_id, source_revision, target_proposal_id,
+          target_revision, relation_kind, relation_claim, relation_scope,
+          author_account_id, source_timestamp, recorded_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).bind(
+        `topic-relation-${randomToken(18)}`,
         options.proposalId,
         options.revision,
         relation.target_proposal_id,
@@ -1116,15 +1190,7 @@ async function readDetail(database, kind, proposalId, revision) {
     .prepare(`SELECT ${contract.fields.join(', ')} FROM ${contract.table} WHERE proposal_id = ? AND revision = ?`)
     .bind(proposalId, revision)
     .first()
-  if (kind === 'explanatory-conjecture' && detail) {
-    detail.assumptions = await all(
-      database,
-      `SELECT assumption_id,assumption_order,assumption_text
-       FROM explanatory_conjecture_assumptions
-       WHERE proposal_id=? AND revision=? ORDER BY assumption_order`,
-      proposalId,
-      revision,
-    )
+  if (['explanatory-conjecture', 'research-topic'].includes(kind) && detail) {
     detail.framings = await all(
       database,
       `SELECT framing_id,framing_order,coordinate_key_version,coordinate_key,
@@ -1135,12 +1201,51 @@ async function readDetail(database, kind, proposalId, revision) {
       proposalId,
       revision,
     )
+  }
+  if (kind === 'explanatory-conjecture' && detail) {
+    detail.assumptions = await all(
+      database,
+      `SELECT assumption_id,assumption_order,assumption_text
+       FROM explanatory_conjecture_assumptions
+       WHERE proposal_id=? AND revision=? ORDER BY assumption_order`,
+      proposalId,
+      revision,
+    )
     detail.relations = await all(
       database,
       `SELECT relation_id,relation_kind,target_proposal_id,target_revision,
               relation_claim,relation_scope,source_timestamp,recorded_at
        FROM conjecture_relations
        WHERE source_proposal_id=? AND source_revision=? ORDER BY relation_id`,
+      proposalId,
+      revision,
+    )
+  }
+  if (kind === 'research-topic' && detail) {
+    detail.loci = await all(
+      database,
+      `SELECT topic_locus_id,locus_order,locus_kind
+       FROM research_topic_loci
+       WHERE proposal_id=? AND revision=? ORDER BY locus_order`,
+      proposalId,
+      revision,
+    )
+    detail.origins = await all(
+      database,
+      `SELECT topic_origin_id,origin_order,origin_kind,canonical_problem_version_id,
+              canonical_conjecture_version_id,target_proposal_id,target_revision,
+              relationship,origin_rationale
+       FROM research_topic_origins
+       WHERE proposal_id=? AND revision=? ORDER BY origin_order`,
+      proposalId,
+      revision,
+    )
+    detail.topic_relations = await all(
+      database,
+      `SELECT topic_relation_id,relation_kind,target_proposal_id,target_revision,
+              relation_claim,relation_scope,source_timestamp,recorded_at
+       FROM research_topic_relations
+       WHERE source_proposal_id=? AND source_revision=? ORDER BY topic_relation_id`,
       proposalId,
       revision,
     )

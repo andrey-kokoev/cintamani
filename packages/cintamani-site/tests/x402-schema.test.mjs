@@ -226,7 +226,7 @@ function advanceToSettled(database) {
   insertEntitlementEvent(database, 2, "pending-settlement", "available", "settlement-stored");
 }
 
-test("schema v5 preserves the x402 payment plane without plaintext wallet or settlement data", () => {
+test("schema v6 preserves the x402 payment plane without plaintext wallet or settlement data", () => {
   const database = openThrough();
   assert.equal(
     database
@@ -234,7 +234,7 @@ test("schema v5 preserves the x402 payment plane without plaintext wallet or set
         "SELECT metadata_value FROM public_schema_metadata WHERE metadata_key = 'schema_version'",
       )
       .get().metadata_value,
-    "5",
+    "6",
   );
   assert.equal(database.prepare("PRAGMA integrity_check").get().integrity_check, "ok");
   assert.deepEqual(database.prepare("PRAGMA foreign_key_check").all(), []);

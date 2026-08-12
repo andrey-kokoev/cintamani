@@ -141,6 +141,29 @@ function renderRevision(revision, data) {
     }
     article.append(element('h4', { text: 'Inter-conjecture claims' }), relations)
   }
+  if (revision.detail.loci?.length) {
+    const loci = element('ul', { className: 'evidence-list' })
+    for (const item of revision.detail.loci) loci.append(element('li', { text: label(item.locus_kind) }))
+    article.append(element('h4', { text: 'Research loci' }), loci)
+  }
+  if (revision.detail.origins?.length) {
+    const origins = element('ul', { className: 'evidence-list' })
+    for (const item of revision.detail.origins) {
+      const target = item.canonical_problem_version_id ?? item.canonical_conjecture_version_id ??
+        `${item.target_proposal_id} revision ${item.target_revision}`
+      origins.append(element('li', { text: `${label(item.relationship)} ${target}: ${item.origin_rationale}` }))
+    }
+    article.append(element('h4', { text: 'Exact problem or conjecture origins' }), origins)
+  }
+  if (revision.detail.topic_relations?.length) {
+    const relations = element('ul', { className: 'evidence-list' })
+    for (const item of revision.detail.topic_relations) {
+      relations.append(element('li', {
+        text: `${label(item.relation_kind)} ${item.target_proposal_id} revision ${item.target_revision}: ${item.relation_claim}`,
+      }))
+    }
+    article.append(element('h4', { text: 'Exact-version topic relation claims' }), relations)
+  }
   const tombstone = moderationTombstone(data, 'proposal-revision', {
     proposal_id: revision.proposal_id,
     revision: revision.revision,
@@ -225,7 +248,36 @@ export function criticismFocusOptions(revisionDetail) {
     { value: 'whole-proposal|', label: 'Whole proposal revision' },
     { value: 'other-explicit|', label: 'Other explicit focus' },
   ]
-  if (!revisionDetail || typeof revisionDetail.problem_statement !== 'string') return options
+  if (!revisionDetail) return options
+  if (typeof revisionDetail.open_problem === 'string') {
+    options.splice(
+      1,
+      0,
+      { value: 'topic-open-problem|', label: 'Open problem' },
+      { value: 'topic-why-open|', label: 'Why it remains open' },
+      { value: 'topic-scope|', label: 'Topic scope' },
+      { value: 'topic-next-test|', label: 'Next discriminating criticism or test' },
+      { value: 'topic-non-claims|', label: 'Explicit non-claims' },
+      ...(revisionDetail.loci ?? []).map((item) => ({
+        value: `topic-locus|${item.topic_locus_id}`,
+        label: `Research locus ${label(item.locus_kind)}`,
+      })),
+      ...(revisionDetail.origins ?? []).map((item) => ({
+        value: `topic-origin|${item.topic_origin_id}`,
+        label: `Exact origin ${item.origin_order}`,
+      })),
+      ...(revisionDetail.framings ?? []).map((item) => ({
+        value: `topic-coordinate-framing|${item.framing_id}`,
+        label: `Search-coordinate framing ${item.framing_order}`,
+      })),
+      ...(revisionDetail.topic_relations ?? []).map((item) => ({
+        value: `topic-relation|${item.topic_relation_id}`,
+        label: `Topic relation ${label(item.relation_kind)}`,
+      })),
+    )
+    return options
+  }
+  if (typeof revisionDetail.problem_statement !== 'string') return options
   options.splice(
     1,
     0,
@@ -781,7 +833,7 @@ export async function initializeProposalDetail(root = document) {
     listingNotice.hidden = data.proposal_listing_visibility !== 'hidden'
     listingNotice.textContent =
       data.proposal_listing_visibility === 'hidden'
-        ? 'This proposal is hidden from collection and siege-overlay listings by the current ordered moderation action. Its exact record and history remain public here.'
+        ? 'This proposal is hidden from collection and search-overlay listings by the current ordered moderation action. Its exact record and history remain public here.'
         : ''
     root.querySelector('[data-revisions]').replaceChildren(...data.revisions.map((revision) => renderRevision(revision, data)))
     const states = root.querySelector('[data-state-history]')

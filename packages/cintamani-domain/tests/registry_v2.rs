@@ -112,8 +112,8 @@ fn frozen_v1_bytes_rebuild_idempotently_into_v2() {
     let first = rebuild(&paths(&temp)).unwrap();
     let logical = deterministic_logical_readback(&paths(&temp).database_path).unwrap();
     let second = rebuild(&paths(&temp)).unwrap();
-    assert_eq!(first.schema_version, "3");
-    assert_eq!(second.migration_kind, "owned-v3-rebuild");
+    assert_eq!(first.schema_version, "4");
+    assert_eq!(second.migration_kind, "owned-v4-rebuild");
     assert_eq!(
         logical,
         deterministic_logical_readback(&paths(&temp).database_path).unwrap()
@@ -413,6 +413,170 @@ fn framing_validator_rejects_coordinate_key_classification_and_generation_drift(
     }
 }
 
+fn research_topic_admission() -> AdmissionV2 {
+    AdmissionV2 {
+        record_id: "admission-test-research-topic".to_owned(),
+        schema_version: 2,
+        admitted_at: "2026-08-12".to_owned(),
+        description: "Test a problem-derived topic without adding scientific standing.".to_owned(),
+        changes: vec![
+            Change::ResearchTopic {
+                topic_id: "topic-test-kerr-memory".to_owned(),
+                label: "Test Kerr memory criticism topic".to_owned(),
+            },
+            Change::ResearchTopicVersion {
+                topic_version_id: "topic-test-kerr-memory-v1".to_owned(),
+                topic_id: "topic-test-kerr-memory".to_owned(),
+                revision: 1,
+                event_kind: "definition".to_owned(),
+                occurred_at: "2026-08-12".to_owned(),
+                title: "Test the boundary of the Kerr memory explanation".to_owned(),
+                open_problem: "Which mechanism is essential for the local memory advantage?"
+                    .to_owned(),
+                why_open: "The admitted tests are bounded and leave alternative explanations."
+                    .to_owned(),
+                scope: "Existing normalized local evidence only.".to_owned(),
+                next_discriminating_criticism_or_test:
+                    "Construct a matched control that removes the proposed mechanism.".to_owned(),
+                non_claims: "No device validation, truth, importance, or roadmap priority."
+                    .to_owned(),
+            },
+            Change::ResearchTopicLocus {
+                locus_id: "locus-topic-test-theoretical".to_owned(),
+                topic_version_id: "topic-test-kerr-memory-v1".to_owned(),
+                locus_order: 1,
+                locus_kind: "theoretical".to_owned(),
+            },
+            Change::ResearchTopicLocus {
+                locus_id: "locus-topic-test-simulation".to_owned(),
+                topic_version_id: "topic-test-kerr-memory-v1".to_owned(),
+                locus_order: 2,
+                locus_kind: "simulation".to_owned(),
+            },
+            Change::ResearchTopicOrigin {
+                origin_id: "origin-topic-test-problem".to_owned(),
+                topic_version_id: "topic-test-kerr-memory-v1".to_owned(),
+                origin_order: 1,
+                origin_kind: "problem-version".to_owned(),
+                problem_version_id: Some(
+                    "problem-for-conjecture-kerr-quadrature-linear-memory-lead-v1".to_owned(),
+                ),
+                conjecture_version_id: None,
+                relationship: "derived-from".to_owned(),
+                rationale: "The topic names a criticism of this exact motivating problem."
+                    .to_owned(),
+            },
+            Change::ResearchTopicOrigin {
+                origin_id: "origin-topic-test-conjecture".to_owned(),
+                topic_version_id: "topic-test-kerr-memory-v1".to_owned(),
+                origin_order: 2,
+                origin_kind: "conjecture-version".to_owned(),
+                problem_version_id: None,
+                conjecture_version_id: Some(
+                    "conjecture-kerr-quadrature-linear-memory-lead-v1".to_owned(),
+                ),
+                relationship: "criticizes".to_owned(),
+                rationale: "The next test criticizes this exact conjecture statement.".to_owned(),
+            },
+            Change::ResearchTopicFramingLink {
+                framing_link_id: "framing-link-topic-test".to_owned(),
+                topic_version_id: "topic-test-kerr-memory-v1".to_owned(),
+                conjecture_framing_id:
+                    "framing-backfill-conjecture-kerr-quadrature-linear-memory-lead-v1".to_owned(),
+                relationship: "criticizes-framing".to_owned(),
+                rationale: "The topic remains bounded to the exact admitted search framing."
+                    .to_owned(),
+            },
+            Change::ResearchTopicWorkflowEvent {
+                workflow_event_id: "workflow-topic-test-r1".to_owned(),
+                topic_id: "topic-test-kerr-memory".to_owned(),
+                revision: 1,
+                event_kind: "administrative-workflow".to_owned(),
+                occurred_at: "2026-08-12".to_owned(),
+                status: "active".to_owned(),
+                rationale: "Available for criticism.".to_owned(),
+                scope: "Administrative visibility only; not an epistemic judgment.".to_owned(),
+            },
+            provenance(
+                "p-topic-test",
+                ProvenanceTarget::ResearchTopic("topic-test-kerr-memory".to_owned()),
+            ),
+            provenance(
+                "p-topic-test-v1",
+                ProvenanceTarget::ResearchTopicVersion("topic-test-kerr-memory-v1".to_owned()),
+            ),
+            provenance(
+                "p-topic-test-workflow",
+                ProvenanceTarget::ResearchTopicWorkflowEvent("workflow-topic-test-r1".to_owned()),
+            ),
+        ],
+    }
+}
+
+#[test]
+fn research_topics_require_exact_origins_and_expose_bounded_typed_views() {
+    let temp = workspace();
+    let registry = paths(&temp);
+    rebuild(&registry).unwrap();
+    let draft = temp.path().join("research-topic.json");
+    draft_admission(&draft, &research_topic_admission()).unwrap();
+    let preview = preview_admission(&registry, &draft, &authority()).unwrap();
+    assert_eq!(preview.relation_count_deltas["research_topics"], 1);
+    assert_eq!(preview.relation_count_deltas["research_topic_origins"], 2);
+    assert_eq!(preview.relation_count_deltas["siege_cells"], 0);
+    promote_admission(&registry, &draft, &authority()).unwrap();
+
+    let page = list_page(
+        &registry.database_path,
+        Collection::ResearchTopics,
+        &QueryFilters {
+            locus: Some("simulation".to_owned()),
+            origin: Some("conjecture-kerr-quadrature-linear-memory-lead-v1".to_owned()),
+            ..Default::default()
+        },
+        None,
+        1,
+    )
+    .unwrap();
+    assert_eq!(page.items.len(), 1);
+    assert_eq!(page.items[0]["status"], "active");
+    assert_eq!(page.items[0]["origins"].as_array().unwrap().len(), 2);
+    let history = entity_history(
+        &registry.database_path,
+        Collection::ResearchTopics,
+        "topic-test-kerr-memory",
+        None,
+        10,
+    )
+    .unwrap();
+    assert_eq!(history.items.len(), 2);
+    let explanation = why(
+        &registry.database_path,
+        Collection::ResearchTopics,
+        "topic-test-kerr-memory",
+        10,
+    )
+    .unwrap();
+    assert_eq!(explanation["provenance"].as_array().unwrap().len(), 3);
+
+    let mut invalid = research_topic_admission();
+    invalid.record_id = "admission-test-topic-no-origin".to_owned();
+    invalid
+        .changes
+        .retain(|change| !matches!(change, Change::ResearchTopicOrigin { .. }));
+    let invalid_draft = temp.path().join("research-topic-no-origin.json");
+    draft_admission(&invalid_draft, &invalid).unwrap();
+    let next_authority = AdmissionAuthority {
+        admitted_by: "cintamani.architect",
+        authority_kind: "test-review",
+        authority_ref: "test-topic-no-origin",
+        expected_head: &verify_chain(&registry.workspace_root, &registry.chain_root)
+            .unwrap()
+            .generation,
+    };
+    assert!(preview_admission(&registry, &invalid_draft, &next_authority).is_err());
+}
+
 #[test]
 fn dimensions_view_preserves_axis_history_current_assessments_and_empty_axes() {
     let temp = workspace();
@@ -571,7 +735,7 @@ fn dimensions_view_preserves_axis_history_current_assessments_and_empty_axes() {
     assert_eq!(missing_view_report.migration_violations, 1);
     assert!(missing_view_report.migration_violation_details[0].contains("siege_space_dimensions"));
     let error = dimensions(&registry.database_path).unwrap_err().to_string();
-    assert!(error.contains("rebuild the owned schema-2 projection"));
+    assert!(error.contains("rebuild the owned schema-4 projection"));
 
     let empty_database = temp.path().join("empty-schema-2.sqlite");
     let empty = Connection::open(&empty_database).unwrap();

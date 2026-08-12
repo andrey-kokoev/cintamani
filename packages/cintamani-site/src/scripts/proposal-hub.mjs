@@ -36,8 +36,8 @@ function renderProposalList(root, data) {
   list.dataset.settled = 'true'
 }
 
-function renderSiegeOverlay(root, config, proposals) {
-  const overlay = root.querySelector('[data-siege-overlay]')
+function renderSearchOverlay(root, config, proposals) {
+  const overlay = root.querySelector('[data-search-overlay]')
   overlay.replaceChildren()
   const kindForAxis = {
     'theoretical-model': 'theoretical-model-member',
@@ -77,7 +77,7 @@ export async function initializeProposalHub(root = document) {
     if (state) filters.set('state', state)
     const data = await readJson(`/api/proposals?${filters}`)
     renderProposalList(root, data)
-    renderSiegeOverlay(root, config, data.items)
+    renderSearchOverlay(root, config, data.items)
     status.hidden = true
   }
 

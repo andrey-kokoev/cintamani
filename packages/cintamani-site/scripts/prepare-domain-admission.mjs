@@ -296,6 +296,89 @@ function explanatoryConjectureChanges(canonical, contentHash) {
   return changes
 }
 
+function researchTopicChanges(canonical, contentHash) {
+  const revision = canonical.selected_revision
+  const detail = revision.detail
+  const identity = safeId(canonical.proposal.proposal_id)
+  const topicId = `topic-${identity}`
+  const topicVersionId = `${topicId}-version-1`
+  const workflowEventId = `${topicId}-workflow-1`
+  const occurredAt = revision.source_timestamp
+  const changes = [
+    { kind: 'research-topic', topic_id: topicId, label: revision.title },
+    {
+      kind: 'research-topic-version',
+      topic_version_id: topicVersionId,
+      topic_id: topicId,
+      revision: 1,
+      event_kind: 'definition',
+      occurred_at: occurredAt,
+      title: revision.title,
+      open_problem: detail.open_problem,
+      why_open: detail.why_open,
+      scope: detail.topic_scope,
+      next_discriminating_criticism_or_test: detail.next_discriminating_criticism_or_test,
+      non_claims: detail.non_claims,
+    },
+    {
+      kind: 'research-topic-workflow-event',
+      workflow_event_id: workflowEventId,
+      topic_id: topicId,
+      revision: 1,
+      event_kind: 'administrative-workflow',
+      occurred_at: occurredAt,
+      status: 'active',
+      rationale: 'Maintainer selected a bounded fallible research prompt for governed admission review.',
+      scope: revision.scope,
+    },
+  ]
+  for (const [index, locus] of detail.loci.entries()) {
+    changes.push({
+      kind: 'research-topic-locus',
+      locus_id: `${topicVersionId}-locus-${index + 1}`,
+      topic_version_id: topicVersionId,
+      locus_order: index + 1,
+      locus_kind: locus.locus_kind ?? locus,
+    })
+  }
+  for (const [index, origin] of detail.origins.entries()) {
+    if (origin.origin_kind === 'public-explanatory-conjecture-revision') {
+      throw new Error(
+        'a public-only conjecture origin must first be admitted; the bridge will not invent canonical problem/conjecture identity',
+      )
+    }
+    changes.push({
+      kind: 'research-topic-origin',
+      origin_id: `${topicVersionId}-origin-${index + 1}`,
+      topic_version_id: topicVersionId,
+      origin_order: index + 1,
+      origin_kind: origin.origin_kind === 'canonical-problem-version' ? 'problem-version' : 'conjecture-version',
+      problem_version_id: origin.canonical_problem_version_id,
+      conjecture_version_id: origin.canonical_conjecture_version_id,
+      relationship: origin.relationship,
+      rationale: origin.origin_rationale,
+    })
+  }
+  for (const framing of detail.framings) {
+    throw new Error(
+      `topic coordinate ${framing.coordinate_key} needs an exact admitted conjecture framing link; the bridge will not create a prospective coordinate`,
+    )
+  }
+  for (const relation of detail.topic_relations) {
+    throw new Error(
+      `public topic relation ${relation.topic_relation_id ?? relation.relation_kind} needs both governed exact topic versions before admission`,
+    )
+  }
+  for (const [targetKind, targetId, suffix, provenanceKind, claim] of [
+    ['research-topic', topicId, 'identity-definition', 'definition', `Research-topic identity selected from public proposal ${canonical.proposal.proposal_id} revision ${revision.revision}.`],
+    ['research-topic-version', topicVersionId, 'version-definition', 'definition', `Exact fallible topic revision selected from public proposal ${canonical.proposal.proposal_id} revision ${revision.revision}.`],
+    ['research-topic-workflow-event', workflowEventId, 'workflow-limitation', 'limitation', 'Active is an administrative discoverability state, not truth, importance, confidence, priority, consensus, or roadmap authority.'],
+  ]) {
+    changes.push(provenance(targetKind, targetId, provenanceKind, `${claim} Export SHA-256 ${contentHash}.`, suffix))
+  }
+  return changes
+}
+
 export function verifyExport(document) {
   const canonical = document.canonical ?? document
   const expectedHash = document.content_sha256
@@ -317,6 +400,9 @@ export function prepareAdmission(document, options) {
   let changes = axisChanges(canonical, contentHash)
   if (!changes && kind === 'explanatory-conjecture') {
     changes = explanatoryConjectureChanges(canonical, contentHash)
+  }
+  if (!changes && kind === 'research-topic') {
+    changes = researchTopicChanges(canonical, contentHash)
   }
   if (!changes && kind === 'existing-member-assessment') {
     if (!Number.isInteger(options.assessmentRevision) || options.assessmentRevision < 1) {

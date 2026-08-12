@@ -1,6 +1,6 @@
-# Cintamani domain siege registry
+# Cintamani domain search registry
 
-This Rust package governs and queries Cintamani's categorical siege memory. Schema version 3 is a
+This Rust package governs and queries Cintamani's categorical search memory. Schema version 4 is a
 rebuildable SQLite projection, not a scientific database and not experimental evidence. It keeps
 stable domain identities separate from append-only epistemic history, exact provenance, and
 derived runtime observations.
@@ -17,7 +17,7 @@ Five surfaces remain deliberately distinct:
   migration of the four existing records into the chain. It is not their original scientific
   admission authority and supplies no new scientific evidence.
 - `.narada/db/cintamani-domain.sqlite` is an ignored, disposable Site projection. Rebuild creates
-  and fully validates a sibling database before atomically replacing an owned v1/v2/v3 projection.
+  and fully validates a sibling database before atomically replacing an owned v1/v2/v3/v4 projection.
   Chain, parse, schema, history, path, provenance, tracked-source, and present-artifact failures
   preserve the existing database bytes. A nonempty foreign database is never adopted or cleared.
 - `packages/kerr-capacity/output/*/results.sqlite` files are ignored per-run evidence stores. The
@@ -49,11 +49,11 @@ invariant. Definition and limitation provenance are explicit and cannot silently
 
 The category-oriented representation has axis-qualified process ports, parallel same-boundary
 typed morphisms, and ordered morphism paths. Composite foreign keys bind morphisms and paths to the
-same model/material/mechanism/interface axes as their siege cell. Validation also requires
+same model/material/mechanism/interface axes as their search cell. Validation also requires
 contiguous path positions, declared first/last endpoints, and exact target-to-source adjacency
 between steps.
 
-The SQLite `siege_space_dimensions` view makes the categorical siege coordinates first-class. Its
+The SQLite compatibility view `siege_space_dimensions` makes categorical search coordinates first-class. Its
 governed order preserves the original framing: (1) theoretical model, (2) physical material, and
 (3) physical calculation mechanism. (4) observation interface is labeled
 `later-added-fourth-dimension`, rather than being retroactively presented as part of the original
@@ -114,7 +114,7 @@ explicit correction, and ontology change are never inferred by the bridge.
 Selected explanatory-conjecture exports can instead produce candidate problem/version and
 conjecture/version identities, an explicitly open non-evidentiary disposition, zero or more
 generation-pinned framings, and exact definition/limitation provenance. A conjecture can remain
-unclassified or frame a gap: neither case creates a siege cell, morphism, path, assessment, or
+unclassified or frame a gap: neither case creates a search cell, morphism, path, assessment, or
 scientific status. The bridge still only validates and previews; it never advances HEAD.
 Public exact-version relation labels—including rivalry, equivalence, reclassification,
 incompatibility, supersession, and shared-problem claims—remain criticizable public content. The
@@ -165,7 +165,7 @@ four ordered member IDs, plus a separate generation pin used to validate its his
 its classification is exactly `admitted-cell` or `gap`. Coordinates organize conjectures. They are
 not themselves evidence, physical possibilities, or epistemic assessments.
 
-`dimensions` reads the schema-level `siege_space_dimensions` view and groups its rows beneath the
+`dimensions` reads the legacy-named schema view `siege_space_dimensions` and groups its rows beneath the
 fixed four-axis metadata. Both axis and member ordering are deterministic; the fixed metadata makes
 empty axes explicit without inventing placeholder member identities.
 
@@ -195,8 +195,10 @@ addition is authorized.
 
 Migration `001_v1.sql` remains the historical v1 schema. `002_v2.sql` is the clean v2 projection
 schema. `003_v3.sql` adds stable problem identities/versions and exact, generation-pinned
-one-to-many conjecture framings while removing the requirement that every conjecture own a siege
-cell. Rebuild reads the governed chain directly, semantically maps the four v1 records without
+one-to-many conjecture framings while removing the requirement that every conjecture own a search
+cell. `004_v4.sql` adds typed research-topic identities, append-only versions and administrative
+workflow, multi-locus classification, exact origins, criticizable links, and deterministic current
+views. Rebuild reads the governed chain directly, semantically maps the four v1 records without
 editing them, applies later typed changes, and records the exact clean/upgrade/rebuild lineage.
 
 `check` reports and enforces projection identity, migration lineage, SQLite integrity, foreign
@@ -230,3 +232,12 @@ do not strengthen those scientific claims.
 The problem/framing migration and public bridge are engineering structure, not a new experiment or
 scientific result. They create no Ledger entry. Concurrent computing-paradigms site work is outside
 this package change and is neither required nor modified by the domain migration.
+
+## Search terminology and durable compatibility
+
+Human-facing copy, CLI/MCP descriptions, and presentation symbols use **search space**, **search
+coordinate**, **search cell**, and **search overlay**. Historical v1–v4 contracts retain internal
+`siege_*` names: SQLite tables/views such as `siege_cells` and `siege_space_dimensions`, serialized
+admission fields and Rust `Change::SiegeCell*` variants, and registry count keys. Renaming those
+durable identifiers would break frozen admission bytes, hashes, and consumers; retaining them does
+not make them current product terminology.

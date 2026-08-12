@@ -38,6 +38,8 @@ pub enum Collection {
     Conjectures,
     ConjectureVersions,
     ConjectureFramings,
+    ResearchTopics,
+    ResearchTopicVersions,
     Criteria,
     Parameters,
     Regions,
@@ -52,7 +54,7 @@ pub enum Collection {
 }
 
 impl Collection {
-    pub const ALL: [Self; 23] = [
+    pub const ALL: [Self; 25] = [
         Self::Models,
         Self::Materials,
         Self::Mechanisms,
@@ -65,6 +67,8 @@ impl Collection {
         Self::Conjectures,
         Self::ConjectureVersions,
         Self::ConjectureFramings,
+        Self::ResearchTopics,
+        Self::ResearchTopicVersions,
         Self::Criteria,
         Self::Parameters,
         Self::Regions,
@@ -92,6 +96,8 @@ impl Collection {
             Self::Conjectures => "conjectures",
             Self::ConjectureVersions => "conjecture-versions",
             Self::ConjectureFramings => "conjecture-framings",
+            Self::ResearchTopics => "research-topics",
+            Self::ResearchTopicVersions => "research-topic-versions",
             Self::Criteria => "criteria",
             Self::Parameters => "parameters",
             Self::Regions => "regions",
@@ -134,6 +140,9 @@ pub struct QueryFilters {
     pub source_admission_id: Option<String>,
     pub ledger_number: Option<u32>,
     pub text: Option<String>,
+    pub locus: Option<String>,
+    pub origin: Option<String>,
+    pub coordinate: Option<String>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -150,7 +159,7 @@ pub struct FrontierFilters {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct SiegeSpaceDimensionMember {
+pub struct SearchSpaceDimensionMember {
     pub member_order: i64,
     pub member_id: String,
     pub member_name: String,
@@ -165,19 +174,19 @@ pub struct SiegeSpaceDimensionMember {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct SiegeSpaceDimension {
+pub struct SearchSpaceDimension {
     pub dimension_order: i64,
     pub dimension_key: String,
     pub dimension_name: String,
     pub dimension_role: String,
     pub member_count: usize,
-    pub members: Vec<SiegeSpaceDimensionMember>,
+    pub members: Vec<SearchSpaceDimensionMember>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
-pub struct SiegeSpaceDimensions {
+pub struct SearchSpaceDimensions {
     pub collection: String,
-    pub items: Vec<SiegeSpaceDimension>,
+    pub items: Vec<SearchSpaceDimension>,
 }
 
 const DIMENSION_DEFINITIONS: [(i64, &str, &str, &str); 4] = [
@@ -235,7 +244,7 @@ pub struct CoordinateMetadata {
     pub status: Option<String>,
 }
 
-pub fn dimensions(database: &Path) -> Result<SiegeSpaceDimensions> {
+pub fn dimensions(database: &Path) -> Result<SearchSpaceDimensions> {
     let connection = open(database)?;
     let mut statement = connection
         .prepare(
@@ -246,7 +255,7 @@ pub fn dimensions(database: &Path) -> Result<SiegeSpaceDimensions> {
          FROM siege_space_dimensions ORDER BY dimension_order,member_order,member_id",
         )
         .context(
-            "siege_space_dimensions is unavailable; rebuild the owned schema-2 projection first",
+            "legacy compatibility view siege_space_dimensions is unavailable; rebuild the owned schema-4 projection first",
         )?;
     let rows = statement.query_map([], |row| {
         Ok((
@@ -254,7 +263,7 @@ pub fn dimensions(database: &Path) -> Result<SiegeSpaceDimensions> {
             row.get::<_, String>(1)?,
             row.get::<_, String>(2)?,
             row.get::<_, String>(3)?,
-            SiegeSpaceDimensionMember {
+            SearchSpaceDimensionMember {
                 member_order: row.get(4)?,
                 member_id: row.get(5)?,
                 member_name: row.get(6)?,
@@ -272,7 +281,7 @@ pub fn dimensions(database: &Path) -> Result<SiegeSpaceDimensions> {
 
     let mut items = DIMENSION_DEFINITIONS
         .iter()
-        .map(|(order, key, name, role)| SiegeSpaceDimension {
+        .map(|(order, key, name, role)| SearchSpaceDimension {
             dimension_order: *order,
             dimension_key: (*key).to_owned(),
             dimension_name: (*name).to_owned(),
@@ -283,27 +292,27 @@ pub fn dimensions(database: &Path) -> Result<SiegeSpaceDimensions> {
         .collect::<Vec<_>>();
     for row in rows {
         let (order, key, name, role, member) = row?;
-        let index = usize::try_from(order - 1).context("invalid siege dimension order")?;
+        let index = usize::try_from(order - 1).context("invalid search dimension order")?;
         let dimension = items
             .get_mut(index)
-            .context("siege dimension view exposed an unknown axis")?;
+            .context("search dimension view exposed an unknown axis")?;
         if dimension.dimension_order != order
             || dimension.dimension_key != key
             || dimension.dimension_name != name
             || dimension.dimension_role != role
         {
-            bail!("siege dimension view metadata does not match the governed four-axis contract");
+            bail!("search dimension view metadata does not match the governed four-axis contract");
         }
         let expected_member_order = i64::try_from(dimension.members.len() + 1)?;
         if member.member_order != expected_member_order {
-            bail!("siege dimension member order is not contiguous");
+            bail!("search dimension member order is not contiguous");
         }
         dimension.members.push(member);
     }
     for dimension in &mut items {
         dimension.member_count = dimension.members.len();
     }
-    Ok(SiegeSpaceDimensions {
+    Ok(SearchSpaceDimensions {
         collection: "dimensions".to_owned(),
         items,
     })
@@ -349,6 +358,7 @@ pub fn list_page(
         sql.push_str(" AND lower(payload) LIKE ?");
         values.push(SqlValue::Text(format!("%{}%", text.to_ascii_lowercase())));
     }
+    push_topic_filters(&mut sql, &mut values, collection, filters)?;
     sql.push_str(" ORDER BY key LIMIT ?");
     values.push(SqlValue::Integer((limit + 1) as i64));
     let mut statement = connection.prepare(&sql)?;
@@ -376,6 +386,50 @@ pub fn list_page(
         items,
         next_cursor,
     })
+}
+
+fn push_topic_filters(
+    sql: &mut String,
+    values: &mut Vec<SqlValue>,
+    collection: Collection,
+    filters: &QueryFilters,
+) -> Result<()> {
+    let topic_id = match collection {
+        Collection::ResearchTopics => "q.key",
+        Collection::ResearchTopicVersions => {
+            "(SELECT topic_id FROM research_topic_versions WHERE topic_version_id=q.key)"
+        }
+        _ if filters.locus.is_some()
+            || filters.origin.is_some()
+            || filters.coordinate.is_some() =>
+        {
+            bail!("locus, origin, and coordinate filters apply only to research topics")
+        }
+        _ => return Ok(()),
+    };
+    let version_id = format!(
+        "(SELECT topic_version_id FROM current_research_topic_versions WHERE topic_id={topic_id})"
+    );
+    if let Some(locus) = &filters.locus {
+        sql.push_str(&format!(
+            " AND EXISTS(SELECT 1 FROM research_topic_loci l WHERE l.topic_version_id={version_id} AND l.locus_kind=?)"
+        ));
+        values.push(SqlValue::Text(locus.clone()));
+    }
+    if let Some(origin) = &filters.origin {
+        sql.push_str(&format!(
+            " AND EXISTS(SELECT 1 FROM research_topic_origins o WHERE o.topic_version_id={version_id} AND (o.problem_version_id=? OR o.conjecture_version_id=?))"
+        ));
+        values.push(SqlValue::Text(origin.clone()));
+        values.push(SqlValue::Text(origin.clone()));
+    }
+    if let Some(coordinate) = &filters.coordinate {
+        sql.push_str(&format!(
+            " AND EXISTS(SELECT 1 FROM research_topic_framing_links l JOIN conjecture_framings f ON f.framing_id=l.conjecture_framing_id WHERE l.topic_version_id={version_id} AND f.coordinate_key=?)"
+        ));
+        values.push(SqlValue::Text(coordinate.clone()));
+    }
+    Ok(())
 }
 
 pub fn entity_show(database: &Path, collection: Collection, id: &str) -> Result<Value> {
@@ -644,6 +698,21 @@ fn provenance_match(collection: Collection, key: &str) -> String {
              p.criterion_id IN (SELECT criterion_id FROM falsification_criteria WHERE conjecture_version_id={key})"
         ),
         Collection::ConjectureFramings => format!("p.conjecture_framing_id={key}"),
+        Collection::ResearchTopics => format!(
+            "p.research_topic_id={key} OR p.research_topic_version_id IN (
+                SELECT topic_version_id FROM research_topic_versions WHERE topic_id={key}) OR
+             p.research_topic_workflow_event_id IN (
+                SELECT workflow_event_id FROM research_topic_workflow_events WHERE topic_id={key}) OR
+             p.research_topic_relation_id IN (
+                SELECT relation_id FROM research_topic_relations r
+                JOIN research_topic_versions v ON v.topic_version_id=r.source_topic_version_id
+                WHERE v.topic_id={key})"
+        ),
+        Collection::ResearchTopicVersions => format!(
+            "p.research_topic_version_id={key} OR p.research_topic_relation_id IN (
+                SELECT relation_id FROM research_topic_relations
+                WHERE source_topic_version_id={key} OR target_topic_version_id={key})"
+        ),
         Collection::Criteria => format!("p.criterion_id={key}"),
         Collection::Parameters => format!("p.parameter_id={key}"),
         Collection::Regions => format!(
@@ -726,6 +795,89 @@ fn collection_spec(collection: Collection) -> CollectionSpec {
         Collection::ConjectureFramings => (
             "SELECT f.framing_id key,json_object('framing_id',f.framing_id,'conjecture_version_id',f.conjecture_version_id,'framing_order',f.framing_order,'coordinate_key_version',f.coordinate_key_version,'coordinate_key',f.coordinate_key,'validation_generation',f.validation_generation,'model_id',f.model_id,'material_id',f.material_id,'mechanism_id',f.mechanism_id,'interface_id',f.interface_id,'classification',f.coordinate_classification,'cell_id',f.cell_id,'framing_rationale',f.framing_rationale,'source_admission_id',f.source_admission_id) payload,f.model_id,f.material_id,f.mechanism_id,f.interface_id,f.coordinate_classification status,f.source_admission_id FROM conjecture_framings f",
             Some("conjecture_framing_id"),
+        ),
+        Collection::ResearchTopics => (
+            "SELECT t.topic_id key,json_object(
+                'topic_id',t.topic_id,'topic_kind',t.topic_kind,'label',t.label,
+                'current_version_id',v.topic_version_id,'revision',v.revision,'title',v.title,
+                'open_problem',v.open_problem,'why_open',v.why_open,'scope',v.topic_scope,
+                'next_discriminating_criticism_or_test',v.next_discriminating_criticism_or_test,
+                'non_claims',v.non_claims,'status',w.status,'workflow_revision',w.revision,
+                'workflow_event_id',w.workflow_event_id,'workflow_occurred_at',w.occurred_at,
+                'workflow_rationale',w.rationale,'workflow_scope',w.workflow_scope,
+                'loci',json((SELECT json_group_array(locus_kind) FROM (
+                    SELECT locus_kind FROM research_topic_loci l WHERE l.topic_version_id=v.topic_version_id ORDER BY locus_order))),
+                'origins',json((SELECT json_group_array(json_object(
+                    'origin_id',origin_id,'kind',origin_kind,
+                    'id',coalesce(problem_version_id,conjecture_version_id),
+                    'relationship',relationship,'rationale',rationale,
+                    'source_admission_id',source_admission_id)) FROM (
+                    SELECT * FROM research_topic_origins o WHERE o.topic_version_id=v.topic_version_id ORDER BY origin_order))),
+                'coordinate_framings',json((SELECT json_group_array(json_object(
+                    'framing_link_id',framing_link_id,'conjecture_framing_id',conjecture_framing_id,
+                    'coordinate_key',coordinate_key,'coordinate_key_version',coordinate_key_version,
+                    'validation_generation',validation_generation,'model_id',model_id,
+                    'material_id',material_id,'mechanism_id',mechanism_id,'interface_id',interface_id,
+                    'classification',coordinate_classification,'cell_id',cell_id,
+                    'relationship',relationship,'rationale',rationale,
+                    'source_admission_id',source_admission_id)) FROM (
+                    SELECT l.*,f.coordinate_key,f.coordinate_key_version,f.validation_generation,
+                           f.model_id,f.material_id,f.mechanism_id,f.interface_id,
+                           f.coordinate_classification,f.cell_id
+                    FROM research_topic_framing_links l
+                    JOIN conjecture_framings f ON f.framing_id=l.conjecture_framing_id
+                    WHERE l.topic_version_id=v.topic_version_id ORDER BY l.framing_link_id))),
+                'evidence_links',json((SELECT json_group_array(json_object(
+                    'evidence_link_id',evidence_link_id,'artifact_id',artifact_id,
+                    'relationship',relationship,'rationale',rationale,
+                    'source_admission_id',source_admission_id)) FROM (
+                    SELECT * FROM research_topic_evidence_links e WHERE e.topic_version_id=v.topic_version_id ORDER BY evidence_link_id))),
+                'test_links',json((SELECT json_group_array(json_object(
+                    'test_link_id',test_link_id,'criterion_id',criterion_id,
+                    'relationship',relationship,'rationale',rationale,
+                    'source_admission_id',source_admission_id)) FROM (
+                    SELECT * FROM research_topic_test_links x WHERE x.topic_version_id=v.topic_version_id ORDER BY test_link_id))),
+                'public_links',json((SELECT json_group_array(json_object(
+                    'public_link_id',public_link_id,'link_kind',link_kind,
+                    'public_record_id',public_record_id,'target_proposal_id',target_proposal_id,
+                    'target_revision',target_revision,'content_sha256',content_sha256,
+                    'relationship',relationship,'rationale',rationale,
+                    'source_admission_id',source_admission_id)) FROM (
+                    SELECT * FROM research_topic_public_links p WHERE p.topic_version_id=v.topic_version_id ORDER BY link_order))),
+                'relations',json((SELECT json_group_array(json_object(
+                    'relation_id',relation_id,'source_topic_version_id',source_topic_version_id,
+                    'target_topic_version_id',target_topic_version_id,'kind',relation_kind,
+                    'claim',relation_claim,'scope',relation_scope,
+                    'source_admission_id',source_admission_id)) FROM (
+                    SELECT * FROM research_topic_relations r
+                    WHERE r.source_topic_version_id=v.topic_version_id OR r.target_topic_version_id=v.topic_version_id
+                    ORDER BY relation_id))),
+                'identity_source_admission_id',t.source_admission_id,
+                'version_source_admission_id',v.source_admission_id,
+                'workflow_source_admission_id',w.source_admission_id
+             ) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,
+             w.status status,v.source_admission_id
+             FROM research_topics t JOIN current_research_topic_versions v USING(topic_id)
+             JOIN current_research_topic_workflow w USING(topic_id)",
+            Some("research_topic_id"),
+        ),
+        Collection::ResearchTopicVersions => (
+            "SELECT v.topic_version_id key,json_object(
+                'topic_version_id',v.topic_version_id,'topic_id',v.topic_id,'revision',v.revision,
+                'event_kind',v.event_kind,'title',v.title,'open_problem',v.open_problem,
+                'why_open',v.why_open,'scope',v.topic_scope,
+                'next_discriminating_criticism_or_test',v.next_discriminating_criticism_or_test,
+                'non_claims',v.non_claims,
+                'loci',json((SELECT json_group_array(locus_kind) FROM (
+                    SELECT locus_kind FROM research_topic_loci l WHERE l.topic_version_id=v.topic_version_id ORDER BY locus_order))),
+                'origins',json((SELECT json_group_array(json_object(
+                    'origin_kind',origin_kind,'problem_version_id',problem_version_id,
+                    'conjecture_version_id',conjecture_version_id,'relationship',relationship,'rationale',rationale))
+                    FROM (SELECT * FROM research_topic_origins o WHERE o.topic_version_id=v.topic_version_id ORDER BY origin_order))),
+                'source_admission_id',v.source_admission_id
+             ) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,
+             v.event_kind status,v.source_admission_id FROM research_topic_versions v",
+            Some("research_topic_version_id"),
         ),
         Collection::Criteria => (
             "SELECT f.criterion_id key,json_object('criterion_id',f.criterion_id,'conjecture_version_id',f.conjecture_version_id,'description',f.description,'metric',f.metric,'comparator',f.comparator,'threshold_value',f.threshold_value,'threshold_text',f.threshold_text,'units',f.units,'predeclared',json(iif(f.predeclared=1,'true','false')),'source_admission_id',f.source_admission_id) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,NULL status,f.source_admission_id FROM falsification_criteria f",
@@ -822,6 +974,16 @@ fn history_base_sql(collection: Collection) -> Option<String> {
              FROM conjecture_versions UNION ALL {}",
             single("conjecture_dispositions", "conjecture_id", "disposition_id", "decided_at",
                 "status", "rationale", "decision_scope", "disposition")),
+        Collection::ResearchTopics => format!(
+            "SELECT printf('%010d:version:%s',revision,topic_version_id) key,topic_id parent_id,
+                json_object('history_family','version','event_id',topic_version_id,'revision',revision,
+                    'event_kind',event_kind,'occurred_at',formulated_at,'title',title,
+                    'open_problem',open_problem,'why_open',why_open,'scope',topic_scope,
+                    'next_discriminating_criticism_or_test',next_discriminating_criticism_or_test,
+                    'non_claims',non_claims,'source_admission_id',source_admission_id) payload
+             FROM research_topic_versions UNION ALL {}",
+            single("research_topic_workflow_events", "topic_id", "workflow_event_id", "occurred_at",
+                "status", "rationale", "workflow_scope", "administrative-workflow")),
         Collection::Regions =>
             "SELECT printf('%010d:version:%s',revision,region_version_id) key,region_id parent_id,
                 json_object('history_family','version','event_id',region_version_id,'revision',revision,
