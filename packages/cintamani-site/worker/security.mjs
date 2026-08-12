@@ -324,6 +324,22 @@ export async function authorizeMutation(request, env, body, mutationKind, { oper
   return { session, ip_hash: ipHash }
 }
 
+export async function authorizeAgentProposal(request, env, body) {
+  const authorization = await authorizeMutation(request, env, body, 'proposal')
+  if (
+    authorization.session.transport !== 'agent-bearer' ||
+    authorization.session.auth_kind !== 'siwx' ||
+    authorization.session.principal_kind !== 'base-wallet'
+  ) {
+    throw new ResponseError(
+      403,
+      'agent_bearer_required',
+      'Free agent submission requires a SIWX agent-bearer session',
+    )
+  }
+  return authorization
+}
+
 export async function readBoundedJson(request, maxBytes = 65536) {
   const contentLength = Number.parseInt(request.headers.get('content-length') ?? '0', 10)
   if (contentLength > maxBytes) throw new ResponseError(413, 'payload_too_large', 'The request body is too large')

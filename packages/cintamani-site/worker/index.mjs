@@ -21,6 +21,7 @@ import {
   withdrawProposal,
 } from './repository.mjs'
 import {
+  authorizeAgentProposal,
   authorizeMutation,
   clearOAuthCookie,
   clearSessionCookie,
@@ -380,6 +381,20 @@ async function publicMutation(request, env, mutationKind, handler) {
   return resultResponse(await handler(body, authorization))
 }
 
+async function freeAgentProposal(request, env) {
+  if (env.X402_ENABLED === 'true') {
+    throw new ResponseError(
+      402,
+      'agent_payment_required',
+      'Free agent submissions are closed because x402 is enabled; use POST /api/x402/proposals',
+      { paid_route: '/api/x402/proposals' },
+    )
+  }
+  const body = await readBoundedJson(request)
+  const authorization = await authorizeAgentProposal(request, env, body)
+  return resultResponse(await createProposal(request, env, authorization, body))
+}
+
 async function operatorMutation(request, env, handler) {
   const body = await readBoundedJson(request)
   const { session } = await authorizeMutation(request, env, body, 'operator', { operator: true })
@@ -631,6 +646,12 @@ async function routeApi(request, env) {
       dimensions: axisMetadata,
       turnstile_site_key: env.TURNSTILE_SITE_KEY ?? null,
       authentication: 'github-or-base-wallet',
+      agent_submission: {
+        route: '/api/agent/proposals',
+        authentication: 'siwx-agent-bearer',
+        free: env.X402_ENABLED !== 'true',
+        paid_route: '/api/x402/proposals',
+      },
       x402: publicX402Configuration(env),
       immediate_visibility: 'submitted-unreviewed',
       voting: false,
@@ -643,6 +664,7 @@ async function routeApi(request, env) {
   if (request.method === 'POST' && pathname === '/api/session/logout') return logout(request, env)
   if ((request.method === 'GET' || request.method === 'POST') && pathname === '/api/auth/wallet/challenge') return createSIWxChallenge(request, env)
   if (request.method === 'POST' && pathname === '/api/auth/wallet/verify') return verifySIWxChallenge(request, env)
+  if (request.method === 'POST' && pathname === '/api/agent/proposals') return freeAgentProposal(request, env)
   if (request.method === 'POST' && pathname === '/api/x402/proposals') return paidProposal(request, env)
   let x402Values = captures(pathname, /^\/api\/x402\/proposals\/status\/([^/]+)$/u)
   if (request.method === 'POST' && x402Values) return x402Status(request, env, x402Values[0])

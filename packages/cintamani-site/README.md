@@ -220,6 +220,7 @@ The public machine contract is intentionally small:
 | `POST /api/auth/wallet/challenge?purpose=link|revoke&transport=browser-cookie` | create a GitHub-cookie, Origin/CSRF-bound identity-link challenge |
 | `POST /api/auth/wallet/verify?...` with `SIGN-IN-WITH-X` | consume the exact signed challenge; issue a cookie/bearer or append the link event |
 | `POST /api/x402/proposals` | validate, reserve, challenge/verify/settle once, and publish |
+| `POST /api/agent/proposals` | publish without payment using a SIWX agent-bearer session only while `X402_ENABLED` is not `true` |
 | `POST /api/x402/proposals/status/:retry-reference` | read safe state for the same body/key without facilitator access |
 | `POST /api/x402/proposals/retry/:retry-reference` | finalize the same settled body without another payment |
 | ordinary revision/withdrawal routes with `Authorization: Bearer …` | linked or original author follow-up, still quota/lock constrained |

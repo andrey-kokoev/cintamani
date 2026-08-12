@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { authorizeMutation, csrfForSession, sha256Hex } from '../worker/security.mjs'
+import { authorizeAgentProposal, authorizeMutation, csrfForSession, sha256Hex } from '../worker/security.mjs'
 
 const origin = 'https://cintamani.test'
 const secrets = {
@@ -23,7 +23,7 @@ async function environment(authKind, transport, token) {
     auth_kind: authKind,
     transport,
     scope: 'public-write',
-    principal_kind: authKind === 'github' ? 'github' : 'wallet',
+    principal_kind: authKind === 'github' ? 'github' : 'base-wallet',
     public_pseudonym: authKind,
     github_login: authKind === 'github' ? 'author' : null,
     github_profile_url: null,
@@ -67,7 +67,7 @@ test('wallet browser cookies retain Origin/CSRF but omit Turnstile', async () =>
     {},
     'proposal',
   )
-  assert.equal(authorization.session.principal_kind, 'wallet')
+  assert.equal(authorization.session.principal_kind, 'base-wallet')
 })
 
 test('agent bearer writes omit browser Origin/CSRF and Turnstile but retain quotas', async () => {
@@ -80,6 +80,36 @@ test('agent bearer writes omit browser Origin/CSRF and Turnstile but retain quot
     'proposal',
   )
   assert.match(authorization.ip_hash, /^[0-9a-f]{64}$/u)
+})
+
+test('free agent proposal authorization requires a SIWX wallet bearer', async () => {
+  const bearerToken = 'wallet-agent-bearer-token-with-enough-randomness'
+  const bearerEnv = await environment('siwx', 'agent-bearer', bearerToken)
+  const authorization = await authorizeAgentProposal(
+    mutationRequest(bearerToken, 'agent-bearer'),
+    bearerEnv,
+    {},
+  )
+  assert.equal(authorization.session.principal_kind, 'base-wallet')
+
+  const cookieToken = 'wallet-browser-token-with-enough-randomness'
+  const cookieEnv = await environment('siwx', 'browser-cookie', cookieToken)
+  const csrf = await csrfForSession(cookieEnv, cookieToken)
+  await assert.rejects(
+    authorizeAgentProposal(
+      mutationRequest(cookieToken, 'browser-cookie', { originHeader: true, csrf }),
+      cookieEnv,
+      {},
+    ),
+    (error) => error.code === 'agent_bearer_required',
+  )
+
+  const githubToken = 'github-agent-bearer-token-with-enough-randomness'
+  const githubEnv = await environment('github', 'agent-bearer', githubToken)
+  await assert.rejects(
+    authorizeAgentProposal(mutationRequest(githubToken, 'agent-bearer'), githubEnv, {}),
+    (error) => error.code === 'agent_bearer_required',
+  )
 })
 
 test('GitHub cookie writes still require Turnstile', async () => {

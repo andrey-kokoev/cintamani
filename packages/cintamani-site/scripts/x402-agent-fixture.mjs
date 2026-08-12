@@ -115,14 +115,17 @@ async function authenticateWallet(baseUrl, account, network, fetchImpl) {
 export async function runAgentFixture({ env = process.env, argv = process.argv.slice(2), fetchImpl = fetch, write = console.log } = {}) {
   const baseUrl = (env.CINTAMANI_URL ?? 'http://127.0.0.1:8787').replace(/\/$/u, '')
   const pay = argv.includes('--pay')
+  const submitFree = argv.includes('--submit-free')
   const config = await body(await fetchImpl(`${baseUrl}/api/config`, { headers: { accept: 'application/json' } }))
   const health = await body(await fetchImpl(`${baseUrl}/api/health`, { headers: { accept: 'application/json' } }))
-  write(JSON.stringify({ mode: pay ? 'paid' : 'discovery-only', x402: config.x402, health: health.status }))
-  if (!pay) return { mode: 'discovery-only', config, health }
+  write(JSON.stringify({ mode: pay ? 'paid' : (submitFree ? 'free-agent' : 'discovery-only'), x402: config.x402, agent_submission: config.agent_submission, health: health.status }))
+  if (!pay && !submitFree) return { mode: 'discovery-only', config, health }
 
-  const network = assertDiscovery(config, env.X402_AGENT_NETWORK)
+  const network = submitFree
+    ? (env.X402_AGENT_NETWORK ?? config.x402?.network ?? expected.network)
+    : assertDiscovery(config, env.X402_AGENT_NETWORK)
   const expectedReceiver = env.X402_AGENT_PAY_TO
-  if (!/^0x[0-9a-fA-F]{40}$/u.test(expectedReceiver ?? '')) {
+  if (pay && !/^0x[0-9a-fA-F]{40}$/u.test(expectedReceiver ?? '')) {
     throw new Error('X402_AGENT_PAY_TO is required as the exact expected receiver')
   }
   const account = privateKeyToAccount(requirePrivateKey(env))
@@ -135,6 +138,17 @@ export async function runAgentFixture({ env = process.env, argv = process.argv.s
   const idempotencyKey = env.X402_AGENT_IDEMPOTENCY_KEY
   if (!idempotencyKey || idempotencyKey.length < 8 || idempotencyKey.length > 200) {
     throw new Error('X402_AGENT_IDEMPOTENCY_KEY is required so retries use the same key and body')
+  }
+  if (submitFree) {
+    if (config.agent_submission?.free !== true) throw new Error('free agent submission is not available')
+    const bearer = await authenticateWallet(baseUrl, account, network, fetchImpl)
+    const result = await body(await fetchImpl(`${baseUrl}/api/agent/proposals`, {
+      method: 'POST',
+      headers: jsonHeaders({ authorization: `Bearer ${bearer}`, 'idempotency-key': idempotencyKey }),
+      body: canonicalBody,
+    }))
+    write(JSON.stringify({ mode: 'free-agent', proposal_id: result.proposal_id }))
+    return { mode: 'free-agent', proposal_id: result.proposal_id }
   }
   const paidFetch = wrapFetchWithPaymentFromConfig(fetchImpl, {
     schemes: [{ network, client: new ExactEvmScheme(account) }],

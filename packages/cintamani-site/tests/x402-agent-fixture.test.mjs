@@ -45,6 +45,9 @@ test('fixture source never prints or serializes the private key', async () => {
   assert.match(source, /validateProposal/u)
   assert.match(source, /successful paid submission omitted PAYMENT-RESPONSE/u)
   assert.match(source, /--pay/u)
+  assert.match(source, /--submit-free/u)
+  assert.match(source, /\/api\/agent\/proposals/u)
+  assert.match(source, /config\.agent_submission\?\.free !== true/u)
 })
 
 test('agent payment selector rejects wrong asset and receiver before authorization', () => {
