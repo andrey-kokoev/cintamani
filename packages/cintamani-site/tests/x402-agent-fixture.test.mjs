@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { readFile } from 'node:fs/promises'
-import { runAgentFixture, selectPaymentRequirement } from '../scripts/x402-agent-fixture.mjs'
+import { explanatoryConjectureTemplate, runAgentFixture, selectPaymentRequirement } from '../scripts/x402-agent-fixture.mjs'
+import frontier from '../src/data/frontier.json' with { type: 'json' }
+import { validateProposal } from '../src/lib/proposals.mjs'
 
 function response(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
@@ -54,4 +56,16 @@ test('agent payment selector rejects wrong asset and receiver before authorizati
   assert.equal(selectPaymentRequirement(2, [valid], valid.network, receiver), valid)
   assert.throws(() => selectPaymentRequirement(2, [{ ...valid, asset: '0x0000000000000000000000000000000000000000' }], valid.network, receiver), /asset, or receiver guard/u)
   assert.throws(() => selectPaymentRequirement(2, [{ ...valid, payTo: '0x3333333333333333333333333333333333333333' }], valid.network, receiver), /asset, or receiver guard/u)
+})
+
+test('agent schema exposes unclassified and exact generation-pinned explanatory conjecture templates', () => {
+  const config = { frontier }
+  const general = validateProposal(explanatoryConjectureTemplate(config))
+  assert.equal(general.kind, 'explanatory-conjecture')
+  assert.deepEqual(general.framings, [])
+  const coordinate = frontier.items.find((item) => item.classification === 'gap')
+  const focused = validateProposal(explanatoryConjectureTemplate(config, coordinate.coordinate_key))
+  assert.equal(focused.framings[0].coordinate_classification, 'gap')
+  assert.equal(focused.framings[0].validation_generation, coordinate.validation_generation)
+  assert.throws(() => explanatoryConjectureTemplate(config, 'missing-coordinate'), /bounded server frontier/u)
 })

@@ -75,7 +75,7 @@ function assertCleanCheck(report) {
     'artifact_observation_drift',
   ]
   if (
-    report.schema_version !== '2' ||
+    report.schema_version !== '3' ||
     report.projection_kind !== 'rebuildable-site-domain-registry' ||
     report.integrity !== 'ok' ||
     report.admission_chain_consistent !== true
@@ -111,7 +111,7 @@ function assertDimensions(value) {
 }
 
 function frontierKey(item) {
-  return [item.model_id, item.material_id, item.mechanism_id, item.interface_id].join('\u001f')
+  return item.coordinate_key
 }
 
 export function readFrontier(
@@ -154,7 +154,7 @@ export function readFrontier(
 function stableSummary(report) {
   const counts = report.relation_counts ?? {}
   return {
-    snapshot_schema: 'cintamani.site-registry-summary.v1',
+    snapshot_schema: 'cintamani.site-registry-summary.v2',
     snapshot_mode: 'build-time-static',
     registry_authority: 'Rust/SQLite Cintamani domain registry',
     mutable_edge_registry: false,

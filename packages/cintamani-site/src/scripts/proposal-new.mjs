@@ -14,6 +14,7 @@ import {
   discoverWallets,
   publishPaidProposal,
 } from './wallet-contribution.mjs'
+import { conjectureRelationKinds } from '../lib/proposals.mjs'
 
 const fieldContracts = {
   'theoretical-model-member': [
@@ -69,6 +70,14 @@ const fieldContracts = {
     { name: 'proposed_definition', label: 'Proposed definition', kind: 'textarea', max: 12000, rows: 6, help: 'State the proposed ontology definition in clear prose.' },
     { name: 'compatibility_effect', label: 'Compatibility effect', kind: 'textarea', max: 8000, rows: 5, help: 'Explain how existing identities, paths, and records would be interpreted.' },
     { name: 'migration_requirements', label: 'Migration requirements', kind: 'textarea', max: 8000, rows: 5, help: 'Describe the bounded data or tooling migration needed.' },
+  ],
+  'explanatory-conjecture': [
+    { name: 'problem_statement', label: 'Problem', kind: 'textarea', max: 12000, rows: 5, help: 'State the problem the conjecture is meant to solve, not merely its topic.' },
+    { name: 'explanatory_claim', label: 'Explanatory claim', kind: 'textarea', max: 12000, rows: 6, help: 'State what the conjecture says happens and why it matters.' },
+    { name: 'essential_mechanism', label: 'Essential mechanism', kind: 'textarea', max: 12000, rows: 6, help: 'Name the causal or computational mechanism without hiding it behind a label.' },
+    { name: 'explanation_scope', label: 'Explanation scope', kind: 'textarea', max: 8000, rows: 4, help: 'Bound the regimes and claims the explanation covers.' },
+    { name: 'failure_condition', label: 'Failure condition', kind: 'textarea', max: 12000, rows: 5, help: 'Describe an observation or criticism that would show the explanation fails.' },
+    { name: 'assumptions', label: 'Unresolved assumptions', kind: 'textarea', max: 12000, rows: 5, help: 'Enter one unresolved assumption per line. At least one is required.' },
   ],
 }
 
@@ -126,6 +135,14 @@ export const detailFieldPlaceholders = Object.freeze({
     proposed_definition: 'e.g., Observation interface denotes the declared map from modeled state to reported observable, separate from physical detector implementation.',
     compatibility_effect: 'e.g., Existing interface identities remain stable; records gain the revised definition without changing their evidence status.',
     migration_requirements: 'e.g., Append a versioned definition event and rebuild derived views; preserve prior admissions byte-for-byte.',
+  }),
+  'explanatory-conjecture': Object.freeze({
+    problem_statement: 'e.g., The current model does not explain why phase-sensitive readout preserves a lag-4 advantage under normalized observation noise.',
+    explanatory_claim: 'e.g., Kerr mixing distributes recent inputs across observable quadratures in a way the disabled control cannot reproduce.',
+    essential_mechanism: 'e.g., Driven nonlinear phase rotation couples amplitude history into the selected output quadrature before observation noise is added.',
+    explanation_scope: 'e.g., The declared normalized model, linear-memory targets, and frozen readout protocol only.',
+    failure_condition: 'e.g., The matched Kerr-minus-disabled lower envelope is nonpositive under the predeclared bounded parameter region.',
+    assumptions: 'e.g., The normalized state equation remains an adequate abstraction in the tested regime.\ne.g., The chosen quadrature is available without adding state information.',
   }),
 })
 
@@ -222,6 +239,88 @@ function renderDetailFields(form, config) {
   }
   container.replaceChildren(...fieldContracts[kind].map((contract) => fieldNode(contract, config, kind)))
   syncMemberSelect(container, config)
+  form.querySelector('[data-conjecture-framings]').hidden = kind !== 'explanatory-conjecture'
+}
+
+function coordinateLabel(item) {
+  const classification = item.classification === 'gap' ? 'gap' : `admitted cell · ${item.status ?? 'unassessed'}`
+  return `${item.model_name} / ${item.material_name} / ${item.mechanism_name} / ${item.interface_name} — ${classification}`
+}
+
+function appendFraming(form, config, selectedKey = '') {
+  const list = form.querySelector('[data-framing-list]')
+  if (list.children.length >= 32) return
+  const row = element('fieldset', { className: 'coordinate-framing-row' })
+  const select = element('select', { attributes: { name: 'coordinate_key', required: '' } })
+  select.append(chooseOption('Choose a current frontier coordinate…'))
+  for (const item of config.frontier.items) {
+    const option = element('option', { text: coordinateLabel(item), attributes: { value: item.coordinate_key } })
+    if (item.coordinate_key === selectedKey) option.selected = true
+    select.append(option)
+  }
+  const selectLabel = element('label', { className: 'form-field form-field--wide' })
+  selectLabel.append('Coordinate ', requiredMarker(false), select)
+  const rationale = element('textarea', {
+    attributes: {
+      name: 'framing_rationale',
+      rows: '3',
+      maxlength: '4000',
+      required: '',
+      placeholder: 'e.g., This coordinate frames where the explanation is conjectured to apply; it does not assert that the coordinate is physically realizable.',
+    },
+  })
+  const rationaleLabel = element('label', { className: 'form-field form-field--wide' })
+  rationaleLabel.append('Framing rationale ', requiredMarker(false), rationale)
+  const remove = element('button', { className: 'text-button', text: 'Remove framing', attributes: { type: 'button' } })
+  remove.addEventListener('click', () => row.remove())
+  row.append(selectLabel, rationaleLabel, remove)
+  list.append(row)
+}
+
+function configureFramings(root, form, config) {
+  const url = new URL(globalThis.location.href)
+  const selected = url.searchParams.get('coordinate') ?? ''
+  const generation = url.searchParams.get('generation')
+  if (selected) {
+    const coordinate = config.frontier.items.find((item) => item.coordinate_key === selected)
+    if (coordinate && (!generation || generation === coordinate.validation_generation)) {
+      form.elements.kind.value = 'explanatory-conjecture'
+      renderDetailFields(form, config)
+      appendFraming(form, config, selected)
+    }
+  }
+  root.querySelector('[data-add-framing]').addEventListener('click', () => appendFraming(form, config))
+  root.querySelector('[data-add-relation]').addEventListener('click', () => {
+    const list = form.querySelector('[data-relation-list]')
+    if (list.children.length >= 16) return
+    const row = element('fieldset', { className: 'conjecture-relation-row' })
+    const kind = element('select', { attributes: { name: 'relation_kind', required: '' } })
+    kind.append(chooseOption('Choose a relation…'))
+    for (const value of conjectureRelationKinds) {
+      kind.append(element('option', { text: labelText(value), attributes: { value } }))
+    }
+    const kindLabel = element('label', { className: 'form-field form-field--wide' })
+    kindLabel.append('Relation ', requiredMarker(false), kind)
+    const fields = [
+      ['target_proposal_id', 'Target proposal ID', 'input', 'e.g., proposal-AbCdEf123456'],
+      ['target_revision', 'Target revision', 'number', 'e.g., 1'],
+      ['relation_claim', 'Relation claim', 'textarea', 'e.g., Both conjectures address the same memory mechanism but predict incompatible observation dependence.'],
+      ['relation_scope', 'Relation scope', 'textarea', 'e.g., These exact public revisions and their declared normalized regime only.'],
+    ]
+    row.append(kindLabel)
+    for (const [name, label, type, placeholder] of fields) {
+      const control = type === 'textarea'
+        ? element('textarea', { attributes: { name, rows: '3', maxlength: name === 'relation_claim' ? '12000' : '4000', placeholder, required: '' } })
+        : element('input', { attributes: { name, type: type === 'number' ? 'number' : 'text', min: type === 'number' ? '1' : undefined, placeholder, required: '' } })
+      const wrapper = element('label', { className: 'form-field form-field--wide' })
+      wrapper.append(`${label} `, requiredMarker(false), control)
+      row.append(wrapper)
+    }
+    const remove = element('button', { className: 'text-button', text: 'Remove relation', attributes: { type: 'button' } })
+    remove.addEventListener('click', () => row.remove())
+    row.append(remove)
+    list.append(row)
+  })
 }
 
 function clearFieldErrors(form) {
@@ -373,6 +472,26 @@ function proposalBody(form, parent, { includeTurnstile = true } = {}) {
         }]
       : [],
   }
+  if (body.kind === 'explanatory-conjecture') {
+    body.assumptions = String(body.detail.assumptions ?? '').split('\n').map((value) => value.trim()).filter(Boolean)
+    delete body.detail.assumptions
+    body.framings = [...form.querySelectorAll('[data-framing-list] .coordinate-framing-row')].map((row) => {
+      const coordinate = row.querySelector('[name="coordinate_key"]').value
+      const match = form._frontierItems.find((item) => item.coordinate_key === coordinate)
+      return {
+        coordinate_key: coordinate,
+        validation_generation: match?.validation_generation ?? '',
+        framing_rationale: row.querySelector('[name="framing_rationale"]').value,
+      }
+    })
+    body.relations = [...form.querySelectorAll('[data-relation-list] .conjecture-relation-row')].map((row) => ({
+      relation_kind: row.querySelector('[name="relation_kind"]').value,
+      target_proposal_id: row.querySelector('[name="target_proposal_id"]').value,
+      target_revision: Number.parseInt(row.querySelector('[name="target_revision"]').value, 10),
+      relation_claim: row.querySelector('[name="relation_claim"]').value,
+      relation_scope: row.querySelector('[name="relation_scope"]').value,
+    }))
+  }
   if (includeTurnstile) body.turnstile_token = turnstileToken(form)
   if (parent) body.parent = parent
   return body
@@ -446,6 +565,7 @@ export async function initializeProposalNew(root = document) {
   }
 
   form.hidden = false
+  form._frontierItems = config.frontier.items
   const kindSelect = form.elements.kind
   kindSelect.append(
     element('option', {
@@ -461,6 +581,7 @@ export async function initializeProposalNew(root = document) {
     form.querySelector('[data-error-summary]').hidden = true
   })
   renderDetailFields(form, config)
+  configureFramings(root, form, config)
   const walletLane = session.contributor?.principal_kind === 'base-wallet'
   if (walletLane) {
     root.querySelector('[data-authenticated-turnstile]').hidden = true

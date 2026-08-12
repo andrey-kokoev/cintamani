@@ -52,6 +52,34 @@ function proposalFromEnvironment(env) {
   }
 }
 
+export function explanatoryConjectureTemplate(config, coordinateKey = null) {
+  const coordinate = coordinateKey
+    ? config.frontier?.items?.find((item) => item.coordinate_key === coordinateKey)
+    : null
+  if (coordinateKey && !coordinate) throw new Error('requested coordinate is not in the bounded server frontier')
+  return {
+    kind: 'explanatory-conjecture',
+    title: '[AGENT TEMPLATE] Bounded explanatory conjecture',
+    summary: 'A problem-led conjecture template for exact criticism; no scientific result is asserted.',
+    rationale: 'Expose the explanation, assumptions, failure condition, and any conjectural coordinate framing.',
+    scope: 'Template only; public submission remains unreviewed and canonical admission remains separate.',
+    detail: {
+      problem_statement: 'What bounded problem should this conjecture explain?',
+      explanatory_claim: 'Replace this text with the proposed explanation.',
+      essential_mechanism: 'Replace this text with the mechanism essential to the explanation.',
+      explanation_scope: 'State the exact regime and claim family.',
+      failure_condition: 'State what would show that the explanation fails.',
+    },
+    assumptions: ['Replace this text with an unresolved assumption.'],
+    framings: coordinate ? [{
+      coordinate_key: coordinate.coordinate_key,
+      validation_generation: coordinate.validation_generation,
+      framing_rationale: 'Explain why this coordinate is a useful conjectural frame.',
+    }] : [],
+    relations: [], evidence: [], references: [],
+  }
+}
+
 function requirePrivateKey(env) {
   const value = env.X402_AGENT_PRIVATE_KEY
   if (!/^0x[0-9a-fA-F]{64}$/u.test(value ?? '')) throw new Error('X402_AGENT_PRIVATE_KEY must be an env-only 32-byte hex key')
@@ -98,7 +126,11 @@ export async function runAgentFixture({ env = process.env, argv = process.argv.s
     throw new Error('X402_AGENT_PAY_TO is required as the exact expected receiver')
   }
   const account = privateKeyToAccount(requirePrivateKey(env))
-  const proposal = validateProposal(proposalFromEnvironment(env))
+  const proposal = validateProposal(
+    env.X402_AGENT_PROPOSAL_KIND === 'explanatory-conjecture'
+      ? explanatoryConjectureTemplate(config, env.X402_AGENT_COORDINATE_KEY ?? null)
+      : proposalFromEnvironment(env),
+  )
   const canonicalBody = JSON.stringify(proposal)
   const idempotencyKey = env.X402_AGENT_IDEMPOTENCY_KEY
   if (!idempotencyKey || idempotencyKey.length < 8 || idempotencyKey.length > 200) {

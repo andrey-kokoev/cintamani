@@ -21,9 +21,10 @@ use std::os::windows::ffi::OsStrExt;
 #[cfg(windows)]
 use windows_sys::Win32::Storage::FileSystem::ReplaceFileW;
 
-pub const SCHEMA_VERSION: &str = "2";
+pub const SCHEMA_VERSION: &str = "3";
 pub const PROJECTION_KIND: &str = "rebuildable-site-domain-registry";
 const MIGRATION_V2: &str = include_str!("../migrations/002_v2.sql");
+const MIGRATION_V3: &str = include_str!("../migrations/003_v3.sql");
 const DEFAULT_DATABASE: &str = ".narada/db/cintamani-domain.sqlite";
 
 const DOMAIN_TABLES: &[&str] = &[
@@ -50,8 +51,11 @@ const DOMAIN_TABLES: &[&str] = &[
     "parameter_regions",
     "parameter_region_versions",
     "parameter_region_values",
+    "problems",
+    "problem_versions",
     "conjectures",
     "conjecture_versions",
+    "conjecture_framings",
     "conjecture_dispositions",
     "falsification_criteria",
     "protocols",
@@ -187,10 +191,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         connection.pragma_update(None, "journal_mode", "DELETE")?;
         connection.execute_batch(MIGRATION_V2)?;
         let transaction = connection.transaction()?;
-        transaction.execute(
-            "INSERT INTO metadata VALUES ('schema_version', ?1)",
-            [SCHEMA_VERSION],
-        )?;
+        transaction.execute("INSERT INTO metadata VALUES ('schema_version', '2')", [])?;
         transaction.execute(
             "INSERT INTO metadata VALUES ('projection_kind', ?1)",
             [PROJECTION_KIND],
@@ -202,7 +203,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         transaction.execute(
             "INSERT INTO migration_lineage VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             params![
-                format!("migration-{}-to-v2", chain.generation),
+                format!("migration-{}-to-v3", chain.generation),
                 source_schema,
                 SCHEMA_VERSION,
                 migration_kind,
@@ -242,6 +243,9 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         for record in &legacy {
             insert_legacy_record(&transaction, record, &legacy)?;
         }
+        transaction.commit()?;
+        connection.execute_batch(MIGRATION_V3)?;
+        let transaction = connection.transaction()?;
         for record in &v2 {
             insert_v2_record(&transaction, record)?;
         }
@@ -252,7 +256,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
     if let Err(error) = build_result {
         let _ = fs::remove_file(&stage);
         return Err(error)
-            .context("failed to build sibling v2 projection; live database preserved");
+            .context("failed to build sibling v3 projection; live database preserved");
     }
 
     let stage_paths = paths.clone().with_database(&stage);
@@ -261,7 +265,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         Ok(report) => {
             let _ = fs::remove_file(&stage);
             bail!(
-                "sibling v2 projection failed validation (history={}, paths={}, provenance={}, ledger={}, config={}, artifacts={}); live database preserved",
+                "sibling v3 projection failed validation (history={}, paths={}, provenance={}, ledger={}, config={}, artifacts={}); live database preserved",
                 report.history_violations,
                 report.path_violations,
                 report.provenance_violations,
@@ -273,7 +277,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         Err(error) => {
             let _ = fs::remove_file(&stage);
             return Err(error)
-                .context("failed to inspect sibling v2 projection; live database preserved");
+                .context("failed to inspect sibling v3 projection; live database preserved");
         }
     };
     atomic_replace(&stage, &paths.database_path)?;
@@ -402,7 +406,7 @@ fn existing_projection_posture(path: &Path) -> Result<(&'static str, &'static st
         .map(|metadata| metadata.len() > 0)
         .unwrap_or(false);
     if !nonempty {
-        return Ok(("none", "clean-v2"));
+        return Ok(("none", "clean-v3"));
     }
     let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)
         .with_context(|| format!("refusing non-SQLite live projection {}", path.display()))?;
@@ -428,15 +432,18 @@ fn existing_projection_posture(path: &Path) -> Result<(&'static str, &'static st
             |row| row.get(0),
         )
         .optional()?;
-    if kind.as_deref() != Some(PROJECTION_KIND) || !matches!(schema.as_deref(), Some("1" | "2")) {
+    if kind.as_deref() != Some(PROJECTION_KIND)
+        || !matches!(schema.as_deref(), Some("1" | "2" | "3"))
+    {
         bail!(
             "refusing incompatible database ownership metadata (schema={schema:?}, projection={kind:?})"
         );
     }
-    Ok(if schema.as_deref() == Some("1") {
-        ("1", "owned-v1-upgrade")
-    } else {
-        ("2", "owned-v2-rebuild")
+    Ok(match schema.as_deref() {
+        Some("1") => ("1", "owned-v1-upgrade"),
+        Some("2") => ("2", "owned-v2-upgrade"),
+        Some("3") => ("3", "owned-v3-rebuild"),
+        _ => unreachable!(),
     })
 }
 
@@ -1302,7 +1309,10 @@ fn migration_violations(
         }
         let valid = matches!(
             (source.as_str(), kind.as_str()),
-            ("none", "clean-v2") | ("1", "owned-v1-upgrade") | ("2", "owned-v2-rebuild")
+            ("none", "clean-v3")
+                | ("1", "owned-v1-upgrade")
+                | ("2", "owned-v2-upgrade")
+                | ("3", "owned-v3-rebuild")
         );
         if !valid {
             errors.push(format!(
@@ -1318,7 +1328,7 @@ fn migration_violations(
     )?;
     if dimension_view_present != 1 {
         errors.push(
-            "schema-2 projection is missing siege_space_dimensions; rebuild required".to_owned(),
+            "schema-3 projection is missing siege_space_dimensions; rebuild required".to_owned(),
         );
     }
     Ok(errors)
@@ -1402,7 +1412,10 @@ fn history_violations(connection: &Connection) -> Result<Vec<String>> {
             if revision > 1
                 && matches!(
                     family.table,
-                    "parameter_region_versions" | "conjecture_versions" | "protocol_versions"
+                    "parameter_region_versions"
+                        | "problem_versions"
+                        | "conjecture_versions"
+                        | "protocol_versions"
                 )
                 && event_kind == "definition"
             {
@@ -1494,6 +1507,13 @@ fn history_families() -> Vec<HistoryFamily> {
             status_column: "region_kind",
             identity_table: Some("parameter_regions"),
             identity_column: "region_id",
+        },
+        HistoryFamily {
+            table: "problem_versions",
+            parent_column: "problem_id",
+            status_column: "event_kind",
+            identity_table: Some("problems"),
+            identity_column: "problem_id",
         },
         HistoryFamily {
             table: "conjecture_versions",
@@ -1626,7 +1646,7 @@ fn legal_transition(table: &str, from: &str, to: &str) -> bool {
                 | ("recorded-unverified", "recorded-verified")
         ),
         "run_assessments" => matches!((from, to), ("partial", "completed" | "failed")),
-        "conjecture_versions" | "protocol_versions" => matches!(
+        "problem_versions" | "conjecture_versions" | "protocol_versions" => matches!(
             (from, to),
             ("definition", "correction" | "supersession") | ("correction", "supersession")
         ),
@@ -1806,18 +1826,32 @@ fn provenance_violations(connection: &Connection) -> Result<Vec<String>> {
             "region_version_id",
             "t.predeclared=1",
         ),
+        ("problems", "problem_id", "problem_id", "0"),
+        (
+            "problem_versions",
+            "problem_version_id",
+            "problem_version_id",
+            "0",
+        ),
         ("conjectures", "conjecture_id", "conjecture_id", "0"),
         (
             "conjecture_versions",
             "conjecture_version_id",
             "conjecture_version_id",
-            "1",
+            "EXISTS (SELECT 1 FROM conjecture_dispositions d
+                      WHERE d.conjecture_version_id=t.conjecture_version_id AND d.status!='open')",
+        ),
+        (
+            "conjecture_framings",
+            "framing_id",
+            "conjecture_framing_id",
+            "0",
         ),
         (
             "conjecture_dispositions",
             "disposition_id",
             "conjecture_disposition_id",
-            "1",
+            "t.status!='open'",
         ),
         (
             "falsification_criteria",
@@ -2149,8 +2183,11 @@ fn provenance_target(target: &ProvenanceTarget) -> (&'static str, &str) {
         ProvenanceTarget::Parameter(id) => ("parameter_id", id),
         ProvenanceTarget::Region(id) => ("region_id", id),
         ProvenanceTarget::RegionVersion(id) => ("region_version_id", id),
+        ProvenanceTarget::Problem(id) => ("problem_id", id),
+        ProvenanceTarget::ProblemVersion(id) => ("problem_version_id", id),
         ProvenanceTarget::Conjecture(id) => ("conjecture_id", id),
         ProvenanceTarget::ConjectureVersion(id) => ("conjecture_version_id", id),
+        ProvenanceTarget::ConjectureFraming(id) => ("conjecture_framing_id", id),
         ProvenanceTarget::ConjectureDisposition(id) => ("conjecture_disposition_id", id),
         ProvenanceTarget::Criterion(id) => ("criterion_id", id),
         ProvenanceTarget::Protocol(id) => ("protocol_id", id),
@@ -2186,8 +2223,11 @@ fn provenance_target_columns() -> Vec<&'static str> {
         "parameter_id",
         "region_id",
         "region_version_id",
+        "problem_id",
+        "problem_version_id",
         "conjecture_id",
         "conjecture_version_id",
+        "conjecture_framing_id",
         "conjecture_disposition_id",
         "criterion_id",
         "protocol_id",

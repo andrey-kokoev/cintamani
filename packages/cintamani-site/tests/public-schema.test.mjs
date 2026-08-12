@@ -217,6 +217,24 @@ function insertDetail(database, { id, revision = 1, kind }) {
         )
         .run(...common);
       break;
+    case "explanatory-conjecture":
+      database
+        .prepare(
+          `INSERT INTO explanatory_conjecture_details
+           VALUES (?, ?, 'What bounded behavior needs explaining?',
+                   'A candidate explanation with no earned standing',
+                   'An explicit interaction is proposed as essential',
+                   'This revision and declared coordinate framing only',
+                   'A declared observation would refute the explanation')`,
+        )
+        .run(...common);
+      database
+        .prepare(
+          `INSERT INTO explanatory_conjecture_assumptions
+           VALUES (?, ?, ?, 1, 'The normalized boundary remains applicable')`,
+        )
+        .run(`assumption-${id}-1`, ...common);
+      break;
     default:
       throw new Error(`unsupported kind: ${kind}`);
   }
@@ -282,6 +300,7 @@ test("schema admits every explicit proposal kind with one typed detail and no ve
     "existing-member-assessment",
     "existing-member-correction",
     "ontology-change",
+    "explanatory-conjecture",
   ];
   kinds.forEach((kind, index) =>
     insertCompleteProposal(database, { id: `proposal-${index}`, kind }),
@@ -291,7 +310,7 @@ test("schema admits every explicit proposal kind with one typed detail and no ve
     database
       .prepare("SELECT COUNT(*) AS count FROM public_proposal_summaries")
       .get().count,
-    7,
+    8,
   );
   assert.equal(
     database
@@ -426,7 +445,10 @@ test("criticism, reply, test, interpretation, reference, and moderation targets 
 
   database
     .prepare(
-      `INSERT INTO criticisms VALUES
+      `INSERT INTO criticisms (
+         criticism_id, proposal_id, target_revision, author_account_id,
+         title, criticism, scope, source_timestamp, recorded_at
+       ) VALUES
        ('criticism-1', 'proposal-a', 1, 'account-author', 'Boundary criticism',
         'The observation boundary may be underspecified.', 'Revision 1 only', ?, ?)`,
     )
@@ -464,7 +486,10 @@ test("criticism, reply, test, interpretation, reference, and moderation targets 
     () =>
       database
         .prepare(
-          `INSERT INTO criticisms VALUES
+          `INSERT INTO criticisms (
+             criticism_id, proposal_id, target_revision, author_account_id,
+             title, criticism, scope, source_timestamp, recorded_at
+           ) VALUES
            ('criticism-bad', 'proposal-a', 99, 'account-author', 'Bad target',
             'No such revision', 'Invalid', ?, ?)`,
         )
@@ -507,6 +532,72 @@ test("criticism, reply, test, interpretation, reference, and moderation targets 
         .run(at),
     /CHECK constraint failed/,
   );
+});
+
+test("problem-led records enforce exact focus, relation kinds, immutability, and framing classification", () => {
+  const database = openDatabase();
+  insertAccount(database);
+  insertCompleteProposal(database, { id: "conjecture-a", kind: "explanatory-conjecture" });
+  insertCompleteProposal(database, { id: "conjecture-b", kind: "explanatory-conjecture" });
+  insertCompleteProposal(database, { id: "model-a", kind: "theoretical-model-member" });
+  database.prepare(
+    `INSERT INTO proposal_coordinate_framings VALUES
+     ('framing-a','conjecture-a',1,1,'cintamani.coordinate-key.v1','coordinate-a','generation-a',
+      'model','material','mechanism','interface','gap',NULL,'Conjectural gap framing')`,
+  ).run();
+  database.prepare(
+    `INSERT INTO conjecture_relations VALUES
+     ('relation-a','conjecture-a',1,'conjecture-b',1,'incompatible-with','Incompatible mechanisms',
+      'These exact revisions','account-author',?,?)`,
+  ).run(at, at);
+  assert.throws(
+    () => database.prepare(
+      `INSERT INTO conjecture_relations VALUES
+       ('relation-old-vocabulary','conjecture-a',1,'conjecture-b',1,'competes-with','Old vocabulary',
+        'These exact revisions','account-author',?,?)`,
+    ).run(at, at),
+    /CHECK constraint failed/u,
+  );
+  database.prepare(
+    `INSERT INTO criticisms (
+       criticism_id,proposal_id,target_revision,author_account_id,title,criticism,scope,
+       source_timestamp,recorded_at,focus_kind,focus_ref
+     ) VALUES ('focused-a','conjecture-a',1,'account-author','Focused criticism',
+       'The framing is not essential','This exact framing',?,?,'coordinate-framing','framing-a')`,
+  ).run(at, at);
+  assert.throws(
+    () => database.prepare(
+      `INSERT INTO criticisms (
+         criticism_id,proposal_id,target_revision,author_account_id,title,criticism,scope,
+         source_timestamp,recorded_at,focus_kind,focus_ref
+       ) VALUES ('focused-bad','conjecture-b',1,'account-author','Bad focus',
+         'Cross-revision focus','Invalid',?,?,'coordinate-framing','framing-a')`,
+    ).run(at, at),
+    /criticism focus must target an exact item/u,
+  );
+  assert.throws(
+    () => database.prepare(
+      `INSERT INTO criticisms (
+         criticism_id,proposal_id,target_revision,author_account_id,title,criticism,scope,
+         source_timestamp,recorded_at,focus_kind,focus_ref
+       ) VALUES ('focused-wrong-kind','model-a',1,'account-author','Bad typed focus',
+         'Model proposals do not have an explanatory claim','Invalid',?,?,'explanatory-claim',NULL)`,
+    ).run(at, at),
+    /criticism focus must target an exact item/u,
+  );
+  assert.throws(
+    () => database.prepare("UPDATE proposal_coordinate_framings SET framing_rationale='changed'").run(),
+    /immutable public record/u,
+  );
+  assert.throws(
+    () => database.prepare(
+      `INSERT INTO proposal_coordinate_framings VALUES
+       ('framing-bad','conjecture-a',1,2,'cintamani.coordinate-key.v1','coordinate-b','generation-a',
+        'model','material','mechanism','interface','admitted-cell',NULL,'Invalid cell classification')`,
+    ).run(),
+    /CHECK constraint failed/u,
+  );
+  assert.equal(database.prepare("SELECT COUNT(*) count FROM public_schema_violations").get().count, 0);
 });
 
 test("state history drives detectable caches and exports pin the selected state event", () => {

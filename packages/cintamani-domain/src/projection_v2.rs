@@ -1,6 +1,9 @@
-use crate::Change;
+use crate::{
+    Change,
+    query::{COORDINATE_KEY_VERSION, coordinate_key},
+};
 use anyhow::{Result, bail};
-use rusqlite::{Transaction, params};
+use rusqlite::{OptionalExtension, Transaction, params};
 
 pub(crate) fn insert_change(
     transaction: &Transaction<'_>,
@@ -465,14 +468,56 @@ pub(crate) fn insert_change(
                 ],
             )?;
         }
+        Change::Problem { problem_id, label } => {
+            transaction.execute(
+                "INSERT INTO problems VALUES (?1,?2,?3)",
+                params![problem_id, label, admission],
+            )?;
+        }
+        Change::ProblemVersion {
+            problem_version_id,
+            problem_id,
+            revision,
+            event_kind,
+            occurred_at,
+            problem_statement,
+            rationale,
+            scope,
+        } => {
+            transaction.execute(
+                "INSERT INTO problem_versions VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                params![
+                    problem_version_id,
+                    problem_id,
+                    revision,
+                    event_kind,
+                    occurred_at,
+                    problem_statement,
+                    rationale,
+                    scope,
+                    admission
+                ],
+            )?;
+        }
         Change::Conjecture {
             conjecture_id,
+            problem_id,
             cell_id,
             label,
         } => {
+            let problem_id = problem_id.as_deref().ok_or_else(|| {
+                anyhow::anyhow!(
+                    "schema-v3 conjecture {conjecture_id} requires an explicit problem_id"
+                )
+            })?;
+            if cell_id.is_some() {
+                bail!(
+                    "schema-v3 conjecture {conjecture_id} must use exact-version conjecture framings rather than a mandatory cell_id"
+                );
+            }
             transaction.execute(
                 "INSERT INTO conjectures VALUES (?1,?2,?3,?4)",
-                params![conjecture_id, cell_id, label, admission],
+                params![conjecture_id, problem_id, label, admission],
             )?;
         }
         Change::ConjectureVersion {
@@ -496,6 +541,106 @@ pub(crate) fn insert_change(
                     statement,
                     rationale,
                     scope,
+                    admission
+                ],
+            )?;
+        }
+        Change::ConjectureFraming {
+            framing_id,
+            conjecture_version_id,
+            framing_order,
+            coordinate_key_version,
+            coordinate_key: supplied_coordinate_key,
+            validation_generation,
+            model_id,
+            material_id,
+            mechanism_id,
+            interface_id,
+            coordinate_classification,
+            cell_id,
+            framing_rationale,
+        } => {
+            if coordinate_key_version != COORDINATE_KEY_VERSION {
+                bail!(
+                    "conjecture framing {framing_id} uses unsupported coordinate-key version {coordinate_key_version}"
+                );
+            }
+            if validation_generation.trim().is_empty() {
+                bail!("conjecture framing {framing_id} requires a validation generation");
+            }
+            let known_generation: i64 = transaction.query_row(
+                "SELECT COUNT(*) FROM admissions
+                 WHERE source_path LIKE '.narada/kb/cintamani-domain/chain/generations/' || ?1 || '/%'",
+                [validation_generation],
+                |row| row.get(0),
+            )?;
+            let active_generation: String = transaction.query_row(
+                "SELECT value FROM metadata WHERE key='chain_generation'",
+                [],
+                |row| row.get(0),
+            )?;
+            if known_generation == 0
+                && validation_generation != &active_generation
+                && validation_generation != "bootstrap-0004-0e32d9248223"
+            {
+                bail!(
+                    "conjecture framing {framing_id} validation generation is not in the governed chain ancestry"
+                );
+            }
+            let expected_coordinate_key =
+                coordinate_key(model_id, material_id, mechanism_id, interface_id);
+            if supplied_coordinate_key != &expected_coordinate_key {
+                bail!(
+                    "conjecture framing {framing_id} coordinate key does not match its ordered axis members"
+                );
+            }
+            let member_count: i64 = transaction.query_row(
+                "SELECT COUNT(*) FROM theoretical_models m, materials a, physical_mechanisms p, interfaces i
+                 WHERE m.model_id=?1 AND a.material_id=?2 AND p.mechanism_id=?3 AND i.interface_id=?4",
+                params![model_id, material_id, mechanism_id, interface_id],
+                |row| row.get(0),
+            )?;
+            if member_count != 1 {
+                bail!(
+                    "conjecture framing {framing_id} references an axis member outside the governed snapshot"
+                );
+            }
+            let admitted_cell: Option<String> = transaction
+                .query_row(
+                    "SELECT cell_id FROM siege_cells
+                     WHERE model_id=?1 AND material_id=?2 AND mechanism_id=?3 AND interface_id=?4",
+                    params![model_id, material_id, mechanism_id, interface_id],
+                    |row| row.get(0),
+                )
+                .optional()?;
+            let expected_classification = if admitted_cell.is_some() {
+                "admitted-cell"
+            } else {
+                "gap"
+            };
+            if coordinate_classification != expected_classification
+                || cell_id.as_deref() != admitted_cell.as_deref()
+            {
+                bail!(
+                    "conjecture framing {framing_id} classification/cell does not match the governed coordinate"
+                );
+            }
+            transaction.execute(
+                "INSERT INTO conjecture_framings VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",
+                params![
+                    framing_id,
+                    conjecture_version_id,
+                    framing_order,
+                    coordinate_key_version,
+                    supplied_coordinate_key,
+                    validation_generation,
+                    model_id,
+                    material_id,
+                    mechanism_id,
+                    interface_id,
+                    coordinate_classification,
+                    cell_id,
+                    framing_rationale,
                     admission
                 ],
             )?;

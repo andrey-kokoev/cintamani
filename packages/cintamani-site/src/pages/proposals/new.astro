@@ -162,6 +162,25 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
         <div class="typed-detail-fields" data-detail-fields></div>
       </fieldset>
 
+      <fieldset class="proposal-form-section conjecture-framings" data-conjecture-framings hidden>
+        <legend><span>5</span> Frame the conjecture in the frontier</legend>
+        <p class="form-section-help">
+          Coordinates are optional conjectural framings, not evidence or admissions. Leave this empty for a
+          general, unclassified conjecture.
+        </p>
+        <div data-framing-list></div>
+        <button class="secondary-action" type="button" data-add-framing>Add coordinate framing</button>
+        <details class="optional-support conjecture-relations">
+          <summary>Optional exact-version conjecture relations</summary>
+          <p class="form-section-help">
+            A relation is itself a criticizable claim. It links exact public revisions and never merges,
+            reclassifies, supersedes, or otherwise changes either record automatically.
+          </p>
+          <div data-relation-list></div>
+          <button class="secondary-action" type="button" data-add-relation>Add conjecture relation</button>
+        </details>
+      </fieldset>
+
       <details class="optional-support" data-optional-support>
         <summary>Optional evidence and references</summary>
         <p class="form-section-help">These records add context; they are not votes, scores, or automatic scientific support.</p>

@@ -170,13 +170,21 @@ function detail(kind, suffix = 'candidate') {
         compatibility_effect: 'Existing paths require review; no silent migration.',
         migration_requirements: 'A maintainer-authored schema migration would be required.',
       }
+    case 'explanatory-conjecture':
+      return {
+        problem_statement: 'Why does a bounded phase-sensitive readout retain local linear memory?',
+        explanatory_claim: 'The nonlinear phase rotation distributes input history into the selected quadrature.',
+        essential_mechanism: 'Driven Kerr phase mixing before the observation boundary.',
+        explanation_scope: 'The normalized local model and linear-memory target family only.',
+        failure_condition: 'A predeclared matched control eliminates the positive lower-envelope advantage.',
+      }
     default:
       throw new Error(`unknown kind ${kind}`)
   }
 }
 
 function proposal(kind, suffix = 'candidate') {
-  return {
+  const record = {
     kind,
     title: `Proposal for ${kind}`,
     summary: 'A bounded public proposal, immediately visible and unreviewed.',
@@ -189,6 +197,12 @@ function proposal(kind, suffix = 'candidate') {
     ],
     turnstile_token: 'test-pass',
   }
+  if (kind === 'explanatory-conjecture') {
+    record.assumptions = ['The selected quadrature remains a declared observable.']
+    record.framings = []
+    record.relations = []
+  }
+  return record
 }
 
 async function responseJson(response) {
@@ -325,7 +339,7 @@ test('operator authority is derived from append-only D1 role events', async () =
   h.database.close()
 })
 
-test('all seven typed proposal kinds publish immediately as submitted and unreviewed', async () => {
+test('all eight typed proposal kinds publish immediately as submitted and unreviewed', async () => {
   const h = await harness()
   const kinds = [
     'theoretical-model-member',
@@ -335,6 +349,7 @@ test('all seven typed proposal kinds publish immediately as submitted and unrevi
     'existing-member-assessment',
     'existing-member-correction',
     'ontology-change',
+    'explanatory-conjecture',
   ]
   for (const [index, kind] of kinds.entries()) {
     const created = await createOne(h, kind, `candidate-${index}`)
@@ -346,6 +361,112 @@ test('all seven typed proposal kinds publish immediately as submitted and unrevi
   assert.equal(list.response.status, 200)
   assert.deepEqual(new Set(list.body.items.map((item) => item.proposal_kind)), new Set(kinds))
   assert.equal(h.database.database.prepare('SELECT COUNT(*) AS count FROM public_schema_violations').get().count, 0)
+  h.database.close()
+})
+
+test('explanatory conjectures derive frontier framing metadata and support exact focused criticism', async () => {
+  const h = await harness()
+  const config = await responseJson(await h.call('/api/config'))
+  const gap = config.body.frontier.items.find((item) => item.classification === 'gap')
+  assert.ok(gap)
+  const body = proposal('explanatory-conjecture')
+  body.framings = [{
+    coordinate_key: gap.coordinate_key,
+    validation_generation: gap.validation_generation,
+    framing_rationale: 'This gap is a conjectural application frame, not an admitted cell.',
+  }]
+  const created = await responseJson(await h.call('/api/proposals', {
+    method: 'POST', actor: h.author, body, key: 'explanatory-framing-1',
+  }))
+  assert.equal(created.response.status, 201, JSON.stringify(created.body))
+  const read = await responseJson(await h.call(`/api/proposals/${created.body.proposal_id}`))
+  assert.equal(read.response.status, 200)
+  const detail = read.body.revisions[0].detail
+  assert.equal(detail.framings[0].coordinate_classification, 'gap')
+  assert.equal(detail.framings[0].cell_id, null)
+  assert.equal(detail.framings[0].model_id, gap.model_id)
+  assert.equal(detail.assumptions.length, 1)
+
+  const criticism = await responseJson(await h.call(
+    `/api/proposals/${created.body.proposal_id}/revisions/1/criticisms`,
+    {
+      method: 'POST',
+      actor: h.outsider,
+      body: {
+        title: 'The framing may not constrain the mechanism',
+        criticism: 'The explanation has not shown that this exact coordinate is essential.',
+        scope: 'The first coordinate framing of revision 1 only.',
+        focus_kind: 'coordinate-framing',
+        focus_ref: detail.framings[0].framing_id,
+        turnstile_token: 'test-pass',
+      },
+      key: 'focused-criticism-1',
+    },
+  ))
+  assert.equal(criticism.response.status, 201, JSON.stringify(criticism.body))
+  const filtered = await responseJson(await h.call(`/api/proposals?coordinate_key=${encodeURIComponent(gap.coordinate_key)}`))
+  assert.deepEqual(filtered.body.items.map((item) => item.proposal_id), [created.body.proposal_id])
+
+  const revisionBody = structuredClone(body)
+  delete revisionBody.kind
+  revisionBody.title = 'A narrower exact-version explanation'
+  revisionBody.detail.explanatory_claim = 'The revised claim is confined to the same declared gap framing.'
+  revisionBody.relations = [{
+    relation_kind: 'supersedes',
+    target_proposal_id: created.body.proposal_id,
+    target_revision: 1,
+    relation_claim: 'Revision 2 narrows rather than replaces the exact first-revision explanation.',
+    relation_scope: 'This proposal and these two immutable revisions only.',
+  }]
+  const revised = await responseJson(await h.call(`/api/proposals/${created.body.proposal_id}/revisions`, {
+    method: 'POST', actor: h.author, body: revisionBody, key: 'explanatory-revision-2',
+  }))
+  assert.equal(revised.response.status, 201, JSON.stringify(revised.body))
+  assert.equal(revised.body.revision, 2)
+  const reread = await responseJson(await h.call(`/api/proposals/${created.body.proposal_id}`))
+  assert.equal(reread.body.revisions.length, 2)
+  assert.equal(reread.body.revisions[0].detail.relations.length, 0)
+  assert.equal(reread.body.revisions[1].detail.relations[0].target_revision, 1)
+  assert.equal(reread.body.revisions[1].detail.framings[0].coordinate_key, gap.coordinate_key)
+
+  const drifted = structuredClone(body)
+  drifted.framings[0].validation_generation = 'stale-generation'
+  const rejected = await responseJson(await h.call('/api/proposals', {
+    method: 'POST', actor: h.author, body: drifted, key: 'explanatory-framing-drift',
+  }))
+  assert.equal(rejected.response.status, 400)
+  assert.match(JSON.stringify(rejected.body), /framing generation does not match/u)
+  h.database.close()
+})
+
+test('typed inter-conjecture relations target exact immutable explanatory revisions', async () => {
+  const h = await harness()
+  const target = await createOne(h, 'explanatory-conjecture', 'relation-target', { key: 'relation-target-key' })
+  const sourceBody = proposal('explanatory-conjecture', 'relation-source')
+  sourceBody.relations = [{
+    relation_kind: 'rival-to',
+    target_proposal_id: target.proposal_id,
+    target_revision: 1,
+    relation_claim: 'The two explanations make incompatible claims about the essential observable.',
+    relation_scope: 'These exact first revisions only.',
+  }]
+  const source = await responseJson(await h.call('/api/proposals', {
+    method: 'POST', actor: h.author, body: sourceBody, key: 'relation-source-key',
+  }))
+  assert.equal(source.response.status, 201, JSON.stringify(source.body))
+  const read = await responseJson(await h.call(`/api/proposals/${source.body.proposal_id}`))
+  assert.equal(read.body.revisions[0].detail.relations[0].target_proposal_id, target.proposal_id)
+  assert.equal(read.body.revisions[0].detail.relations[0].target_revision, 1)
+
+  const invalid = structuredClone(sourceBody)
+  invalid.title = 'Invalid cross-kind relation'
+  invalid.relations[0].target_proposal_id = (await createOne(h, 'theoretical-model-member', 'relation-wrong-kind')).proposal_id
+  const rejected = await responseJson(await h.call('/api/proposals', {
+    method: 'POST', actor: h.author, body: invalid, key: 'relation-invalid-key',
+  }))
+  assert.equal(rejected.response.status, 409)
+  assert.equal(rejected.body.error.code, 'concurrent_write_conflict')
+  assert.equal(h.database.database.prepare('SELECT COUNT(*) count FROM proposals').get().count, 3)
   h.database.close()
 })
 

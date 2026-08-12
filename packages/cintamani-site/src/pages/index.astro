@@ -28,6 +28,10 @@ interface Dimension {
 }
 
 interface FrontierItem {
+  coordinate_key: string
+  coordinate_key_version: string
+  validation_generation: string
+  classification: 'admitted-cell' | 'gap'
   model_id: string
   material_id: string
   mechanism_id: string
@@ -35,13 +39,12 @@ interface FrontierItem {
   cell_id: string | null
   cell_name: string | null
   status: string | null
-  gap: boolean
 }
 
 const dimensions = dimensionsSnapshot.items as Dimension[]
 const frontier = frontierSnapshot.items as FrontierItem[]
-const admittedCells = frontier.filter((item) => !item.gap)
-const gaps = frontier.filter((item) => item.gap)
+const admittedCells = frontier.filter((item) => item.classification === 'admitted-cell')
+const gaps = frontier.filter((item) => item.classification === 'gap')
 const label = (value: string | null) => value ? value.replaceAll('-', ' ') : 'unassessed'
 ---
 <SiteLayout
@@ -170,10 +173,10 @@ const label = (value: string | null) => value ? value.replaceAll('-', ' ') : 'un
     </div>
     <div class="frontier-grid">
       {frontier.map((item) => (
-        <article class:list={['frontier-card', item.gap ? 'frontier-card--gap' : 'frontier-card--cell']}>
+        <article class:list={['frontier-card', item.classification === 'gap' ? 'frontier-card--gap' : 'frontier-card--cell']}>
           <header>
-            <p>{item.gap ? 'Unadmitted coordinate' : 'Governed siege cell'}</p>
-            <span>{item.gap ? 'gap' : label(item.status)}</span>
+            <p>{item.classification === 'gap' ? 'Unadmitted coordinate' : 'Governed siege cell'}</p>
+            <span>{item.classification === 'gap' ? 'gap' : label(item.status)}</span>
           </header>
           <h3>{item.cell_name ?? 'No cell occupies this coordinate'}</h3>
           {item.cell_id && <code>{item.cell_id}</code>}
@@ -183,9 +186,17 @@ const label = (value: string | null) => value ? value.replaceAll('-', ' ') : 'un
             <div><dt>Mechanism</dt><dd>{label(item.mechanism_id)}</dd></div>
             <div><dt>Interface</dt><dd>{label(item.interface_id)}</dd></div>
           </dl>
-          {item.gap && (
+          {item.classification === 'gap' && (
             <p class="gap-note">No governed evidence-bearing cell has been admitted here.</p>
           )}
+          <a
+            class="text-action frontier-conjecture-link"
+            href={`/proposals/new/?coordinate=${encodeURIComponent(item.coordinate_key)}&generation=${encodeURIComponent(item.validation_generation)}`}
+            target="_blank"
+            rel="noopener"
+          >
+            Frame a conjecture here <span aria-hidden="true">↗</span>
+          </a>
         </article>
       ))}
     </div>

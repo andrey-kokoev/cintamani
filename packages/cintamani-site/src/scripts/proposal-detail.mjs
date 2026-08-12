@@ -105,7 +105,10 @@ function renderRevision(revision, data) {
     element('code', { text: revision.content_sha256 }),
   )
   const detail = element('dl', { className: 'typed-detail-list' })
-  for (const [key, value] of Object.entries(revision.detail)) appendTerm(detail, label(key), value)
+  for (const [key, value] of Object.entries(revision.detail)) {
+    if (Array.isArray(value)) continue
+    appendTerm(detail, label(key), value)
+  }
   article.append(
     heading,
     element('h3', { text: revision.title }),
@@ -117,6 +120,27 @@ function renderRevision(revision, data) {
     detail,
     publicByline(revision, 'authored by'),
   )
+  if (revision.detail.assumptions?.length) {
+    const assumptions = element('ol', { className: 'evidence-list' })
+    for (const item of revision.detail.assumptions) assumptions.append(element('li', { text: item.assumption_text }))
+    article.append(element('h4', { text: 'Unresolved assumptions' }), assumptions)
+  }
+  if (revision.detail.framings?.length) {
+    const framings = element('ul', { className: 'evidence-list' })
+    for (const item of revision.detail.framings) {
+      framings.append(element('li', {
+        text: `${label(item.coordinate_classification)} · ${item.model_id} / ${item.material_id} / ${item.mechanism_id} / ${item.interface_id}: ${item.framing_rationale}`,
+      }))
+    }
+    article.append(element('h4', { text: 'Conjectural coordinate framings' }), framings)
+  }
+  if (revision.detail.relations?.length) {
+    const relations = element('ul', { className: 'evidence-list' })
+    for (const item of revision.detail.relations) {
+      relations.append(element('li', { text: `${label(item.relation_kind)} ${item.target_proposal_id} revision ${item.target_revision}: ${item.relation_claim}` }))
+    }
+    article.append(element('h4', { text: 'Inter-conjecture claims' }), relations)
+  }
   const tombstone = moderationTombstone(data, 'proposal-revision', {
     proposal_id: revision.proposal_id,
     revision: revision.revision,
@@ -196,10 +220,42 @@ function bindPublicForm(form, session, path, buildBody, after) {
   })
 }
 
-function criticismForm(session, proposalId, revision, reload) {
+export function criticismFocusOptions(revisionDetail) {
+  const options = [
+    { value: 'whole-proposal|', label: 'Whole proposal revision' },
+    { value: 'other-explicit|', label: 'Other explicit focus' },
+  ]
+  if (!revisionDetail || typeof revisionDetail.problem_statement !== 'string') return options
+  options.splice(
+    1,
+    0,
+    { value: 'problem-statement|', label: 'Problem statement' },
+    { value: 'explanatory-claim|', label: 'Explanatory claim' },
+    { value: 'essential-mechanism|', label: 'Essential mechanism' },
+    { value: 'explanation-scope|', label: 'Explanation scope' },
+    { value: 'failure-condition|', label: 'Failure condition' },
+    ...(revisionDetail.assumptions ?? []).map((item) => ({
+      value: `assumption|${item.assumption_id}`,
+      label: `Assumption ${item.assumption_order}`,
+    })),
+    ...(revisionDetail.framings ?? []).map((item) => ({
+      value: `coordinate-framing|${item.framing_id}`,
+      label: `Coordinate framing ${item.framing_order}`,
+    })),
+    ...(revisionDetail.relations ?? []).map((item) => ({
+      value: `conjecture-relation|${item.relation_id}`,
+      label: `Relation ${label(item.relation_kind)}`,
+    })),
+  )
+  return options
+}
+
+function criticismForm(session, proposalId, revision, revisionDetail, reload) {
   const form = element('form', { className: 'compact-public-form' })
+  const focusOptions = criticismFocusOptions(revisionDetail)
   form.append(
     element('h3', { text: 'Criticize this exact revision' }),
+    selectField('focus', 'Focused target', focusOptions),
     field('title', 'Criticism title', { area: false, placeholder: detailFormPlaceholders.criticism.title }),
     field('criticism', 'Criticism', { placeholder: detailFormPlaceholders.criticism.criticism }),
     field('scope', 'Scope', { placeholder: detailFormPlaceholders.criticism.scope }),
@@ -211,7 +267,10 @@ function criticismForm(session, proposalId, revision, reload) {
     form,
     session,
     `/api/proposals/${encodeURIComponent(proposalId)}/revisions/${revision}/criticisms`,
-    (values) => ({ title: values.get('title'), criticism: values.get('criticism'), scope: values.get('scope') }),
+    (values) => {
+      const [focus_kind, focus_ref] = String(values.get('focus')).split('|')
+      return { title: values.get('title'), criticism: values.get('criticism'), scope: values.get('scope'), focus_kind, focus_ref: focus_ref || null }
+    },
     reload,
   )
   return form
@@ -357,6 +416,7 @@ function renderDiscussion(root, data, session, reload) {
     if (criticismTombstone) article.append(criticismTombstone)
     article.append(
       element('p', { className: 'revision-index', text: `Targets revision ${criticism.target_revision}` }),
+      element('p', { className: 'scope-note', text: `Focus: ${label(criticism.focus_kind)}${criticism.focus_ref ? ` · ${criticism.focus_ref}` : ''}` }),
       element('h3', { text: criticism.title }),
       element('p', { text: criticism.criticism }),
       element('p', { className: 'scope-note', text: `Scope: ${criticism.scope}` }),
@@ -451,6 +511,39 @@ function renderModeration(root, data, session, reload) {
   if (!data.moderation.length) moderation.append(element('p', { text: 'No moderation action is recorded.' }))
 }
 
+export function buildRevisionPayload(proposalKind, values) {
+  const typed = JSON.parse(values.get('detail_json'))
+  const body = {
+    title: values.get('title'),
+    summary: values.get('summary'),
+    rationale: values.get('rationale'),
+    scope: values.get('scope'),
+    detail: typed,
+    evidence: [],
+    references: [],
+  }
+  if (proposalKind !== 'explanatory-conjecture') return body
+
+  const { assumptions = [], framings = [], relations = [], ...detail } = typed
+  body.detail = detail
+  body.assumptions = assumptions.map((item) =>
+    typeof item === 'string' ? item : item.assumption_text,
+  )
+  body.framings = framings.map((item) => ({
+    coordinate_key: item.coordinate_key,
+    validation_generation: item.validation_generation,
+    framing_rationale: item.framing_rationale,
+  }))
+  body.relations = relations.map((item) => ({
+    relation_kind: item.relation_kind,
+    target_proposal_id: item.target_proposal_id,
+    target_revision: item.target_revision,
+    relation_claim: item.relation_claim,
+    relation_scope: item.relation_scope,
+  }))
+  return body
+}
+
 function revisionForm(session, proposal, current, reload) {
   const form = element('form', { className: 'compact-public-form' })
   const fields = [
@@ -477,15 +570,7 @@ function revisionForm(session, proposal, current, reload) {
     form,
     session,
     `/api/proposals/${encodeURIComponent(proposal.proposal_id)}/revisions`,
-    (values) => ({
-      title: values.get('title'),
-      summary: values.get('summary'),
-      rationale: values.get('rationale'),
-      scope: values.get('scope'),
-      detail: JSON.parse(values.get('detail_json')),
-      evidence: [],
-      references: [],
-    }),
+    (values) => buildRevisionPayload(proposal.proposal_kind, values),
     reload,
   )
   return form
@@ -754,7 +839,7 @@ export async function initializeProposalDetail(root = document) {
       )
     } else if (session.authenticated) {
       contributionForms.append(
-        criticismForm(session, proposalId, data.proposal.current_revision, load),
+        criticismForm(session, proposalId, data.proposal.current_revision, data.revisions.at(-1).detail, load),
         testForm(session, proposalId, data.proposal.current_revision, load),
         interpretationForm(session, proposalId, data.proposal.current_revision, load),
       )

@@ -1,4 +1,5 @@
 import dimensions from '../data/dimensions.json' with { type: 'json' }
+import frontier from '../data/frontier.json' with { type: 'json' }
 
 export const proposalKinds = Object.freeze([
   'theoretical-model-member',
@@ -8,6 +9,29 @@ export const proposalKinds = Object.freeze([
   'existing-member-assessment',
   'existing-member-correction',
   'ontology-change',
+  'explanatory-conjecture',
+])
+
+export const criticismFocusKinds = Object.freeze([
+  'whole-proposal',
+  'problem-statement',
+  'explanatory-claim',
+  'essential-mechanism',
+  'explanation-scope',
+  'failure-condition',
+  'assumption',
+  'coordinate-framing',
+  'conjecture-relation',
+  'other-explicit',
+])
+
+export const conjectureRelationKinds = Object.freeze([
+  'rival-to',
+  'reclassifies',
+  'equivalent-to',
+  'incompatible-with',
+  'supersedes',
+  'addresses-same-problem',
 ])
 
 export const publicMutationKinds = Object.freeze([
@@ -53,6 +77,7 @@ export const axisMetadata = Object.freeze(
 const memberKeys = new Set(
   axisMetadata.flatMap((axis) => axis.members.map((member) => `${axis.dimension_key}:${member.member_id}`)),
 )
+const coordinates = new Map(frontier.items.map((coordinate) => [coordinate.coordinate_key, coordinate]))
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const controlPattern = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u
 
@@ -257,9 +282,93 @@ function validateDetail(kind, raw) {
           max: 8000,
         }),
       }
+    case 'explanatory-conjecture':
+      return {
+        problem_statement: text(detail.problem_statement, 'detail.problem_statement', { max: 12000 }),
+        explanatory_claim: text(detail.explanatory_claim, 'detail.explanatory_claim', { max: 12000 }),
+        essential_mechanism: text(detail.essential_mechanism, 'detail.essential_mechanism', { max: 12000 }),
+        explanation_scope: text(detail.explanation_scope, 'detail.explanation_scope', { max: 8000 }),
+        failure_condition: text(detail.failure_condition, 'detail.failure_condition', { max: 12000 }),
+      }
     default:
       throw new InputError('proposal kind is not supported', 'kind')
   }
+}
+
+function validateAssumptions(kind, values) {
+  if (kind !== 'explanatory-conjecture') {
+    if (values !== undefined) throw new InputError('assumptions belong only to explanatory conjectures', 'assumptions')
+    return []
+  }
+  if (!Array.isArray(values) || values.length < 1 || values.length > 32) {
+    throw new InputError('assumptions must contain 1-32 explicit assumptions', 'assumptions')
+  }
+  return values.map((value, index) => text(value, `assumptions[${index}]`, { max: 4000 }))
+}
+
+function validateFramings(kind, values) {
+  if (kind !== 'explanatory-conjecture') {
+    if (values !== undefined) throw new InputError('coordinate framings belong only to explanatory conjectures', 'framings')
+    return []
+  }
+  if (values === undefined) return []
+  if (!Array.isArray(values) || values.length > 32) {
+    throw new InputError('framings must contain at most 32 coordinates', 'framings')
+  }
+  const seen = new Set()
+  return values.map((raw, index) => {
+    const framing = object(raw, `framings[${index}]`)
+    const coordinateKey = text(framing.coordinate_key, `framings[${index}].coordinate_key`, { max: 1000 })
+    if (seen.has(coordinateKey)) throw new InputError('a coordinate may be framed only once', `framings[${index}].coordinate_key`)
+    seen.add(coordinateKey)
+    const coordinate = coordinates.get(coordinateKey)
+    if (!coordinate) throw new InputError('framing coordinate is not in the bounded registry snapshot', `framings[${index}].coordinate_key`)
+    const validationGeneration = text(
+      framing.validation_generation,
+      `framings[${index}].validation_generation`,
+      { max: 160 },
+    )
+    if (validationGeneration !== coordinate.validation_generation) {
+      throw new InputError('framing generation does not match the registry snapshot', `framings[${index}].validation_generation`)
+    }
+    return {
+      framing_order: index + 1,
+      coordinate_key_version: coordinate.coordinate_key_version,
+      coordinate_key: coordinate.coordinate_key,
+      validation_generation: coordinate.validation_generation,
+      model_id: coordinate.model_id,
+      material_id: coordinate.material_id,
+      mechanism_id: coordinate.mechanism_id,
+      interface_id: coordinate.interface_id,
+      coordinate_classification: coordinate.classification,
+      cell_id: coordinate.cell_id,
+      framing_rationale: text(framing.framing_rationale, `framings[${index}].framing_rationale`, { max: 4000 }),
+    }
+  })
+}
+
+function validateConjectureRelations(kind, values) {
+  if (kind !== 'explanatory-conjecture') {
+    if (values !== undefined) throw new InputError('conjecture relations belong only to explanatory conjectures', 'relations')
+    return []
+  }
+  if (values === undefined) return []
+  if (!Array.isArray(values) || values.length > 16) {
+    throw new InputError('relations must contain at most 16 exact-version links', 'relations')
+  }
+  return values.map((raw, index) => {
+    const relation = object(raw, `relations[${index}]`)
+    if (!Number.isInteger(relation.target_revision) || relation.target_revision < 1) {
+      throw new InputError('target_revision must be a positive integer', `relations[${index}].target_revision`)
+    }
+    return {
+      relation_kind: oneOf(relation.relation_kind, `relations[${index}].relation_kind`, conjectureRelationKinds),
+      target_proposal_id: text(relation.target_proposal_id, `relations[${index}].target_proposal_id`, { max: 100 }),
+      target_revision: relation.target_revision,
+      relation_claim: text(relation.relation_claim, `relations[${index}].relation_claim`, { max: 12000 }),
+      relation_scope: text(relation.relation_scope, `relations[${index}].relation_scope`, { max: 4000 }),
+    }
+  })
 }
 
 function validateEvidence(values) {
@@ -315,6 +424,9 @@ export function validateProposalRevision(kind, raw) {
     rationale: text(input.rationale, 'rationale', { max: 12000 }),
     scope: text(input.scope, 'scope', { max: 4000 }),
     detail: validateDetail(kind, input.detail),
+    assumptions: validateAssumptions(kind, input.assumptions),
+    framings: validateFramings(kind, input.framings),
+    relations: validateConjectureRelations(kind, input.relations),
     evidence: validateEvidence(input.evidence),
     references: validateReferences(input.references),
   }
@@ -344,12 +456,23 @@ export function validateProposal(raw) {
 
 export function validateCriticism(raw) {
   const input = object(raw, 'criticism')
+  const focusKind = oneOf(input.focus_kind ?? 'whole-proposal', 'focus_kind', criticismFocusKinds)
+  const requiresRef = ['assumption', 'coordinate-framing', 'conjecture-relation'].includes(focusKind)
+  if (!requiresRef && input.focus_ref !== undefined && input.focus_ref !== null && input.focus_ref !== '') {
+    throw new InputError('focus_ref is allowed only for an exact assumption, framing, or relation', 'focus_ref')
+  }
   return {
     title: text(input.title, 'title', { max: 160 }),
     criticism: text(input.criticism, 'criticism', { max: 12000 }),
     scope: text(input.scope, 'scope', { max: 4000 }),
+    focus_kind: focusKind,
+    focus_ref: requiresRef ? text(input.focus_ref, 'focus_ref', { max: 160 }) : null,
     references: validateReferences(input.references),
   }
+}
+
+export function validateConjectureRevision(raw) {
+  return validateProposalRevision('explanatory-conjecture', raw)
 }
 
 export function validateReply(raw) {

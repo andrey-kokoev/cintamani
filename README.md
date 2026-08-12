@@ -52,6 +52,13 @@ the generic contributor/SIWX identity model, optional x402 publication lane, sec
 handoff, provisioning, recovery, and deployment boundaries. The x402 agent wrapper reads config and
 health only by default; paid mode is a real wallet mutation and requires separate authorization.
 
+The public plane also supports problem-led `explanatory-conjecture` records. They expose an
+essential mechanism, failure condition, unresolved assumptions, exact-version criticism and
+relations, and optional generation-pinned framings of the derived four-dimensional frontier. A
+framing is conjectural organization—not evidence, a physical possibility claim, or canonical
+admission. Selected exports can be validated and previewed as candidate canonical problems and
+open conjectures without creating a siege cell or advancing governed HEAD.
+
 Task 5 is intentionally suspended at a disabled isolated-testnet checkpoint. The public Worker at
 `cintamani-x402-testnet.andrei-kokoev.workers.dev` is not accepting x402 payments, its disposable
 payer is unfunded, and neither the Base-Sepolia paid acceptance gate nor any production payment gate

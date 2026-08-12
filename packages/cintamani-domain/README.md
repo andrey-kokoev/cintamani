@@ -1,6 +1,6 @@
 # Cintamani domain siege registry
 
-This Rust package governs and queries Cintamani's categorical siege memory. Schema version 2 is a
+This Rust package governs and queries Cintamani's categorical siege memory. Schema version 3 is a
 rebuildable SQLite projection, not a scientific database and not experimental evidence. It keeps
 stable domain identities separate from append-only epistemic history, exact provenance, and
 derived runtime observations.
@@ -17,7 +17,7 @@ Five surfaces remain deliberately distinct:
   migration of the four existing records into the chain. It is not their original scientific
   admission authority and supplies no new scientific evidence.
 - `.narada/db/cintamani-domain.sqlite` is an ignored, disposable Site projection. Rebuild creates
-  and fully validates a sibling database before atomically replacing an owned v1/v2 projection.
+  and fully validates a sibling database before atomically replacing an owned v1/v2/v3 projection.
   Chain, parse, schema, history, path, provenance, tracked-source, and present-artifact failures
   preserve the existing database bytes. A nonempty foreign database is never adopted or cleared.
 - `packages/kerr-capacity/output/*/results.sqlite` files are ignored per-run evidence stores. The
@@ -74,7 +74,7 @@ The lifecycle is:
 2. Edit it to add explicit typed changes and exact provenance changes.
 3. `admission validate` checks its typed record shape without mutation.
 4. `admission preview` supplies the proposed actor, external authority kind/reference, and expected
-   current HEAD. It builds and checks a temporary projection, reports relation-count deltas, removes
+current HEAD. It builds and checks a temporary projection, reports relation-count deltas, removes
    all preview material, and leaves governed HEAD unchanged.
 5. `admission promote` repeats validation, takes an exclusive lock, rejects a stale expected HEAD,
    atomically exposes the generation and HEAD, rebuilds the projection, and emits an admission
@@ -111,6 +111,14 @@ action, not a Worker promotion path. Candidate axis mappings include revision-1 
 assessment and exact same-admission definition/limitation provenance. Existing-member assessments
 require the maintainer to supply the next history revision and event kind. Evidence-bearing status,
 explicit correction, and ontology change are never inferred by the bridge.
+Selected explanatory-conjecture exports can instead produce candidate problem/version and
+conjecture/version identities, an explicitly open non-evidentiary disposition, zero or more
+generation-pinned framings, and exact definition/limitation provenance. A conjecture can remain
+unclassified or frame a gap: neither case creates a siege cell, morphism, path, assessment, or
+scientific status. The bridge still only validates and previews; it never advances HEAD.
+Public exact-version relation labels—including rivalry, equivalence, reclassification,
+incompatibility, supersession, and shared-problem claims—remain criticizable public content. The
+bridge does not translate them into canonical identity merges, dispositions, or state changes.
 
 The ordinary `admission validate`, `preview`, real external authority, expected-HEAD, and `promote`
 requirements remain unchanged. Public selection is not admission. A public `admission_link` may be
@@ -131,8 +139,8 @@ pnpm domain:mcp
 
 The Rust CLI accepts `--workspace-root`, `--database`, `--chain`, and `--format human|json`.
 
-`list` covers models, materials, mechanisms, interfaces, morphisms, paths, cells, conjectures,
-conjecture versions, criteria, parameters, regions, region versions, protocols, runs, artifacts,
+`list` covers models, materials, mechanisms, interfaces, morphisms, paths, cells, problems, problem
+versions, conjectures, conjecture versions, conjecture framings, criteria, parameters, regions, region versions, protocols, runs, artifacts,
 gates, comparisons, admissions, and provenance. Filters include the four axes, current status,
 source admission, Ledger number, and text. Results use stable keyset cursors and a limit from 1 to
 100. A cursor is bound to its collection and exact filter digest; malformed, stale, wrong-family,
@@ -152,7 +160,10 @@ conjecture versions and dispositions, or protocol versions and config-provenance
 Gate and comparison history follows typed supersession chains. `why` traverses exact provenance to
 the immutable admission and Ledger claim. `frontier` computes a bounded lexicographic four-axis
 matrix and represents unadmitted cells as explicit gaps; it does not materialize an unbounded
-Cartesian product.
+Cartesian product. Every returned coordinate includes a stable versioned key derived only from the
+four ordered member IDs, plus a separate generation pin used to validate its historical framing;
+its classification is exactly `admitted-cell` or `gap`. Coordinates organize conjectures. They are
+not themselves evidence, physical possibilities, or epistemic assessments.
 
 `dimensions` reads the schema-level `siege_space_dimensions` view and groups its rows beneath the
 fixed four-axis metadata. Both axis and member ordering are deterministic; the fixed metadata makes
@@ -183,9 +194,10 @@ addition is authorized.
 ## Migration, integrity, and verification
 
 Migration `001_v1.sql` remains the historical v1 schema. `002_v2.sql` is the clean v2 projection
-schema. Rebuild reads the governed chain directly, semantically maps the four v1 records without
-editing them, applies later typed v2 changes, and records whether the operation was `clean-v2`, an
-`owned-v1-upgrade`, or an `owned-v2-rebuild`.
+schema. `003_v3.sql` adds stable problem identities/versions and exact, generation-pinned
+one-to-many conjecture framings while removing the requirement that every conjecture own a siege
+cell. Rebuild reads the governed chain directly, semantically maps the four v1 records without
+editing them, applies later typed changes, and records the exact clean/upgrade/rebuild lineage.
 
 `check` reports and enforces projection identity, migration lineage, SQLite integrity, foreign
 keys, chain agreement, family history and transition invariants, path composition, exact
@@ -214,3 +226,7 @@ evidence-bearing cell. The registry makes no LiTaO3 device/material validation, 
 calibration or robustness, connected parameter-region, replicated nonlinear-computation, or
 Conjecture 5 claim. Organizational structure, history machinery, query results, and an MCP surface
 do not strengthen those scientific claims.
+
+The problem/framing migration and public bridge are engineering structure, not a new experiment or
+scientific result. They create no Ledger entry. Concurrent computing-paradigms site work is outside
+this package change and is neither required nor modified by the domain migration.

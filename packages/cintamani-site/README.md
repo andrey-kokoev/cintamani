@@ -43,7 +43,7 @@ appears as a canonical member or cell merely because it is visible in the browse
 
 ## Public schema and behavior
 
-The eight ordered `migrations/*.sql` files define public schema version 4 in strict SQLite/D1. The
+The nine ordered `migrations/*.sql` files define public schema version 5 in strict SQLite/D1. The
 initial invariant migration is split because the
 local D1 engine rejects a seven-branch compound `UNION`; the cardinality invariant uses explicit
 `EXISTS` terms and a typed `CASE` instead. `scripts/check-public-d1.mjs` applies all migrations from
@@ -54,6 +54,10 @@ atomic shadow-table cutover. Migration 0007 adds the x402 reservation, payment-e
 receipt, retry-entitlement, reconciliation, and proposal-source records. Migration 0008 makes a
 current, directly verified GitHub-wallet counterpart eligible for future author actions while
 leaving every stored author and prior revision untouched. Link revocation removes that eligibility.
+Migration 0009 losslessly rebuilds the proposal/revision/criticism core to add problem-led
+explanatory conjectures, exact typed criticism focus, immutable assumptions, generation-pinned
+coordinate framings, and exact-version inter-conjecture relations. Its splitter regression proves
+that representative persisted prefixes either roll back or converge on replay.
 
 The schema has one stable proposal identity, immutable contiguous revisions, and a dedicated detail
 table for each of these kinds:
@@ -64,11 +68,23 @@ table for each of these kinds:
 - observation-interface member;
 - existing-member assessment;
 - explicit existing-member correction;
-- ontology change.
+- ontology change;
+- explanatory conjecture.
 
 Every new axis member declares a canonical-vocabulary, non-evidentiary initial status. Interface
 proposals also declare canonical observation kind and units; the maintainer bridge never invents
 them. Existing-member targets are checked against the tracked canonical dimension snapshot.
+An explanatory conjecture instead requires a problem statement, explanatory claim, essential
+mechanism, scope, failure condition, and unresolved assumptions. It may have zero or more
+coordinate framings. The server accepts only a current checked coordinate key and generation, then
+derives all four members, `admitted-cell|gap`, and optional cell ID from the build-time snapshot;
+client classifications are never trusted. A coordinate frames where a conjecture purports to
+apply. It is neither an epistemic object nor evidence that the coordinate is realizable.
+
+Exact-version conjecture relations use only `rival-to`, `reclassifies`, `equivalent-to`,
+`incompatible-with`, `supersedes`, and `addresses-same-problem`. Each relation is itself a public,
+criticizable claim. It does not merge identities, reclassify a canonical coordinate, supersede a
+state, or otherwise cause an automatic registry or administrative transition.
 
 The public proposal hub is a reading and filtering surface. Its single content-level `Submit
 proposal` action opens the dedicated `/proposals/new/` page in a new tab; the hub does not contain an
@@ -219,6 +235,10 @@ create an immutable export. The canonical, key-sorted JSON includes source times
 revision, selected state event, typed detail/evidence/references, and the criticism/test/
 interpretation snapshot. It explicitly says `criticisms_non_exhaustive: true`; it excludes an
 export-time timestamp from the hashed body. Its SHA-256 is the export identity.
+For an explanatory conjecture, the bridge emits a candidate problem/version,
+conjecture/version, an explicitly `open` non-evidentiary disposition, zero or more exact framings,
+and definition/limitation provenance tied to the source proposal, revision, and export digest. It
+does not create a cell, morphism, path, assessment, or scientific status and never promotes HEAD.
 
 The Worker cannot promote an export. A maintainer downloads the public export wrapper and runs:
 
@@ -237,7 +257,7 @@ same-admission Ledger evidence mapping. Explicit corrections and ontology change
 not auto-translated: they require a maintainer-authored typed correction or schema migration.
 
 The script verifies the export hash and exact selection, refuses overwriting the output, and emits a
-schema-2 domain draft. Candidate axis-member drafts contain the identity, revision-1 non-evidentiary
+  schema-2-compatible domain draft consumed by the schema-3 projection. Candidate axis-member drafts contain the identity, revision-1 non-evidentiary
 assessment, and exact definition/limitation provenance naming proposal, revision, and export digest.
 The maintainer must still run the canonical commands with real authority:
 
@@ -254,6 +274,10 @@ cargo run --manifest-path packages/cintamani-domain/Cargo.toml -- \
 Tests run real `validate` and non-mutating `preview` for all four axis mappings and prove canonical
 HEAD and the live domain SQLite file remain byte-identical. Only after an external promotion may an
 operator append its receipt to `admission_links` in public D1.
+
+The problem-led UI, public schema, and bridge are organizational engineering, not new scientific
+evidence, so this change creates no Ledger entry. Concurrent computing-paradigms pages, layout, CSS,
+and tests are separate user work and are excluded from the Task 6 change boundary.
 
 ## Local commands
 
@@ -299,7 +323,7 @@ during local development.
 
 For x402 specifically, the operator must additionally:
 
-1. keep `X402_ENABLED=false` (or absent) through the schema-v4 migration and ordinary deployment;
+1. keep `X402_ENABLED=false` (or absent) through the current schema-v5 migration and ordinary deployment;
 2. migrate a production-like local D1 and a disposable remote-style copy, checking preservation,
    partial-prefix replay, schema violations, and foreign keys before touching production D1;
 3. designate a dedicated user-controlled Base receiver and set `X402_PAY_TO` without putting wallet

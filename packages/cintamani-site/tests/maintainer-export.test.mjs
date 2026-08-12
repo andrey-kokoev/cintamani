@@ -171,6 +171,66 @@ test('bridge requires exact assessment revision/classification and refuses autom
   }
 })
 
+test('bridge maps a selected explanatory conjecture to a candidate problem, open disposition, framing, and exact provenance', () => {
+  const frontier = JSON.parse(readFileSync(resolve(siteRoot, 'src/data/frontier.json'), 'utf8'))
+  const coordinate = frontier.items.find((item) => item.classification === 'gap')
+  const document = wrapper('explanatory-conjecture', {
+    problem_statement: 'What mechanism could explain the bounded local memory difference?',
+    explanatory_claim: 'Phase-sensitive mixing exposes history unavailable to the matched control.',
+    essential_mechanism: 'Nonlinear phase rotation before the observation boundary.',
+    explanation_scope: 'Normalized local linear-memory protocol only.',
+    failure_condition: 'A predeclared matched comparison has a nonpositive lower envelope.',
+    assumptions: [{ assumption_id: 'assumption-public-1', assumption_order: 1, assumption_text: 'The chosen quadrature remains observable.' }],
+    framings: [{
+      framing_id: 'public-framing-1', framing_order: 1,
+      coordinate_key_version: coordinate.coordinate_key_version,
+      coordinate_key: coordinate.coordinate_key,
+      validation_generation: coordinate.validation_generation,
+      model_id: coordinate.model_id, material_id: coordinate.material_id,
+      mechanism_id: coordinate.mechanism_id, interface_id: coordinate.interface_id,
+      coordinate_classification: coordinate.classification, cell_id: coordinate.cell_id,
+      framing_rationale: 'A conjectural gap framing only.',
+    }],
+    relations: [],
+  })
+  const admission = prepareAdmission(document, {
+    recordId: 'admission-public-explanatory-conjecture',
+    admittedAt: '2026-08-12',
+  })
+  assert.deepEqual(admission.changes.slice(0, 4).map((change) => change.kind), [
+    'problem', 'problem-version', 'conjecture', 'conjecture-version',
+  ])
+  assert.equal(admission.changes.find((change) => change.kind === 'conjecture-framing').coordinate_classification, 'gap')
+  assert.equal(admission.changes.find((change) => change.kind === 'conjecture-disposition').status, 'open')
+  assert.equal(admission.changes.filter((change) => change.kind === 'provenance-claim').length, 6)
+
+  const temporaryRoot = mkdtempSync(resolve(tmpdir(), 'cintamani-problem-led-export-'))
+  const draft = resolve(temporaryRoot, 'draft.json')
+  writeFileSync(draft, `${JSON.stringify(admission, null, 2)}\n`)
+  try {
+    for (const command of ['validate', 'preview']) {
+      const args = [
+        'run', '--quiet', '--manifest-path', resolve(repositoryRoot, 'packages/cintamani-domain/Cargo.toml'), '--',
+        '--workspace-root', repositoryRoot, '--format', 'json', 'admission', command, draft,
+      ]
+      if (command === 'preview') {
+        const head = readFileSync(resolve(repositoryRoot, '.narada/kb/cintamani-domain/chain/HEAD'), 'utf8').trim()
+        args.push('--admitted-by', 'public-export-test-maintainer', '--authority-kind', 'verified-public-proposal-export',
+          '--authority-ref', document.export_id, '--expected-head', head)
+      }
+      const cargo = spawnSync('cargo', args, { cwd: repositoryRoot, encoding: 'utf8', windowsHide: true })
+      assert.equal(cargo.status, 0, `${cargo.stdout}\n${cargo.stderr}`)
+      if (command === 'preview') {
+        const result = JSON.parse(cargo.stdout)
+        assert.equal(result.projection_valid, true)
+        assert.equal(result.mutates_governed_head, false)
+      }
+    }
+  } finally {
+    rmSync(temporaryRoot, { recursive: true, force: true })
+  }
+})
+
 test('tampered export fails before draft creation and generated draft passes the Rust admission validator', () => {
   const document = wrapper('theoretical-model-member', {
     member_id: 'public-model-validation-fixture',
@@ -256,7 +316,7 @@ test('tampered export fails before draft creation and generated draft passes the
   }
 })
 
-test('all four candidate-axis mappings pass real validate and preview without advancing HEAD or changing the live DB', () => {
+test('all four candidate-axis mappings pass real validate and preview without advancing HEAD or changing a preexisting projection', () => {
   const cases = [
     [
       'theoretical-model-member',
@@ -308,10 +368,30 @@ test('all four candidate-axis mappings pass real validate and preview without ad
   const temporaryRoot = mkdtempSync(resolve(tmpdir(), 'cintamani-axis-preview-'))
   const cargoManifest = resolve(repositoryRoot, 'packages/cintamani-domain/Cargo.toml')
   const headPath = resolve(repositoryRoot, '.narada/kb/cintamani-domain/chain/HEAD')
-  const databasePath = resolve(repositoryRoot, '.narada/db/cintamani-domain.sqlite')
+  const databasePath = resolve(temporaryRoot, 'cintamani-domain.sqlite')
   const headBefore = readFileSync(headPath, 'utf8')
-  const databaseBefore = fileHash(databasePath)
   try {
+    const rebuild = spawnSync(
+      'cargo',
+      [
+        'run',
+        '--quiet',
+        '--manifest-path',
+        cargoManifest,
+        '--',
+        '--workspace-root',
+        repositoryRoot,
+        '--database',
+        databasePath,
+        '--format',
+        'json',
+        'rebuild',
+      ],
+      { cwd: repositoryRoot, encoding: 'utf8', windowsHide: true },
+    )
+    assert.equal(rebuild.status, 0, `${rebuild.stdout}\n${rebuild.stderr}`)
+    const databaseBefore = fileHash(databasePath)
+
     for (const [kind, detail, expectedTable] of cases) {
       const document = wrapper(kind, detail)
       const admission = prepareAdmission(document, {
@@ -335,6 +415,8 @@ test('all four candidate-axis mappings pass real validate and preview without ad
           '--',
           '--workspace-root',
           repositoryRoot,
+          '--database',
+          databasePath,
           '--format',
           'json',
           'admission',
@@ -354,6 +436,8 @@ test('all four candidate-axis mappings pass real validate and preview without ad
           '--',
           '--workspace-root',
           repositoryRoot,
+          '--database',
+          databasePath,
           '--format',
           'json',
           'admission',

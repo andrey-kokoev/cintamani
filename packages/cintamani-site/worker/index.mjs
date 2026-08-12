@@ -1,3 +1,4 @@
+import frontier from '../src/data/frontier.json' with { type: 'json' }
 import { axisMetadata, proposalKinds, text, validateProposal } from '../src/lib/proposals.mjs'
 import {
   changeOperatorRole,
@@ -620,6 +621,13 @@ async function routeApi(request, env) {
   if (request.method === 'GET' && pathname === '/api/config') {
     return json({
       proposal_kinds: proposalKinds,
+      frontier: {
+        coordinate_key_version: frontier.items[0]?.coordinate_key_version ?? null,
+        validation_generation: frontier.items[0]?.validation_generation ?? null,
+        items: frontier.items,
+        bounded: true,
+        derived: true,
+      },
       dimensions: axisMetadata,
       turnstile_site_key: env.TURNSTILE_SITE_KEY ?? null,
       authentication: 'github-or-base-wallet',

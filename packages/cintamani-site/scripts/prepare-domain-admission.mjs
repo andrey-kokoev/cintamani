@@ -229,6 +229,73 @@ function assessmentChanges(canonical, contentHash, revisionNumber, materialClass
   ]
 }
 
+function safeId(value) {
+  return value.toLowerCase().replaceAll(/[^a-z0-9]+/gu, '-').replaceAll(/^-+|-+$/gu, '').slice(0, 72)
+}
+
+function explanatoryConjectureChanges(canonical, contentHash) {
+  const revision = canonical.selected_revision
+  const detail = revision.detail
+  const identity = safeId(canonical.proposal.proposal_id)
+  const problemId = `problem-${identity}`
+  const problemVersionId = `${problemId}-version-1`
+  const conjectureId = `conjecture-${identity}`
+  const conjectureVersionId = `${conjectureId}-version-1`
+  const dispositionId = `${conjectureId}-disposition-1`
+  const occurredAt = revision.source_timestamp
+  const changes = [
+    { kind: 'problem', problem_id: problemId, label: revision.title },
+    {
+      kind: 'problem-version', problem_version_id: problemVersionId, problem_id: problemId,
+      revision: 1, event_kind: 'definition', occurred_at: occurredAt,
+      problem_statement: detail.problem_statement, rationale: revision.rationale, scope: revision.scope,
+    },
+    { kind: 'conjecture', conjecture_id: conjectureId, problem_id: problemId, label: revision.title },
+    {
+      kind: 'conjecture-version', conjecture_version_id: conjectureVersionId, conjecture_id: conjectureId,
+      revision: 1, event_kind: 'definition', occurred_at: occurredAt,
+      statement: detail.explanatory_claim,
+      rationale: `${revision.rationale}\n\nEssential mechanism: ${detail.essential_mechanism}\n\nUnresolved assumptions:\n${detail.assumptions.map((item) => `- ${item.assumption_text}`).join('\n')}`,
+      scope: `${detail.explanation_scope}\n\nFailure condition: ${detail.failure_condition}`,
+    },
+  ]
+  for (const framing of detail.framings) {
+    changes.push({
+      kind: 'conjecture-framing', framing_id: `${conjectureVersionId}-framing-${framing.framing_order}`,
+      conjecture_version_id: conjectureVersionId, framing_order: framing.framing_order,
+      coordinate_key_version: framing.coordinate_key_version, coordinate_key: framing.coordinate_key,
+      validation_generation: framing.validation_generation, model_id: framing.model_id,
+      material_id: framing.material_id, mechanism_id: framing.mechanism_id,
+      interface_id: framing.interface_id, coordinate_classification: framing.coordinate_classification,
+      cell_id: framing.cell_id, framing_rationale: framing.framing_rationale,
+    })
+  }
+  changes.push({
+    kind: 'conjecture-disposition', disposition_id: dispositionId, conjecture_id: conjectureId,
+    conjecture_version_id: conjectureVersionId, revision: 1, event_kind: 'decision',
+    occurred_at: occurredAt, status: 'open',
+    rationale: 'Candidate public conjecture selected for governed review; no scientific test or survival is implied.',
+    scope: revision.scope,
+  })
+  for (const [targetKind, targetId, suffix, claim] of [
+    ['problem', problemId, 'problem-definition', `Problem definition selected from public proposal ${canonical.proposal.proposal_id} revision ${revision.revision}.`],
+    ['problem-version', problemVersionId, 'problem-version-definition', `Exact candidate problem version selected from public proposal ${canonical.proposal.proposal_id} revision ${revision.revision}.`],
+    ['conjecture', conjectureId, 'conjecture-definition', `Explanatory conjecture selected from public proposal ${canonical.proposal.proposal_id} revision ${revision.revision}.`],
+    ['conjecture-version', conjectureVersionId, 'conjecture-version-definition', `Exact candidate conjecture version selected from public proposal ${canonical.proposal.proposal_id} revision ${revision.revision}.`],
+    ['conjecture-disposition', dispositionId, 'open-limitation', 'Open is a non-evidentiary disposition; public selection is not survival, truth, or admission.'],
+  ]) {
+    changes.push(provenance(targetKind, targetId, suffix === 'open-limitation' ? 'limitation' : 'definition', `${claim} Export SHA-256 ${contentHash}.`, suffix))
+  }
+  for (const framing of changes.filter((change) => change.kind === 'conjecture-framing')) {
+    changes.push(provenance(
+      'conjecture-framing', framing.framing_id, 'limitation',
+      `Coordinate framing selected from public proposal ${canonical.proposal.proposal_id} revision ${revision.revision}; it is conjectural organization, not an epistemic assessment. Export SHA-256 ${contentHash}.`,
+      `framing-${framing.framing_order}-limitation`,
+    ))
+  }
+  return changes
+}
+
 export function verifyExport(document) {
   const canonical = document.canonical ?? document
   const expectedHash = document.content_sha256
@@ -248,6 +315,9 @@ export function prepareAdmission(document, options) {
   const { canonical, contentHash } = verifyExport(document)
   const kind = canonical.proposal.proposal_kind
   let changes = axisChanges(canonical, contentHash)
+  if (!changes && kind === 'explanatory-conjecture') {
+    changes = explanatoryConjectureChanges(canonical, contentHash)
+  }
   if (!changes && kind === 'existing-member-assessment') {
     if (!Number.isInteger(options.assessmentRevision) || options.assessmentRevision < 1) {
       throw new Error('--assessment-revision is required for an existing-member assessment')

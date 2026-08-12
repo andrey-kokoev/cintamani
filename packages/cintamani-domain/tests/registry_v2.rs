@@ -1,7 +1,7 @@
 use cintamani_domain::{
     AdmissionAuthority, AdmissionV2, Change, Collection, FrontierFilters, ProvenanceTarget,
-    QueryFilters, RegistryPaths, deterministic_logical_readback, dimensions, draft_admission,
-    entity_history, entity_show, frontier, handle_mcp_request, inspect, list_page,
+    QueryFilters, RegistryPaths, coordinate_key, deterministic_logical_readback, dimensions,
+    draft_admission, entity_history, entity_show, frontier, handle_mcp_request, inspect, list_page,
     preview_admission, promote_admission, rebuild, tool_descriptors, verify_chain, why,
 };
 use rusqlite::{Connection, params};
@@ -112,8 +112,8 @@ fn frozen_v1_bytes_rebuild_idempotently_into_v2() {
     let first = rebuild(&paths(&temp)).unwrap();
     let logical = deterministic_logical_readback(&paths(&temp).database_path).unwrap();
     let second = rebuild(&paths(&temp)).unwrap();
-    assert_eq!(first.schema_version, "2");
-    assert_eq!(second.migration_kind, "owned-v2-rebuild");
+    assert_eq!(first.schema_version, "3");
+    assert_eq!(second.migration_kind, "owned-v3-rebuild");
     assert_eq!(
         logical,
         deterministic_logical_readback(&paths(&temp).database_path).unwrap()
@@ -127,6 +127,290 @@ fn frozen_v1_bytes_rebuild_idempotently_into_v2() {
         0
     );
     assert_eq!(report.missing_artifacts, 1);
+}
+
+fn problem_led_admission(generation: &str) -> AdmissionV2 {
+    let gap_key = coordinate_key(
+        "normalized-driven-kerr-resonator",
+        "thin-film-litao3-candidate",
+        "driven-dissipative-kerr-mixing",
+        "bus-mode-coherent-quadrature",
+    );
+    AdmissionV2 {
+        record_id: "admission-test-problem-led".to_owned(),
+        schema_version: 2,
+        admitted_at: "2026-08-12".to_owned(),
+        description: "Test problem-led gap and unclassified conjectures without admitting a cell."
+            .to_owned(),
+        changes: vec![
+            Change::Problem {
+                problem_id: "problem-test-gap".to_owned(),
+                label: "Test gap problem".to_owned(),
+            },
+            Change::ProblemVersion {
+                problem_version_id: "problem-test-gap-v1".to_owned(),
+                problem_id: "problem-test-gap".to_owned(),
+                revision: 1,
+                event_kind: "definition".to_owned(),
+                occurred_at: "2026-08-12".to_owned(),
+                problem_statement:
+                    "What would explain a bounded response in this unadmitted coordinate?"
+                        .to_owned(),
+                rationale: "Test-only structural problem.".to_owned(),
+                scope: "No scientific or material claim.".to_owned(),
+            },
+            Change::Conjecture {
+                conjecture_id: "conjecture-test-gap".to_owned(),
+                problem_id: Some("problem-test-gap".to_owned()),
+                cell_id: None,
+                label: "Test gap conjecture".to_owned(),
+            },
+            Change::ConjectureVersion {
+                conjecture_version_id: "conjecture-test-gap-v1".to_owned(),
+                conjecture_id: "conjecture-test-gap".to_owned(),
+                revision: 1,
+                event_kind: "definition".to_owned(),
+                occurred_at: "2026-08-12".to_owned(),
+                statement: "A deliberately non-evidentiary test conjecture.".to_owned(),
+                rationale: "Exercise exact-version framing.".to_owned(),
+                scope: "Registry workflow test only.".to_owned(),
+            },
+            Change::ConjectureFraming {
+                framing_id: "framing-test-gap-v1-1".to_owned(),
+                conjecture_version_id: "conjecture-test-gap-v1".to_owned(),
+                framing_order: 1,
+                coordinate_key_version: "cintamani.coordinate-key.v1".to_owned(),
+                coordinate_key: gap_key,
+                validation_generation: generation.to_owned(),
+                model_id: "normalized-driven-kerr-resonator".to_owned(),
+                material_id: "thin-film-litao3-candidate".to_owned(),
+                mechanism_id: "driven-dissipative-kerr-mixing".to_owned(),
+                interface_id: "bus-mode-coherent-quadrature".to_owned(),
+                coordinate_classification: "gap".to_owned(),
+                cell_id: None,
+                framing_rationale: "Conjectural framing of a gap; not a cell admission.".to_owned(),
+            },
+            Change::ConjectureDisposition {
+                disposition_id: "disposition-test-gap-r1".to_owned(),
+                conjecture_id: "conjecture-test-gap".to_owned(),
+                conjecture_version_id: "conjecture-test-gap-v1".to_owned(),
+                revision: 1,
+                event_kind: "decision".to_owned(),
+                occurred_at: "2026-08-12".to_owned(),
+                status: "open".to_owned(),
+                rationale: "Candidate has not been tested or admitted.".to_owned(),
+                scope: "Open organizational disposition only.".to_owned(),
+            },
+            Change::Problem {
+                problem_id: "problem-test-unclassified".to_owned(),
+                label: "Test unclassified problem".to_owned(),
+            },
+            Change::ProblemVersion {
+                problem_version_id: "problem-test-unclassified-v1".to_owned(),
+                problem_id: "problem-test-unclassified".to_owned(),
+                revision: 1,
+                event_kind: "definition".to_owned(),
+                occurred_at: "2026-08-12".to_owned(),
+                problem_statement: "What problem remains before a coordinate framing is chosen?"
+                    .to_owned(),
+                rationale: "Test zero-framing conjecture support.".to_owned(),
+                scope: "No coordinate or scientific claim.".to_owned(),
+            },
+            Change::Conjecture {
+                conjecture_id: "conjecture-test-unclassified".to_owned(),
+                problem_id: Some("problem-test-unclassified".to_owned()),
+                cell_id: None,
+                label: "Test unclassified conjecture".to_owned(),
+            },
+            Change::ConjectureVersion {
+                conjecture_version_id: "conjecture-test-unclassified-v1".to_owned(),
+                conjecture_id: "conjecture-test-unclassified".to_owned(),
+                revision: 1,
+                event_kind: "definition".to_owned(),
+                occurred_at: "2026-08-12".to_owned(),
+                statement: "A conjecture may remain unclassified without inventing a cell."
+                    .to_owned(),
+                rationale: "Exercise zero coordinate framings.".to_owned(),
+                scope: "Registry workflow test only.".to_owned(),
+            },
+            Change::ConjectureDisposition {
+                disposition_id: "disposition-test-unclassified-r1".to_owned(),
+                conjecture_id: "conjecture-test-unclassified".to_owned(),
+                conjecture_version_id: "conjecture-test-unclassified-v1".to_owned(),
+                revision: 1,
+                event_kind: "decision".to_owned(),
+                occurred_at: "2026-08-12".to_owned(),
+                status: "open".to_owned(),
+                rationale: "Candidate has not been tested or admitted.".to_owned(),
+                scope: "Open organizational disposition only.".to_owned(),
+            },
+            provenance(
+                "p-test-gap-problem",
+                ProvenanceTarget::Problem("problem-test-gap".to_owned()),
+            ),
+            provenance(
+                "p-test-gap-problem-v1",
+                ProvenanceTarget::ProblemVersion("problem-test-gap-v1".to_owned()),
+            ),
+            provenance(
+                "p-test-gap-conjecture",
+                ProvenanceTarget::Conjecture("conjecture-test-gap".to_owned()),
+            ),
+            provenance(
+                "p-test-gap-conjecture-v1",
+                ProvenanceTarget::ConjectureVersion("conjecture-test-gap-v1".to_owned()),
+            ),
+            provenance(
+                "p-test-gap-framing",
+                ProvenanceTarget::ConjectureFraming("framing-test-gap-v1-1".to_owned()),
+            ),
+            provenance(
+                "p-test-gap-disposition",
+                ProvenanceTarget::ConjectureDisposition("disposition-test-gap-r1".to_owned()),
+            ),
+            provenance(
+                "p-test-unclassified-problem",
+                ProvenanceTarget::Problem("problem-test-unclassified".to_owned()),
+            ),
+            provenance(
+                "p-test-unclassified-problem-v1",
+                ProvenanceTarget::ProblemVersion("problem-test-unclassified-v1".to_owned()),
+            ),
+            provenance(
+                "p-test-unclassified-conjecture",
+                ProvenanceTarget::Conjecture("conjecture-test-unclassified".to_owned()),
+            ),
+            provenance(
+                "p-test-unclassified-conjecture-v1",
+                ProvenanceTarget::ConjectureVersion("conjecture-test-unclassified-v1".to_owned()),
+            ),
+            provenance(
+                "p-test-unclassified-disposition",
+                ProvenanceTarget::ConjectureDisposition(
+                    "disposition-test-unclassified-r1".to_owned(),
+                ),
+            ),
+        ],
+    }
+}
+
+#[test]
+fn problem_led_gap_and_unclassified_conjectures_preserve_coordinate_and_cell_identity() {
+    let temp = workspace();
+    let registry = paths(&temp);
+    rebuild(&registry).unwrap();
+    let initial_frontier = frontier(
+        &registry.database_path,
+        &FrontierFilters::default(),
+        None,
+        100,
+    )
+    .unwrap();
+    let initial_keys = initial_frontier
+        .items
+        .iter()
+        .map(|item| item["coordinate_key"].as_str().unwrap().to_owned())
+        .collect::<BTreeSet<_>>();
+    let initial_cells = inspect(&registry).unwrap().relation_counts["siege_cells"];
+    let draft = temp.path().join("problem-led.json");
+    draft_admission(
+        &draft,
+        &problem_led_admission("bootstrap-0004-0e32d9248223"),
+    )
+    .unwrap();
+    let preview = preview_admission(&registry, &draft, &authority()).unwrap();
+    assert_eq!(preview.relation_count_deltas["problems"], 2);
+    assert_eq!(preview.relation_count_deltas["conjecture_framings"], 1);
+    assert_eq!(preview.relation_count_deltas["siege_cells"], 0);
+    let receipt = promote_admission(&registry, &draft, &authority()).unwrap();
+    assert_eq!(
+        inspect(&registry).unwrap().relation_counts["siege_cells"],
+        initial_cells
+    );
+    let connection = Connection::open(&registry.database_path).unwrap();
+    let classifications: Vec<(String, i64)> = connection
+        .prepare(
+            "SELECT q.conjecture_id,COUNT(f.framing_id) FROM conjectures q
+             JOIN conjecture_versions v USING(conjecture_id)
+             LEFT JOIN conjecture_framings f USING(conjecture_version_id)
+             WHERE q.conjecture_id LIKE 'conjecture-test-%'
+             GROUP BY q.conjecture_id ORDER BY q.conjecture_id",
+        )
+        .unwrap()
+        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+        .unwrap()
+        .collect::<rusqlite::Result<Vec<_>>>()
+        .unwrap();
+    assert_eq!(
+        classifications,
+        vec![
+            ("conjecture-test-gap".to_owned(), 1),
+            ("conjecture-test-unclassified".to_owned(), 0),
+        ]
+    );
+    drop(connection);
+    let next_frontier = frontier(
+        &registry.database_path,
+        &FrontierFilters::default(),
+        None,
+        100,
+    )
+    .unwrap();
+    assert_eq!(
+        initial_keys,
+        next_frontier
+            .items
+            .iter()
+            .map(|item| item["coordinate_key"].as_str().unwrap().to_owned())
+            .collect()
+    );
+    assert!(
+        next_frontier
+            .items
+            .iter()
+            .all(|item| item["validation_generation"] == receipt.generation)
+    );
+}
+
+#[test]
+fn framing_validator_rejects_coordinate_key_classification_and_generation_drift() {
+    for drift in ["key", "classification", "generation"] {
+        let temp = workspace();
+        let registry = paths(&temp);
+        rebuild(&registry).unwrap();
+        let mut record = problem_led_admission("bootstrap-0004-0e32d9248223");
+        let framing = record
+            .changes
+            .iter_mut()
+            .find_map(|change| match change {
+                Change::ConjectureFraming {
+                    coordinate_key,
+                    validation_generation,
+                    coordinate_classification,
+                    cell_id,
+                    ..
+                } => Some((
+                    coordinate_key,
+                    validation_generation,
+                    coordinate_classification,
+                    cell_id,
+                )),
+                _ => None,
+            })
+            .unwrap();
+        match drift {
+            "key" => framing.0.push_str("-tampered"),
+            "classification" => {
+                *framing.2 = "admitted-cell".to_owned();
+                *framing.3 = Some("cell-kerr-abstract-quadrature".to_owned());
+            }
+            "generation" => *framing.1 = "not-a-governed-generation".to_owned(),
+            _ => unreachable!(),
+        }
+        let draft = temp.path().join(format!("bad-framing-{drift}.json"));
+        draft_admission(&draft, &record).unwrap();
+        assert!(preview_admission(&registry, &draft, &authority()).is_err());
+    }
 }
 
 #[test]
@@ -1092,7 +1376,9 @@ fn show_history_why_and_frontier_are_bounded_and_complete() {
     }
     assert_eq!(rows.len(), 4);
     assert_eq!(
-        rows.iter().filter(|row| row["gap"] == json!(true)).count(),
+        rows.iter()
+            .filter(|row| row["classification"] == "gap")
+            .count(),
         2
     );
     assert!(

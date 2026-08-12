@@ -89,6 +89,16 @@ const detailTables = Object.freeze({
       'migration_requirements',
     ],
   },
+  'explanatory-conjecture': {
+    table: 'explanatory_conjecture_details',
+    fields: [
+      'problem_statement',
+      'explanatory_claim',
+      'essential_mechanism',
+      'explanation_scope',
+      'failure_condition',
+    ],
+  },
 })
 
 function insertDetail(database, proposalId, revision, kind, detail) {
@@ -137,6 +147,9 @@ export async function completeRevisionStatements(database, options) {
     detail: options.input.detail,
     evidence: options.input.evidence,
     references: options.input.references,
+    assumptions: options.input.assumptions,
+    framings: options.input.framings,
+    relations: options.input.relations,
   }
   const contentHash = await sha256Hex(canonicalize(content))
   const statements = insertRevisionStatements(database, options)
@@ -161,6 +174,70 @@ export async function completeRevisionStatements(database, options) {
       options.current,
     )
   statements.push(insertDetail(database, options.proposalId, options.revision, options.kind, options.input.detail))
+  for (const [index, assumption] of options.input.assumptions.entries()) {
+    statements.push(
+      database.prepare(
+        `INSERT INTO explanatory_conjecture_assumptions (
+          assumption_id, proposal_id, revision, assumption_order, assumption_text
+        ) VALUES (?, ?, ?, ?, ?)`,
+      ).bind(
+        `assumption-${randomToken(18)}`,
+        options.proposalId,
+        options.revision,
+        index + 1,
+        assumption,
+      ),
+    )
+  }
+  for (const framing of options.input.framings) {
+    statements.push(
+      database.prepare(
+        `INSERT INTO proposal_coordinate_framings (
+          framing_id, proposal_id, revision, framing_order, coordinate_key_version,
+          coordinate_key, validation_generation, model_id, material_id, mechanism_id,
+          interface_id, coordinate_classification, cell_id, framing_rationale
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).bind(
+        `framing-${randomToken(18)}`,
+        options.proposalId,
+        options.revision,
+        framing.framing_order,
+        framing.coordinate_key_version,
+        framing.coordinate_key,
+        framing.validation_generation,
+        framing.model_id,
+        framing.material_id,
+        framing.mechanism_id,
+        framing.interface_id,
+        framing.coordinate_classification,
+        framing.cell_id,
+        framing.framing_rationale,
+      ),
+    )
+  }
+  for (const relation of options.input.relations) {
+    statements.push(
+      database.prepare(
+        `INSERT INTO conjecture_relations (
+          relation_id, source_proposal_id, source_revision, target_proposal_id,
+          target_revision, relation_kind, relation_claim, relation_scope,
+          author_account_id, source_timestamp, recorded_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).bind(
+        `relation-${randomToken(18)}`,
+        options.proposalId,
+        options.revision,
+        relation.target_proposal_id,
+        relation.target_revision,
+        relation.relation_kind,
+        relation.relation_claim,
+        relation.relation_scope,
+        options.accountId,
+        options.current,
+        options.current,
+      ),
+    )
+  }
   for (const item of options.input.evidence) {
     statements.push(
       database
@@ -422,8 +499,8 @@ export async function createCriticism(request, env, authorization, proposalId, r
     env.PROPOSALS_DB.prepare(
       `INSERT INTO criticisms (
         criticism_id, proposal_id, target_revision, author_account_id, title,
-        criticism, scope, source_timestamp, recorded_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        criticism, scope, source_timestamp, recorded_at, focus_kind, focus_ref
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       criticismId,
       proposalId,
@@ -434,6 +511,8 @@ export async function createCriticism(request, env, authorization, proposalId, r
       input.scope,
       current,
       current,
+      input.focus_kind,
+      input.focus_ref,
     ),
   ]
   for (const reference of input.references) {
@@ -977,6 +1056,7 @@ export async function listProposals(env, url) {
   const cursor = url.searchParams.get('cursor') ?? ''
   const kind = url.searchParams.get('kind')
   const state = url.searchParams.get('state')
+  const coordinateKey = url.searchParams.get('coordinate_key')
   if (kind && !detailTables[kind]) throw new InputError('kind filter is not supported', 'kind')
   if (state && !administrativeStates.includes(state)) throw new InputError('state filter is not supported', 'state')
   const clauses = ['p.proposal_id > ?']
@@ -988,6 +1068,14 @@ export async function listProposals(env, url) {
   if (state) {
     clauses.push('p.current_admin_state = ?')
     bindings.push(state)
+  }
+  if (coordinateKey) {
+    clauses.push(`EXISTS (
+      SELECT 1 FROM proposal_coordinate_framings framing
+      WHERE framing.proposal_id=p.proposal_id AND framing.revision=p.current_revision
+        AND framing.coordinate_key=?
+    )`)
+    bindings.push(coordinateKey)
   }
   bindings.push(limit + 1)
   const rows = await all(
@@ -1024,10 +1112,40 @@ export async function listProposals(env, url) {
 
 async function readDetail(database, kind, proposalId, revision) {
   const contract = detailTables[kind]
-  return database
+  const detail = await database
     .prepare(`SELECT ${contract.fields.join(', ')} FROM ${contract.table} WHERE proposal_id = ? AND revision = ?`)
     .bind(proposalId, revision)
     .first()
+  if (kind === 'explanatory-conjecture' && detail) {
+    detail.assumptions = await all(
+      database,
+      `SELECT assumption_id,assumption_order,assumption_text
+       FROM explanatory_conjecture_assumptions
+       WHERE proposal_id=? AND revision=? ORDER BY assumption_order`,
+      proposalId,
+      revision,
+    )
+    detail.framings = await all(
+      database,
+      `SELECT framing_id,framing_order,coordinate_key_version,coordinate_key,
+              validation_generation,model_id,material_id,mechanism_id,interface_id,
+              coordinate_classification,cell_id,framing_rationale
+       FROM proposal_coordinate_framings
+       WHERE proposal_id=? AND revision=? ORDER BY framing_order`,
+      proposalId,
+      revision,
+    )
+    detail.relations = await all(
+      database,
+      `SELECT relation_id,relation_kind,target_proposal_id,target_revision,
+              relation_claim,relation_scope,source_timestamp,recorded_at
+       FROM conjecture_relations
+       WHERE source_proposal_id=? AND source_revision=? ORDER BY relation_id`,
+      proposalId,
+      revision,
+    )
+  }
+  return detail
 }
 
 export async function readProposal(env, proposalId) {
@@ -1081,7 +1199,7 @@ export async function readProposal(env, proposalId) {
   const criticisms = await all(
     env.PROPOSALS_DB,
     `SELECT c.criticism_id, c.proposal_id, c.target_revision, c.title, c.criticism,
-            c.scope, c.source_timestamp, c.recorded_at, ${publicAccountColumns()}
+            c.scope, c.focus_kind, c.focus_ref, c.source_timestamp, c.recorded_at, ${publicAccountColumns()}
      FROM criticisms c JOIN public_contributor_profiles a ON a.principal_id = c.author_account_id
      WHERE c.proposal_id = ? ORDER BY c.target_revision, c.criticism_id`,
     proposalId,

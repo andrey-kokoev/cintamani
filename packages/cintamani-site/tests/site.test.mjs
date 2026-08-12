@@ -5,9 +5,14 @@ import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import test from 'node:test'
 import { readFrontier } from '../scripts/generate-domain-snapshots.mjs'
-import { detailFormPlaceholders } from '../src/scripts/proposal-detail.mjs'
+import {
+  buildRevisionPayload,
+  criticismFocusOptions,
+  detailFormPlaceholders,
+} from '../src/scripts/proposal-detail.mjs'
 import { detailFieldPlaceholders, focusFirstInvalid } from '../src/scripts/proposal-new.mjs'
 import { contributorLabel, samePublicContributor } from '../src/scripts/public-api.mjs'
+import { conjectureRelationKinds } from '../src/lib/proposals.mjs'
 
 const testRoot = dirname(fileURLToPath(import.meta.url))
 const siteRoot = resolve(testRoot, '..')
@@ -43,8 +48,9 @@ test('tracked snapshots preserve the ordered siege and scientific boundary', () 
 
   const frontier = readJson('src/data/frontier.json')
   assert.equal(frontier.item_count, frontier.items.length)
-  assert.equal(frontier.items.filter((item) => item.gap).length, 2)
-  assert.equal(frontier.items.filter((item) => !item.gap).length, 2)
+  assert.equal(frontier.items.filter((item) => item.classification === 'gap').length, 2)
+  assert.equal(frontier.items.filter((item) => item.classification === 'admitted-cell').length, 2)
+  assert.ok(frontier.items.every((item) => item.coordinate_key && item.validation_generation))
 
   const summary = readJson('src/data/registry-summary.json')
   assert.equal(summary.snapshot_mode, 'build-time-static')
@@ -67,6 +73,7 @@ test('snapshot generator check mode is byte-deterministic and fail-closed', () =
 
 test('frontier pagination rejects repeated coordinates, cursors, and unbounded traversal', () => {
   const item = (suffix) => ({
+    coordinate_key: `coordinate-${suffix}`,
     model_id: `model-${suffix}`,
     material_id: 'material',
     mechanism_id: 'mechanism',
@@ -379,6 +386,7 @@ test('public-write examples cover core, every typed family, and exact-revision c
     'existing-member-assessment': ['target_dimension', 'target_member_id', 'proposed_assessment_status', 'proposed_assessment_detail', 'assessment_rationale', 'assessment_scope'],
     'existing-member-correction': ['target_dimension', 'target_member_id', 'corrected_name', 'corrected_definition', 'corrected_assessment_status', 'corrected_assessment_detail', 'correction_rationale'],
     'ontology-change': ['change_kind', 'target_key', 'proposed_definition', 'compatibility_effect', 'migration_requirements'],
+    'explanatory-conjecture': ['problem_statement', 'explanatory_claim', 'essential_mechanism', 'explanation_scope', 'failure_condition', 'assumptions'],
   }
   assert.deepEqual(Object.keys(detailFieldPlaceholders), Object.keys(expectedKinds))
   for (const [kind, fields] of Object.entries(expectedKinds)) {
@@ -421,6 +429,73 @@ test('public-write examples cover core, every typed family, and exact-revision c
   assert.match(newController, /attributes: \{ id, name, type: 'text', placeholder \}/u)
   assert.match(newController, /\.map\(\(control\) => \[control\.name, control\.value\]\)/u)
   assert.doesNotMatch(`${newController}\n${detailController}`, /\.value\s*=\s*[^\n]*placeholder/u)
+})
+
+test('explanatory revision and criticism helpers preserve typed exact-version structure', () => {
+  assert.deepEqual(conjectureRelationKinds, [
+    'rival-to',
+    'reclassifies',
+    'equivalent-to',
+    'incompatible-with',
+    'supersedes',
+    'addresses-same-problem',
+  ])
+  const ordinaryFocus = criticismFocusOptions({ member_id: 'model-a' })
+  assert.deepEqual(ordinaryFocus.map((item) => item.value), ['whole-proposal|', 'other-explicit|'])
+
+  const explanatory = {
+    problem_statement: 'Why is the local readout difference present?',
+    explanatory_claim: 'A bounded phase transformation carries the relevant history.',
+    essential_mechanism: 'Phase mixing before the declared observation boundary.',
+    explanation_scope: 'One normalized target family.',
+    failure_condition: 'The matched control removes the predeclared advantage.',
+    assumptions: [{ assumption_id: 'assumption-a', assumption_order: 1, assumption_text: 'The observable is stable.' }],
+    framings: [{
+      framing_id: 'framing-a',
+      framing_order: 1,
+      coordinate_key: 'coordinate-a',
+      validation_generation: 'generation-a',
+      framing_rationale: 'A conjectural frame only.',
+      model_id: 'ignored-derived-model',
+    }],
+    relations: [{
+      relation_id: 'relation-a',
+      relation_kind: 'rival-to',
+      target_proposal_id: 'proposal-a',
+      target_revision: 1,
+      relation_claim: 'The mechanisms differ.',
+      relation_scope: 'These exact revisions.',
+      recorded_at: 'ignored-derived-time',
+    }],
+  }
+  const focus = criticismFocusOptions(explanatory)
+  assert.ok(focus.some((item) => item.value === 'problem-statement|'))
+  assert.ok(focus.some((item) => item.value === 'assumption|assumption-a'))
+  assert.ok(focus.some((item) => item.value === 'coordinate-framing|framing-a'))
+  assert.ok(focus.some((item) => item.value === 'conjecture-relation|relation-a'))
+
+  const values = new FormData()
+  values.set('title', 'Revision title')
+  values.set('summary', 'Revision summary')
+  values.set('rationale', 'Revision rationale')
+  values.set('scope', 'Revision scope')
+  values.set('detail_json', JSON.stringify(explanatory))
+  const payload = buildRevisionPayload('explanatory-conjecture', values)
+  assert.equal(payload.detail.problem_statement, explanatory.problem_statement)
+  assert.equal('assumptions' in payload.detail, false)
+  assert.deepEqual(payload.assumptions, ['The observable is stable.'])
+  assert.deepEqual(payload.framings, [{
+    coordinate_key: 'coordinate-a',
+    validation_generation: 'generation-a',
+    framing_rationale: 'A conjectural frame only.',
+  }])
+  assert.deepEqual(payload.relations, [{
+    relation_kind: 'rival-to',
+    target_proposal_id: 'proposal-a',
+    target_revision: 1,
+    relation_claim: 'The mechanisms differ.',
+    relation_scope: 'These exact revisions.',
+  }])
 })
 
 test('Narada ochre primary and semantic colors retain readable contrast', () => {

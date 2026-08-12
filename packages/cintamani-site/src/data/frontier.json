@@ -5,42 +5,70 @@
     {
       "cell_id": "cell-kerr-abstract-quadrature",
       "cell_name": "Normalized Kerr / abstract medium / Kerr mixing / quadrature",
-      "gap": false,
+      "classification": "admitted-cell",
+      "coordinate_key": "27:cintamani.coordinate-key.v1|32:normalized-driven-kerr-resonator|26:abstract-normalized-medium|30:driven-dissipative-kerr-mixing|28:bus-mode-coherent-quadrature",
+      "coordinate_key_version": "cintamani.coordinate-key.v1",
       "interface_id": "bus-mode-coherent-quadrature",
+      "interface_name": "Bus-output coherent quadrature",
       "material_id": "abstract-normalized-medium",
+      "material_name": "Abstract normalized Kerr medium",
       "mechanism_id": "driven-dissipative-kerr-mixing",
+      "mechanism_name": "Driven-dissipative Kerr mixing",
       "model_id": "normalized-driven-kerr-resonator",
-      "status": "advanced-local-lead"
+      "model_name": "Normalized driven Kerr resonator",
+      "status": "advanced-local-lead",
+      "validation_generation": "bootstrap-0004-0e32d9248223"
     },
     {
       "cell_id": "cell-kerr-abstract-intensity",
       "cell_name": "Normalized Kerr / abstract medium / Kerr mixing / intensity",
-      "gap": false,
+      "classification": "admitted-cell",
+      "coordinate_key": "27:cintamani.coordinate-key.v1|32:normalized-driven-kerr-resonator|26:abstract-normalized-medium|30:driven-dissipative-kerr-mixing|18:bus-mode-intensity",
+      "coordinate_key_version": "cintamani.coordinate-key.v1",
       "interface_id": "bus-mode-intensity",
+      "interface_name": "Bus-output mode intensity",
       "material_id": "abstract-normalized-medium",
+      "material_name": "Abstract normalized Kerr medium",
       "mechanism_id": "driven-dissipative-kerr-mixing",
+      "mechanism_name": "Driven-dissipative Kerr mixing",
       "model_id": "normalized-driven-kerr-resonator",
-      "status": "tested-local"
+      "model_name": "Normalized driven Kerr resonator",
+      "status": "tested-local",
+      "validation_generation": "bootstrap-0004-0e32d9248223"
     },
     {
       "cell_id": null,
       "cell_name": null,
-      "gap": true,
+      "classification": "gap",
+      "coordinate_key": "27:cintamani.coordinate-key.v1|32:normalized-driven-kerr-resonator|26:thin-film-litao3-candidate|30:driven-dissipative-kerr-mixing|28:bus-mode-coherent-quadrature",
+      "coordinate_key_version": "cintamani.coordinate-key.v1",
       "interface_id": "bus-mode-coherent-quadrature",
+      "interface_name": "Bus-output coherent quadrature",
       "material_id": "thin-film-litao3-candidate",
+      "material_name": "Thin-film LiTaO3 candidate",
       "mechanism_id": "driven-dissipative-kerr-mixing",
+      "mechanism_name": "Driven-dissipative Kerr mixing",
       "model_id": "normalized-driven-kerr-resonator",
-      "status": null
+      "model_name": "Normalized driven Kerr resonator",
+      "status": null,
+      "validation_generation": "bootstrap-0004-0e32d9248223"
     },
     {
       "cell_id": null,
       "cell_name": null,
-      "gap": true,
+      "classification": "gap",
+      "coordinate_key": "27:cintamani.coordinate-key.v1|32:normalized-driven-kerr-resonator|26:thin-film-litao3-candidate|30:driven-dissipative-kerr-mixing|18:bus-mode-intensity",
+      "coordinate_key_version": "cintamani.coordinate-key.v1",
       "interface_id": "bus-mode-intensity",
+      "interface_name": "Bus-output mode intensity",
       "material_id": "thin-film-litao3-candidate",
+      "material_name": "Thin-film LiTaO3 candidate",
       "mechanism_id": "driven-dissipative-kerr-mixing",
+      "mechanism_name": "Driven-dissipative Kerr mixing",
       "model_id": "normalized-driven-kerr-resonator",
-      "status": null
+      "model_name": "Normalized driven Kerr resonator",
+      "status": null,
+      "validation_generation": "bootstrap-0004-0e32d9248223"
     }
   ]
 }

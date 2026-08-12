@@ -5,6 +5,24 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{fmt, path::Path, str::FromStr};
 
+pub const COORDINATE_KEY_VERSION: &str = "cintamani.coordinate-key.v1";
+
+pub fn coordinate_key(model: &str, material: &str, mechanism: &str, interface: &str) -> String {
+    format!(
+        "{}:{}|{}:{}|{}:{}|{}:{}|{}:{}",
+        COORDINATE_KEY_VERSION.len(),
+        COORDINATE_KEY_VERSION,
+        model.len(),
+        model,
+        material.len(),
+        material,
+        mechanism.len(),
+        mechanism,
+        interface.len(),
+        interface
+    )
+}
+
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum Collection {
@@ -15,8 +33,11 @@ pub enum Collection {
     Morphisms,
     Paths,
     Cells,
+    Problems,
+    ProblemVersions,
     Conjectures,
     ConjectureVersions,
+    ConjectureFramings,
     Criteria,
     Parameters,
     Regions,
@@ -31,7 +52,7 @@ pub enum Collection {
 }
 
 impl Collection {
-    pub const ALL: [Self; 20] = [
+    pub const ALL: [Self; 23] = [
         Self::Models,
         Self::Materials,
         Self::Mechanisms,
@@ -39,8 +60,11 @@ impl Collection {
         Self::Morphisms,
         Self::Paths,
         Self::Cells,
+        Self::Problems,
+        Self::ProblemVersions,
         Self::Conjectures,
         Self::ConjectureVersions,
+        Self::ConjectureFramings,
         Self::Criteria,
         Self::Parameters,
         Self::Regions,
@@ -63,8 +87,11 @@ impl Collection {
             Self::Morphisms => "morphisms",
             Self::Paths => "paths",
             Self::Cells => "cells",
+            Self::Problems => "problems",
+            Self::ProblemVersions => "problem-versions",
             Self::Conjectures => "conjectures",
             Self::ConjectureVersions => "conjecture-versions",
+            Self::ConjectureFramings => "conjecture-framings",
             Self::Criteria => "criteria",
             Self::Parameters => "parameters",
             Self::Regions => "regions",
@@ -187,6 +214,25 @@ pub struct Page {
     pub filters: Value,
     pub items: Vec<Value>,
     pub next_cursor: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+pub struct CoordinateMetadata {
+    pub coordinate_key_version: String,
+    pub coordinate_key: String,
+    pub validation_generation: String,
+    pub model_id: String,
+    pub material_id: String,
+    pub mechanism_id: String,
+    pub interface_id: String,
+    pub model_name: String,
+    pub material_name: String,
+    pub mechanism_name: String,
+    pub interface_name: String,
+    pub classification: String,
+    pub cell_id: Option<String>,
+    pub cell_name: Option<String>,
+    pub status: Option<String>,
 }
 
 pub fn dimensions(database: &Path) -> Result<SiegeSpaceDimensions> {
@@ -443,11 +489,15 @@ pub fn frontier(
     let digest = filter_digest("frontier", filters)?;
     let after = decode_cursor(cursor, "frontier", &digest)?;
     let connection = open(database)?;
+    let generation: String = connection.query_row(
+        "SELECT value FROM metadata WHERE key='chain_generation'",
+        [],
+        |row| row.get(0),
+    )?;
     let mut sql = String::from(
         "SELECT m.model_id||char(31)||a.material_id||char(31)||p.mechanism_id||char(31)||i.interface_id AS key,
-         json_object('model_id',m.model_id,'material_id',a.material_id,'mechanism_id',p.mechanism_id,
-                     'interface_id',i.interface_id,'cell_id',c.cell_id,'cell_name',c.name,
-                     'status',d.status,'gap',CASE WHEN c.cell_id IS NULL THEN json('true') ELSE json('false') END) payload
+         m.model_id,a.material_id,p.mechanism_id,i.interface_id,m.name,a.name,p.name,i.name,
+         c.cell_id,c.name,d.status
          FROM theoretical_models m CROSS JOIN materials a CROSS JOIN physical_mechanisms p CROSS JOIN interfaces i
          LEFT JOIN siege_cells c ON c.model_id=m.model_id AND c.material_id=a.material_id
              AND c.mechanism_id=p.mechanism_id AND c.interface_id=i.interface_id
@@ -478,7 +528,41 @@ pub fn frontier(
     values.push(SqlValue::Integer((limit + 1) as i64));
     let mut statement = connection.prepare(&sql)?;
     let rows = statement.query_map(params_from_iter(values), |row| {
-        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        let model_id = row.get::<_, String>(1)?;
+        let material_id = row.get::<_, String>(2)?;
+        let mechanism_id = row.get::<_, String>(3)?;
+        let interface_id = row.get::<_, String>(4)?;
+        let cell_id = row.get::<_, Option<String>>(9)?;
+        Ok((
+            row.get::<_, String>(0)?,
+            CoordinateMetadata {
+                coordinate_key_version: COORDINATE_KEY_VERSION.to_owned(),
+                coordinate_key: coordinate_key(
+                    &model_id,
+                    &material_id,
+                    &mechanism_id,
+                    &interface_id,
+                ),
+                validation_generation: generation.clone(),
+                model_id,
+                material_id,
+                mechanism_id,
+                interface_id,
+                model_name: row.get(5)?,
+                material_name: row.get(6)?,
+                mechanism_name: row.get(7)?,
+                interface_name: row.get(8)?,
+                classification: if cell_id.is_some() {
+                    "admitted-cell"
+                } else {
+                    "gap"
+                }
+                .to_owned(),
+                cell_id,
+                cell_name: row.get(10)?,
+                status: row.get(11)?,
+            },
+        ))
     })?;
     let mut keyed = rows.collect::<rusqlite::Result<Vec<_>>>()?;
     let has_more = keyed.len() > limit;
@@ -492,7 +576,7 @@ pub fn frontier(
     };
     let items = keyed
         .into_iter()
-        .map(|(_, value)| serde_json::from_str(&value))
+        .map(|(_, value)| serde_json::to_value(value))
         .collect::<serde_json::Result<Vec<_>>>()?;
     Ok(Page {
         collection: "frontier".to_owned(),
@@ -535,6 +619,17 @@ fn provenance_match(collection: Collection, key: &str) -> String {
                 SELECT assessment_id FROM siege_cell_assessments WHERE cell_id={key}) OR
              p.cell_decision_id IN (SELECT decision_id FROM siege_cell_decisions WHERE cell_id={key})"
         ),
+        Collection::Problems => format!(
+            "p.problem_id={key} OR p.problem_version_id IN (
+                SELECT problem_version_id FROM problem_versions WHERE problem_id={key}) OR
+             p.conjecture_id IN (SELECT conjecture_id FROM conjectures WHERE problem_id={key}) OR
+             p.conjecture_version_id IN (SELECT v.conjecture_version_id FROM conjecture_versions v
+                JOIN conjectures q USING(conjecture_id) WHERE q.problem_id={key}) OR
+             p.conjecture_framing_id IN (SELECT f.framing_id FROM conjecture_framings f
+                JOIN conjecture_versions v USING(conjecture_version_id)
+                JOIN conjectures q USING(conjecture_id) WHERE q.problem_id={key})"
+        ),
+        Collection::ProblemVersions => format!("p.problem_version_id={key}"),
         Collection::Conjectures => format!(
             "p.conjecture_id={key} OR p.conjecture_version_id IN (
                 SELECT conjecture_version_id FROM conjecture_versions WHERE conjecture_id={key}) OR
@@ -548,6 +643,7 @@ fn provenance_match(collection: Collection, key: &str) -> String {
                 SELECT disposition_id FROM conjecture_dispositions WHERE conjecture_version_id={key}) OR
              p.criterion_id IN (SELECT criterion_id FROM falsification_criteria WHERE conjecture_version_id={key})"
         ),
+        Collection::ConjectureFramings => format!("p.conjecture_framing_id={key}"),
         Collection::Criteria => format!("p.criterion_id={key}"),
         Collection::Parameters => format!("p.parameter_id={key}"),
         Collection::Regions => format!(
@@ -611,16 +707,28 @@ fn collection_spec(collection: Collection) -> CollectionSpec {
             "SELECT c.cell_id key,json_object('cell_id',c.cell_id,'name',c.name,'model_id',c.model_id,'material_id',c.material_id,'mechanism_id',c.mechanism_id,'interface_id',c.interface_id,'status',d.status,'decision_revision',d.revision,'epistemic_status',a.epistemic_status,'source_admission_id',d.source_admission_id) payload,c.model_id,c.material_id,c.mechanism_id,c.interface_id,d.status,d.source_admission_id FROM siege_cells c JOIN current_siege_cell_decisions d ON d.cell_id=c.cell_id JOIN siege_cell_assessments a ON a.cell_id=c.cell_id AND a.revision=(SELECT MAX(x.revision) FROM siege_cell_assessments x WHERE x.cell_id=c.cell_id)",
             Some("cell_id"),
         ),
+        Collection::Problems => (
+            "SELECT p.problem_id key,json_object('problem_id',p.problem_id,'label',p.label,'current_version_id',v.problem_version_id,'revision',v.revision,'problem_statement',v.problem_statement,'rationale',v.rationale,'scope',v.problem_scope,'source_admission_id',v.source_admission_id) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,v.event_kind status,v.source_admission_id FROM problems p JOIN current_problem_versions v ON v.problem_id=p.problem_id",
+            Some("problem_id"),
+        ),
+        Collection::ProblemVersions => (
+            "SELECT v.problem_version_id key,json_object('problem_version_id',v.problem_version_id,'problem_id',v.problem_id,'revision',v.revision,'event_kind',v.event_kind,'problem_statement',v.problem_statement,'rationale',v.rationale,'scope',v.problem_scope,'source_admission_id',v.source_admission_id) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,v.event_kind status,v.source_admission_id FROM problem_versions v",
+            Some("problem_version_id"),
+        ),
         Collection::Conjectures => (
-            "SELECT q.conjecture_id key,json_object('conjecture_id',q.conjecture_id,'label',q.label,'cell_id',q.cell_id,'version_id',v.conjecture_version_id,'version_revision',v.revision,'statement',v.statement,'status',d.status,'disposition_revision',d.revision,'source_admission_id',d.source_admission_id) payload,c.model_id,c.material_id,c.mechanism_id,c.interface_id,d.status,d.source_admission_id FROM conjectures q JOIN siege_cells c ON c.cell_id=q.cell_id JOIN current_conjecture_versions v ON v.conjecture_id=q.conjecture_id JOIN current_conjecture_dispositions d ON d.conjecture_id=q.conjecture_id",
+            "SELECT q.conjecture_id key,json_object('conjecture_id',q.conjecture_id,'problem_id',q.problem_id,'label',q.label,'version_id',v.conjecture_version_id,'version_revision',v.revision,'statement',v.statement,'status',d.status,'disposition_revision',d.revision,'framing_count',(SELECT COUNT(*) FROM conjecture_framings f WHERE f.conjecture_version_id=v.conjecture_version_id),'source_admission_id',d.source_admission_id) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,d.status,d.source_admission_id FROM conjectures q JOIN current_conjecture_versions v ON v.conjecture_id=q.conjecture_id JOIN current_conjecture_dispositions d ON d.conjecture_id=q.conjecture_id",
             Some("conjecture_id"),
         ),
         Collection::ConjectureVersions => (
-            "SELECT v.conjecture_version_id key,json_object('conjecture_version_id',v.conjecture_version_id,'conjecture_id',v.conjecture_id,'revision',v.revision,'event_kind',v.event_kind,'statement',v.statement,'source_admission_id',v.source_admission_id) payload,c.model_id,c.material_id,c.mechanism_id,c.interface_id,v.event_kind status,v.source_admission_id FROM conjecture_versions v JOIN conjectures q ON q.conjecture_id=v.conjecture_id JOIN siege_cells c ON c.cell_id=q.cell_id",
+            "SELECT v.conjecture_version_id key,json_object('conjecture_version_id',v.conjecture_version_id,'conjecture_id',v.conjecture_id,'problem_id',q.problem_id,'revision',v.revision,'event_kind',v.event_kind,'statement',v.statement,'rationale',v.rationale,'scope',v.formulation_scope,'framing_count',(SELECT COUNT(*) FROM conjecture_framings f WHERE f.conjecture_version_id=v.conjecture_version_id),'source_admission_id',v.source_admission_id) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,v.event_kind status,v.source_admission_id FROM conjecture_versions v JOIN conjectures q ON q.conjecture_id=v.conjecture_id",
             Some("conjecture_version_id"),
         ),
+        Collection::ConjectureFramings => (
+            "SELECT f.framing_id key,json_object('framing_id',f.framing_id,'conjecture_version_id',f.conjecture_version_id,'framing_order',f.framing_order,'coordinate_key_version',f.coordinate_key_version,'coordinate_key',f.coordinate_key,'validation_generation',f.validation_generation,'model_id',f.model_id,'material_id',f.material_id,'mechanism_id',f.mechanism_id,'interface_id',f.interface_id,'classification',f.coordinate_classification,'cell_id',f.cell_id,'framing_rationale',f.framing_rationale,'source_admission_id',f.source_admission_id) payload,f.model_id,f.material_id,f.mechanism_id,f.interface_id,f.coordinate_classification status,f.source_admission_id FROM conjecture_framings f",
+            Some("conjecture_framing_id"),
+        ),
         Collection::Criteria => (
-            "SELECT f.criterion_id key,json_object('criterion_id',f.criterion_id,'conjecture_version_id',f.conjecture_version_id,'description',f.description,'metric',f.metric,'comparator',f.comparator,'threshold_value',f.threshold_value,'threshold_text',f.threshold_text,'units',f.units,'predeclared',json(iif(f.predeclared=1,'true','false')),'source_admission_id',f.source_admission_id) payload,c.model_id,c.material_id,c.mechanism_id,c.interface_id,NULL status,f.source_admission_id FROM falsification_criteria f JOIN conjecture_versions v ON v.conjecture_version_id=f.conjecture_version_id JOIN conjectures q ON q.conjecture_id=v.conjecture_id JOIN siege_cells c ON c.cell_id=q.cell_id",
+            "SELECT f.criterion_id key,json_object('criterion_id',f.criterion_id,'conjecture_version_id',f.conjecture_version_id,'description',f.description,'metric',f.metric,'comparator',f.comparator,'threshold_value',f.threshold_value,'threshold_text',f.threshold_text,'units',f.units,'predeclared',json(iif(f.predeclared=1,'true','false')),'source_admission_id',f.source_admission_id) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,NULL status,f.source_admission_id FROM falsification_criteria f",
             Some("criterion_id"),
         ),
         Collection::Parameters => (
@@ -700,6 +808,12 @@ fn history_base_sql(collection: Collection) -> Option<String> {
                 "epistemic_status", "rationale", "assessment_scope", "assessment"),
             single("siege_cell_decisions", "cell_id", "decision_id", "decided_at",
                 "status", "rationale", "decision_scope", "decision")),
+        Collection::Problems =>
+            "SELECT printf('%010d:version:%s',revision,problem_version_id) key,problem_id parent_id,
+                json_object('history_family','version','event_id',problem_version_id,'revision',revision,
+                    'event_kind',event_kind,'occurred_at',formulated_at,'problem_statement',problem_statement,
+                    'rationale',rationale,'scope',problem_scope,'source_admission_id',source_admission_id) payload
+             FROM problem_versions".to_owned(),
         Collection::Conjectures => format!(
             "SELECT printf('%010d:version:%s',revision,conjecture_version_id) key,conjecture_id parent_id,
                 json_object('history_family','version','event_id',conjecture_version_id,'revision',revision,

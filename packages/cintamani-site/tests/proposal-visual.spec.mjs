@@ -12,6 +12,7 @@ const proposalKinds = [
   'existing-member-assessment',
   'existing-member-correction',
   'ontology-change',
+  'explanatory-conjecture',
 ]
 
 async function mockSession(context, session) {
@@ -26,11 +27,12 @@ async function mockSession(context, session) {
 
 async function mockPublicReads(context, kinds = []) {
   const dimensions = JSON.parse(await readFile(resolve('src/data/dimensions.json'), 'utf8'))
+  const frontier = JSON.parse(await readFile(resolve('src/data/frontier.json'), 'utf8'))
   await context.route('**/api/config', (route) =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ dimensions: dimensions.items, proposal_kinds: kinds, turnstile_site_key: null }),
+      body: JSON.stringify({ dimensions: dimensions.items, frontier, proposal_kinds: kinds, turnstile_site_key: null, x402: { enabled: false } }),
     }),
   )
   await context.route(/\/api\/proposals(?:\?.*)?$/u, (route) =>
@@ -124,7 +126,7 @@ test('proposal hub is screenshot-ready and stable across signed-out and mocked s
   await signedIn.context.close()
 })
 
-test('dedicated proposal form exposes bounded examples for core and all seven typed families without prefilling values', async ({
+test('dedicated proposal form exposes bounded examples for core and all eight typed families without prefilling values', async ({
   browser,
 }, testInfo) => {
   const context = await browser.newContext({ viewport, colorScheme: 'dark', reducedMotion: 'reduce' })
@@ -165,6 +167,7 @@ test('dedicated proposal form exposes bounded examples for core and all seven ty
     'existing-member-assessment': { count: 6, name: 'assessment_rationale', example: 'e.g., The current record identifies a bounded candidate but does not establish a fabricated implementation.' },
     'existing-member-correction': { count: 7, name: 'correction_rationale', example: 'e.g., The existing wording conflates normalized observation noise with calibrated detector noise.' },
     'ontology-change': { count: 5, name: 'proposed_definition', example: 'e.g., Observation interface denotes the declared map from modeled state to reported observable, separate from physical detector implementation.' },
+    'explanatory-conjecture': { count: 6, name: 'failure_condition', example: 'e.g., The matched Kerr-minus-disabled lower envelope is nonpositive under the predeclared bounded parameter region.' },
   }
   for (const [kind, contract] of Object.entries(typedFamilies)) {
     await page.locator('#proposal-kind').selectOption(kind)
@@ -188,5 +191,37 @@ test('dedicated proposal form exposes bounded examples for core and all seven ty
 
   await expect(page.locator('[name="reference_label"]')).toHaveAttribute('placeholder', 'e.g., Protocol and raw-artifact manifest')
   await expect(page.locator('[name="reference_url"]')).toHaveAttribute('placeholder', 'e.g., https://example.org/cintamani/protocol')
+  await context.close()
+})
+
+test('every frontier coordinate opens an exact focused form while general entry remains unclassified', async ({ browser }, testInfo) => {
+  const context = await browser.newContext({ viewport, colorScheme: 'dark', reducedMotion: 'reduce' })
+  await mockSession(context, {
+    authenticated: true,
+    contributor: { github_login: 'author', github_profile_url: 'https://github.com/author' },
+    operator: false, contributor_locked: false, csrf_token: 'frontier-form-token',
+  })
+  await mockPublicReads(context, proposalKinds)
+  const page = await context.newPage()
+  await page.goto(`${testInfo.project.use.baseURL}/`, { waitUntil: 'networkidle' })
+  const cards = page.locator('.frontier-card')
+  await expect(cards).toHaveCount(4)
+  const links = page.locator('.frontier-conjecture-link')
+  await expect(links).toHaveCount(4)
+  for (let index = 0; index < 4; index += 1) {
+    const href = await links.nth(index).getAttribute('href')
+    expect(href).toMatch(/\/proposals\/new\/\?coordinate=.*&generation=/u)
+  }
+
+  const focusedHref = await links.nth(2).getAttribute('href')
+  await page.goto(`${testInfo.project.use.baseURL}${focusedHref}`, { waitUntil: 'networkidle' })
+  await expect(page.locator('#proposal-kind')).toHaveValue('explanatory-conjecture')
+  await expect(page.locator('[data-framing-list] .coordinate-framing-row')).toHaveCount(1)
+  await expect(page.locator('[data-framing-list] [name="coordinate_key"]')).not.toHaveValue('')
+
+  await page.goto(`${testInfo.project.use.baseURL}/proposals/new/`, { waitUntil: 'networkidle' })
+  await page.locator('#proposal-kind').selectOption('explanatory-conjecture')
+  await expect(page.locator('[data-framing-list] .coordinate-framing-row')).toHaveCount(0)
+  await expect(page.getByText('Leave this empty for a general, unclassified conjecture.')).toBeVisible()
   await context.close()
 })

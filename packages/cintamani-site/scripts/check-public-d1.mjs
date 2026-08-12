@@ -41,7 +41,7 @@ try {
   )
   assert.deepEqual(metadata, [
     { metadata_key: 'projection_kind', metadata_value: 'cintamani-public-proposals' },
-    { metadata_key: 'schema_version', metadata_value: '4' },
+    { metadata_key: 'schema_version', metadata_value: '5' },
   ])
 
   const violations = wrangler(
