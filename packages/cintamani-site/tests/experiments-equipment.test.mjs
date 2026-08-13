@@ -74,7 +74,7 @@ test('illustrative experiment catalog covers every supplied proposal family with
   assert.equal(validateIllustrativeCatalog(), true)
   assert.equal(illustrativeExperimentCatalog.items.length, 10)
   const titles = illustrativeExperimentCatalog.items.map((item) => item.title).join(' ')
-  for (const phrase of ['chiral-nematic', 'graphene', 'OAM', 'femtosecond', 'mixed-halide', 'RF/acoustic', 'FPGA', 'HVM']) {
+  for (const phrase of ['chiral-nematic', 'graphene', 'OAM', 'contraction', 'femtosecond', 'perovskite', 'LiNbO3', 'chalcogenide', 'mixed-halide', 'RF/acoustic', 'FPGA', 'HVM']) {
     assert.match(titles, new RegExp(phrase, 'iu'))
   }
   assert.equal(illustrativeExperimentCatalog.origin_story.status, 'clearly-conjectural')
