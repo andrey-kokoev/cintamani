@@ -11,6 +11,70 @@ export const proposalKinds = Object.freeze([
   'ontology-change',
   'explanatory-conjecture',
   'research-topic',
+  'proposed-experiment',
+  'equipment-type-proposal',
+])
+
+export const proposalKindLabels = Object.freeze({
+  'theoretical-model-member': 'Theoretical model member',
+  'physical-material-member': 'Physical material member',
+  'physical-calculation-mechanism-member': 'Physical calculation mechanism member',
+  'observation-interface-member': 'Observation interface member',
+  'existing-member-assessment': 'Existing member assessment',
+  'existing-member-correction': 'Existing member correction',
+  'ontology-change': 'Ontology change',
+  'explanatory-conjecture': 'Explanatory conjecture',
+  'research-topic': 'Research topic',
+  'proposed-experiment': 'Proposed experiment',
+  'equipment-type-proposal': 'Equipment type proposal',
+})
+
+export const proposalSearchTerms = Object.freeze({
+  'proposed-experiment': ['experiment', 'test', 'protocol', 'falsifier', 'equipment'],
+  'equipment-type-proposal': ['equipment', 'capability', 'instrument', 'calibration', 'safety'],
+})
+
+export const experimentKinds = Object.freeze(['physical', 'simulation', 'analytical', 'hybrid'])
+export const experimentIntents = Object.freeze([
+  'falsification',
+  'discrimination',
+  'characterization',
+  'calibration',
+  'replication',
+])
+export const experimentTargetKinds = Object.freeze([
+  'problem-version',
+  'conjecture-version',
+  'research-topic-version',
+  'coordinate',
+  'public-proposal-revision',
+  'external-reference',
+])
+export const experimentControlKinds = Object.freeze([
+  'negative',
+  'positive',
+  'matched',
+  'ablated',
+  'randomized',
+  'sham',
+  'other',
+])
+export const experimentCriterionKinds = Object.freeze(['success', 'falsifier'])
+export const experimentRelationKinds = Object.freeze([
+  'depends-on',
+  'rival-to',
+  'complements',
+  'refines',
+  'reclassifies',
+  'addresses-same-problem',
+  'tests',
+])
+export const experimentRequirementGroupKinds = Object.freeze(['required', 'optional', 'alternative'])
+export const experimentRequirementSelectionRules = Object.freeze(['any-one', 'at-least-n'])
+export const researchTopicExperimentRelationKinds = Object.freeze([
+  'next-discriminating-test',
+  'strongest-falsifier',
+  'candidate-protocol',
 ])
 
 export const criticismFocusKinds = Object.freeze([
@@ -32,6 +96,26 @@ export const criticismFocusKinds = Object.freeze([
   'topic-origin',
   'topic-coordinate-framing',
   'topic-relation',
+  'experiment-target',
+  'experiment-protocol',
+  'experiment-control',
+  'experiment-observable',
+  'experiment-calibration',
+  'experiment-repetition',
+  'experiment-uncertainty',
+  'experiment-criterion',
+  'experiment-confound',
+  'experiment-raw-artifact',
+  'experiment-nonclaim',
+  'experiment-dependency',
+  'experiment-relation',
+  'experiment-equipment-requirement',
+  'equipment-capability',
+  'equipment-operating-limit',
+  'equipment-calibration',
+  'equipment-safety',
+  'equipment-interface',
+  'equipment-nonclaim',
   'other-explicit',
 ])
 
@@ -168,8 +252,336 @@ export function httpsReference(value, field = 'url') {
   return parsed.href
 }
 
+const forbiddenExperimentKeys = new Set([
+  'rank',
+  'confidence',
+  'epistemic_status',
+  'epistemicStatus',
+  'result',
+  'run_id',
+  'admission_id',
+  'canonical_admission',
+])
+
+function rejectForbidden(value, field) {
+  if (!value || typeof value !== 'object') return
+  for (const key of Object.keys(value)) {
+    if (forbiddenExperimentKeys.has(key)) {
+      throw new InputError(`${field}.${key} is not part of a proposed definition`, `${field}.${key}`)
+    }
+  }
+}
+
+function integer(value, field, { min = 1, max = 100000 } = {}) {
+  if (!Number.isInteger(value) || value < min || value > max) {
+    throw new InputError(`${field} must be an integer from ${min} to ${max}`, field)
+  }
+  return value
+}
+
+function list(value, field, { min = 0, max = 64 } = {}) {
+  if (!Array.isArray(value) || value.length < min || value.length > max) {
+    throw new InputError(`${field} must contain ${min}-${max} items`, field)
+  }
+  return value
+}
+
+function experimentId(value, field) {
+  return slug(value, field)
+}
+
+function exactTarget(raw, index) {
+  const field = `detail.targets[${index}]`
+  const target = object(raw, field)
+  rejectForbidden(target, field)
+  const targetKind = oneOf(target.target_kind, `${field}.target_kind`, experimentTargetKinds)
+  const needsRevision = [
+    'problem-version',
+    'conjecture-version',
+    'research-topic-version',
+    'public-proposal-revision',
+  ].includes(targetKind)
+  const targetRevision = target.target_revision === null || target.target_revision === undefined
+    ? null
+    : integer(target.target_revision, `${field}.target_revision`)
+  if (needsRevision && targetRevision === null) {
+    throw new InputError(`${field}.target_revision is required for an exact version target`, `${field}.target_revision`)
+  }
+  return {
+    target_id: text(target.target_id, `${field}.target_id`, { max: 2048 }),
+    target_kind: targetKind,
+    target_revision: targetRevision,
+    target_label: text(target.target_label, `${field}.target_label`, { max: 300 }),
+  }
+}
+
+function experimentProtocol(raw, index) {
+  const field = `detail.protocols[${index}]`
+  const protocol = object(raw, field)
+  rejectForbidden(protocol, field)
+  const steps = list(protocol.steps, `${field}.steps`, { min: 1, max: 64 }).map((step, stepIndex) =>
+    text(step, `${field}.steps[${stepIndex}]`, { max: 2000 }),
+  )
+  return {
+    protocol_id: slug(protocol.protocol_id, `${field}.protocol_id`),
+    protocol_name: text(protocol.protocol_name, `${field}.protocol_name`, { max: 200 }),
+    minimal_decisive_test: text(protocol.minimal_decisive_test, `${field}.minimal_decisive_test`, { max: 12000 }),
+    steps,
+    decision_rule: text(protocol.decision_rule, `${field}.decision_rule`, { max: 12000 }),
+    boundary: text(protocol.boundary, `${field}.boundary`, { max: 8000 }),
+  }
+}
+
+function experimentControl(raw, index) {
+  const field = `detail.controls[${index}]`
+  const control = object(raw, field)
+  rejectForbidden(control, field)
+  return {
+    control_id: slug(control.control_id, `${field}.control_id`),
+    control_order: index + 1,
+    control_kind: oneOf(control.control_kind, `${field}.control_kind`, experimentControlKinds),
+    description: text(control.description, `${field}.description`, { max: 8000 }),
+    controlled_variable: text(control.controlled_variable, `${field}.controlled_variable`, { max: 2000 }),
+    expected_relation: text(control.expected_relation, `${field}.expected_relation`, { max: 8000 }),
+  }
+}
+
+function experimentObservable(raw, index) {
+  const field = `detail.observables[${index}]`
+  const observable = object(raw, field)
+  rejectForbidden(observable, field)
+  return {
+    observable_id: slug(observable.observable_id, `${field}.observable_id`),
+    observable_order: index + 1,
+    name: text(observable.name, `${field}.name`, { max: 240 }),
+    units: text(observable.units, `${field}.units`, { max: 120 }),
+    measurement: text(observable.measurement, `${field}.measurement`, { max: 8000 }),
+    aggregation: text(observable.aggregation, `${field}.aggregation`, { max: 2000 }),
+    uncertainty_reporting: text(observable.uncertainty_reporting, `${field}.uncertainty_reporting`, { max: 4000 }),
+  }
+}
+
+function experimentCalibration(raw, index) {
+  const field = `detail.calibration[${index}]`
+  const calibration = object(raw, field)
+  rejectForbidden(calibration, field)
+  return {
+    calibration_id: slug(calibration.calibration_id, `${field}.calibration_id`),
+    calibration_order: index + 1,
+    quantity: text(calibration.quantity, `${field}.quantity`, { max: 200 }),
+    units: text(calibration.units, `${field}.units`, { max: 120 }),
+    method: text(calibration.method, `${field}.method`, { max: 8000 }),
+    acceptance: text(calibration.acceptance, `${field}.acceptance`, { max: 4000 }),
+  }
+}
+
+function experimentRepetition(raw) {
+  const field = 'detail.repetitions'
+  const repetition = object(raw, field)
+  rejectForbidden(repetition, field)
+  return {
+    repetition_id: slug(repetition.repetition_id, `${field}.repetition_id`),
+    replicate_unit: text(repetition.replicate_unit, `${field}.replicate_unit`, { max: 200 }),
+    minimum_repetitions: integer(repetition.minimum_repetitions, `${field}.minimum_repetitions`),
+    independent_repetitions: integer(repetition.independent_repetitions, `${field}.independent_repetitions`),
+    randomization: text(repetition.randomization, `${field}.randomization`, { max: 4000 }),
+    stopping_rule: text(repetition.stopping_rule, `${field}.stopping_rule`, { max: 4000 }),
+  }
+}
+
+function experimentUncertainty(raw) {
+  const field = 'detail.uncertainty'
+  const uncertainty = object(raw, field)
+  rejectForbidden(uncertainty, field)
+  return {
+    uncertainty_id: slug(uncertainty.uncertainty_id, `${field}.uncertainty_id`),
+    sources: text(uncertainty.sources, `${field}.sources`, { max: 8000 }),
+    propagation: text(uncertainty.propagation, `${field}.propagation`, { max: 8000 }),
+    reporting: text(uncertainty.reporting, `${field}.reporting`, { max: 8000 }),
+  }
+}
+
+function experimentCriterion(raw, index) {
+  const field = `detail.criteria[${index}]`
+  const criterion = object(raw, field)
+  rejectForbidden(criterion, field)
+  return {
+    criterion_id: slug(criterion.criterion_id, `${field}.criterion_id`),
+    criterion_order: index + 1,
+    criterion_kind: oneOf(criterion.criterion_kind, `${field}.criterion_kind`, experimentCriterionKinds),
+    statement: text(criterion.statement, `${field}.statement`, { max: 12000 }),
+    metric: text(criterion.metric, `${field}.metric`, { max: 240 }),
+    comparator: text(criterion.comparator, `${field}.comparator`, { max: 120 }),
+    threshold_text: text(criterion.threshold_text, `${field}.threshold_text`, { max: 2000 }),
+    units: text(criterion.units, `${field}.units`, { max: 120 }),
+  }
+}
+
+function experimentConfound(raw, index) {
+  const field = `detail.confounds[${index}]`
+  const confound = object(raw, field)
+  rejectForbidden(confound, field)
+  return {
+    confound_id: slug(confound.confound_id, `${field}.confound_id`),
+    confound_order: index + 1,
+    confound: text(confound.confound, `${field}.confound`, { max: 4000 }),
+    detection_control: text(confound.detection_control, `${field}.detection_control`, { max: 4000 }),
+    mitigation: text(confound.mitigation, `${field}.mitigation`, { max: 4000 }),
+  }
+}
+
+function experimentRawArtifact(raw, index) {
+  const field = `detail.raw_artifacts[${index}]`
+  const artifact = object(raw, field)
+  rejectForbidden(artifact, field)
+  return {
+    raw_artifact_id: slug(artifact.raw_artifact_id, `${field}.raw_artifact_id`),
+    artifact_order: index + 1,
+    artifact_kind: text(artifact.artifact_kind, `${field}.artifact_kind`, { max: 200 }),
+    format: text(artifact.format, `${field}.format`, { max: 120 }),
+    retention: text(artifact.retention, `${field}.retention`, { max: 2000 }),
+  }
+}
+
+function experimentDependency(raw, index) {
+  const field = `detail.dependencies[${index}]`
+  const dependency = object(raw, field)
+  rejectForbidden(dependency, field)
+  return {
+    dependency_id: slug(dependency.dependency_id, `${field}.dependency_id`),
+    dependency_order: index + 1,
+    target_experiment_id: experimentId(dependency.target_experiment_id, `${field}.target_experiment_id`),
+    target_revision: integer(dependency.target_revision, `${field}.target_revision`),
+    relation_kind: oneOf(dependency.relation_kind, `${field}.relation_kind`, experimentRelationKinds),
+    rationale: text(dependency.rationale, `${field}.rationale`, { max: 8000 }),
+  }
+}
+
+function experimentRelation(raw, index) {
+  const field = `detail.relations[${index}]`
+  const relation = object(raw, field)
+  rejectForbidden(relation, field)
+  return {
+    relation_id: slug(relation.relation_id, `${field}.relation_id`),
+    target_experiment_id: experimentId(relation.target_experiment_id, `${field}.target_experiment_id`),
+    target_revision: integer(relation.target_revision, `${field}.target_revision`),
+    relation_kind: oneOf(relation.relation_kind, `${field}.relation_kind`, experimentRelationKinds),
+    relation_claim: text(relation.relation_claim, `${field}.relation_claim`, { max: 12000 }),
+    relation_scope: text(relation.relation_scope, `${field}.relation_scope`, { max: 4000 }),
+  }
+}
+
+function experimentEquipmentRequirement(raw, index) {
+  const field = `detail.equipment_requirements[${index}]`
+  const requirement = object(raw, field)
+  rejectForbidden(requirement, field)
+  const selectionRule = oneOf(requirement.selection_rule, `${field}.selection_rule`, experimentRequirementSelectionRules)
+  const quantity = integer(requirement.quantity, `${field}.quantity`, { max: 1000 })
+  if (selectionRule === 'any-one' && quantity !== 1) {
+    throw new InputError('any-one equipment groups must have quantity 1', `${field}.quantity`)
+  }
+  return {
+    requirement_id: slug(requirement.requirement_id, `${field}.requirement_id`),
+    group_id: slug(requirement.group_id, `${field}.group_id`),
+    group_order: integer(requirement.group_order, `${field}.group_order`),
+    group_kind: oneOf(requirement.group_kind, `${field}.group_kind`, experimentRequirementGroupKinds),
+    selection_rule: selectionRule,
+    quantity,
+    capability: text(requirement.capability, `${field}.capability`, { max: 240 }),
+    units: text(requirement.units, `${field}.units`, { max: 120 }),
+    specification: text(requirement.specification, `${field}.specification`, { max: 4000 }),
+  }
+}
+
+function topicExperimentLink(raw, index) {
+  const field = `detail.topic_links[${index}]`
+  const link = object(raw, field)
+  rejectForbidden(link, field)
+  return {
+    link_id: slug(link.link_id, `${field}.link_id`),
+    topic_version_id: text(link.topic_version_id, `${field}.topic_version_id`, { max: 200 }),
+    relation_kind: oneOf(link.relation_kind, `${field}.relation_kind`, researchTopicExperimentRelationKinds),
+    rationale: text(link.rationale, `${field}.rationale`, { max: 8000 }),
+  }
+}
+
+function equipmentCapability(raw, index) {
+  const field = `detail.capabilities[${index}]`
+  const capability = object(raw, field)
+  rejectForbidden(capability, field)
+  return {
+    capability_id: slug(capability.capability_id, `${field}.capability_id`),
+    capability_order: index + 1,
+    capability: text(capability.capability, `${field}.capability`, { max: 240 }),
+    units: text(capability.units, `${field}.units`, { max: 120 }),
+    specification: text(capability.specification, `${field}.specification`, { max: 4000 }),
+  }
+}
+
+function equipmentOperatingLimit(raw, index) {
+  const field = `detail.operating_limits[${index}]`
+  const limit = object(raw, field)
+  rejectForbidden(limit, field)
+  return {
+    operating_limit_id: slug(limit.operating_limit_id, `${field}.operating_limit_id`),
+    limit_order: index + 1,
+    parameter: text(limit.parameter, `${field}.parameter`, { max: 240 }),
+    lower_bound: text(limit.lower_bound, `${field}.lower_bound`, { max: 200, nullable: true }),
+    upper_bound: text(limit.upper_bound, `${field}.upper_bound`, { max: 200, nullable: true }),
+    units: text(limit.units, `${field}.units`, { max: 120 }),
+    notes: text(limit.notes, `${field}.notes`, { max: 4000 }),
+  }
+}
+
+function equipmentCalibration(raw, index) {
+  const field = `detail.calibrations[${index}]`
+  const calibration = object(raw, field)
+  rejectForbidden(calibration, field)
+  return {
+    equipment_calibration_id: slug(calibration.equipment_calibration_id, `${field}.equipment_calibration_id`),
+    calibration_order: index + 1,
+    quantity: text(calibration.quantity, `${field}.quantity`, { max: 200 }),
+    units: text(calibration.units, `${field}.units`, { max: 120 }),
+    method: text(calibration.method, `${field}.method`, { max: 8000 }),
+    traceability: text(calibration.traceability, `${field}.traceability`, { max: 4000 }),
+  }
+}
+
+function equipmentSafety(raw, index) {
+  const field = `detail.safety_requirements[${index}]`
+  const safety = object(raw, field)
+  rejectForbidden(safety, field)
+  return {
+    safety_requirement_id: slug(safety.safety_requirement_id, `${field}.safety_requirement_id`),
+    safety_order: index + 1,
+    hazard: text(safety.hazard, `${field}.hazard`, { max: 1200 }),
+    requirement: text(safety.requirement, `${field}.requirement`, { max: 4000 }),
+    mitigation: text(safety.mitigation, `${field}.mitigation`, { max: 4000 }),
+  }
+}
+
+function equipmentInterface(raw, index) {
+  const field = `detail.interface_requirements[${index}]`
+  const requirement = object(raw, field)
+  rejectForbidden(requirement, field)
+  return {
+    interface_requirement_id: slug(requirement.interface_requirement_id, `${field}.interface_requirement_id`),
+    interface_order: index + 1,
+    interface_kind: text(requirement.interface_kind, `${field}.interface_kind`, { max: 200 }),
+    specification: text(requirement.specification, `${field}.specification`, { max: 4000 }),
+    units: text(requirement.units, `${field}.units`, { max: 120 }),
+  }
+}
+
+function nonClaims(values, field) {
+  return list(values, field, { min: 1, max: 64 }).map((value, index) =>
+    text(value, `${field}[${index}]`, { max: 4000 }),
+  )
+}
+
 function validateDetail(kind, raw) {
   const detail = object(raw, 'detail')
+  rejectForbidden(detail, 'detail')
   switch (kind) {
     case 'theoretical-model-member':
       return {
@@ -338,6 +750,81 @@ function validateDetail(kind, raw) {
         ),
         non_claims: text(detail.non_claims, 'detail.non_claims', { max: 12000 }),
       }
+    case 'proposed-experiment': {
+      const targets = list(detail.targets, 'detail.targets', { min: 1, max: 32 }).map(exactTarget)
+      const protocols = list(detail.protocols, 'detail.protocols', { min: 1, max: 32 }).map(experimentProtocol)
+      const controls = list(detail.controls, 'detail.controls', { max: 32 }).map(experimentControl)
+      const observables = list(detail.observables, 'detail.observables', { min: 1, max: 32 }).map(experimentObservable)
+      const calibration = list(detail.calibration, 'detail.calibration', { max: 32 }).map(experimentCalibration)
+      const criteria = list(detail.criteria, 'detail.criteria', { min: 2, max: 64 }).map(experimentCriterion)
+      if (!criteria.some((criterion) => criterion.criterion_kind === 'success')) {
+        throw new InputError('experiments require at least one success criterion', 'detail.criteria')
+      }
+      if (!criteria.some((criterion) => criterion.criterion_kind === 'falsifier')) {
+        throw new InputError('experiments require at least one falsifier criterion', 'detail.criteria')
+      }
+      const equipmentRequirements = list(detail.equipment_requirements, 'detail.equipment_requirements', { min: 1, max: 64 }).map(experimentEquipmentRequirement)
+      const groupIds = new Map()
+      const requirementIds = new Set()
+      for (const requirement of equipmentRequirements) {
+        if (requirementIds.has(requirement.requirement_id)) {
+          throw new InputError('equipment requirement identifiers must be unique', 'detail.equipment_requirements')
+        }
+        requirementIds.add(requirement.requirement_id)
+        const prior = groupIds.get(requirement.group_id)
+        if (prior && (prior.group_kind !== requirement.group_kind || prior.selection_rule !== requirement.selection_rule || prior.quantity !== requirement.quantity)) {
+          throw new InputError('all requirements in a group must share kind, selection rule, and quantity', 'detail.equipment_requirements')
+        }
+        const group = groupIds.get(requirement.group_id) ?? { ...requirement, option_count: 0 }
+        group.option_count += 1
+        groupIds.set(requirement.group_id, group)
+      }
+      for (const [groupId, group] of groupIds) {
+        if (group.group_kind === 'alternative' && group.option_count < 2) {
+          throw new InputError('alternative equipment groups require at least two options', `detail.equipment_requirements.${groupId}`)
+        }
+        if (group.selection_rule === 'at-least-n' && group.option_count < group.quantity) {
+          throw new InputError('at-least-n equipment groups need at least quantity options', `detail.equipment_requirements.${groupId}`)
+        }
+      }
+      return {
+        experiment_id: experimentId(detail.experiment_id, 'detail.experiment_id'),
+        experiment_version: integer(detail.experiment_version, 'detail.experiment_version'),
+        experiment_kind: oneOf(detail.experiment_kind, 'detail.experiment_kind', experimentKinds),
+        intent: oneOf(detail.intent, 'detail.intent', experimentIntents),
+        targets,
+        protocols,
+        controls,
+        observables,
+        calibration,
+        repetitions: experimentRepetition(detail.repetitions),
+        uncertainty: experimentUncertainty(detail.uncertainty),
+        criteria,
+        confounds: list(detail.confounds, 'detail.confounds', { max: 32 }).map(experimentConfound),
+        raw_artifacts: list(detail.raw_artifacts, 'detail.raw_artifacts', { min: 1, max: 32 }).map(experimentRawArtifact),
+        nonclaims: nonClaims(detail.nonclaims, 'detail.nonclaims'),
+        dependencies: list(detail.dependencies, 'detail.dependencies', { max: 32 }).map(experimentDependency),
+        relations: list(detail.relations, 'detail.relations', { max: 32 }).map(experimentRelation),
+        equipment_requirements: equipmentRequirements,
+        topic_links: list(detail.topic_links, 'detail.topic_links', { max: 32 }).map(topicExperimentLink),
+        citations: validateReferences(detail.citations),
+      }
+    }
+    case 'equipment-type-proposal': {
+      return {
+        equipment_type_id: experimentId(detail.equipment_type_id, 'detail.equipment_type_id'),
+        equipment_type_version: integer(detail.equipment_type_version, 'detail.equipment_type_version'),
+        title: text(detail.title, 'detail.title', { max: 160 }),
+        description: text(detail.description, 'detail.description', { max: 12000 }),
+        capabilities: list(detail.capabilities, 'detail.capabilities', { min: 1, max: 64 }).map(equipmentCapability),
+        operating_limits: list(detail.operating_limits, 'detail.operating_limits', { max: 64 }).map(equipmentOperatingLimit),
+        calibrations: list(detail.calibrations, 'detail.calibrations', { max: 32 }).map(equipmentCalibration),
+        safety_requirements: list(detail.safety_requirements, 'detail.safety_requirements', { min: 1, max: 64 }).map(equipmentSafety),
+        interface_requirements: list(detail.interface_requirements, 'detail.interface_requirements', { max: 32 }).map(equipmentInterface),
+        nonclaims: nonClaims(detail.nonclaims, 'detail.nonclaims'),
+        citations: validateReferences(detail.citations),
+      }
+    }
     default:
       throw new InputError('proposal kind is not supported', 'kind')
   }
@@ -543,6 +1030,7 @@ function validateReferences(values) {
 export function validateProposalRevision(kind, raw) {
   oneOf(kind, 'kind', proposalKinds)
   const input = object(raw, 'proposal')
+  rejectForbidden(input, 'proposal')
   return {
     title: text(input.title, 'title', { max: 160 }),
     summary: text(input.summary, 'summary', { max: 2000 }),
@@ -593,6 +1081,26 @@ export function validateCriticism(raw) {
     'topic-origin',
     'topic-coordinate-framing',
     'topic-relation',
+    'experiment-target',
+    'experiment-protocol',
+    'experiment-control',
+    'experiment-observable',
+    'experiment-calibration',
+    'experiment-repetition',
+    'experiment-uncertainty',
+    'experiment-criterion',
+    'experiment-confound',
+    'experiment-raw-artifact',
+    'experiment-nonclaim',
+    'experiment-dependency',
+    'experiment-relation',
+    'experiment-equipment-requirement',
+    'equipment-capability',
+    'equipment-operating-limit',
+    'equipment-calibration',
+    'equipment-safety',
+    'equipment-interface',
+    'equipment-nonclaim',
   ].includes(focusKind)
   if (!requiresRef && input.focus_ref !== undefined && input.focus_ref !== null && input.focus_ref !== '') {
     throw new InputError('focus_ref is allowed only for an exact nested revision item', 'focus_ref')

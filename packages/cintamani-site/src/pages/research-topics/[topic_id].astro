@@ -2,18 +2,34 @@
 import SiteLayout from '../../layouts/SiteLayout.astro'
 import admitted from '../../data/research-topics.json'
 import fixture from '../../data/research-topic-fixture.json'
+import { experimentForTopic, volumetricOriginStory } from '../../lib/experiments.mjs'
 import type { ResearchTopicView } from '../../lib/research-topics'
 
 export function getStaticPaths() {
+  const originTopic = {
+    topic_id: volumetricOriginStory.story_id,
+    revision: 1,
+    title: volumetricOriginStory.label,
+    loci: ['theoretical', 'simulation', 'experimental'],
+    open_problem: 'Can a finite, calibrated 3-D optical volume preserve a declared state and operator across recurrent passes?',
+    why_open: 'This is a design-origin conjecture, not a demonstrated result.',
+    scope: 'Exact finite operators, volumetric addressability, recurrence, calibration, and falsifier-first controls.',
+    next_discriminating_criticism_or_test: 'Run the finite volume-addressed operator test against planar and feedback-off controls.',
+    non_claims: volumetricOriginStory.nonclaims.join(' '),
+    origins: [{ kind: 'illustrative-origin-story', id: `${volumetricOriginStory.story_id}@1`, relationship: 'motivated-by' }],
+    coordinate: null,
+  }
   return [
     ...(admitted.items as ResearchTopicView[]).map((topic) => ({ params: { topic_id: topic.topic_id }, props: { topic, authority: 'governed-domain-registry' } })),
     ...(fixture.items as ResearchTopicView[]).map((topic) => ({ params: { topic_id: topic.topic_id }, props: { topic, authority: fixture.authority } })),
+    { params: { topic_id: originTopic.topic_id }, props: { topic: originTopic, authority: fixture.authority } },
   ]
 }
 
 const { topic, authority } = Astro.props as { topic: ResearchTopicView; authority: string }
 const label = (value: string) => value.replaceAll('-', ' ')
 const relations = fixture.relations.filter((relation) => relation.source.startsWith(`${topic.topic_id}@`) || relation.target.startsWith(`${topic.topic_id}@`))
+const nextExperiments = experimentForTopic(topic.topic_id)
 ---
 <SiteLayout title={`Cintamani · ${topic.title}`} description={topic.open_problem}>
   <article class="topic-detail section-shell">
@@ -27,11 +43,23 @@ const relations = fixture.relations.filter((relation) => relation.source.startsW
     <section><h2>Why it remains open</h2><p>{topic.why_open}</p></section>
     <section><h2>Scope</h2><p>{topic.scope}</p></section>
     <section><h2>Next discriminating criticism or test</h2><p>{topic.next_discriminating_criticism_or_test}</p></section>
+    <section class="next-experiments" aria-labelledby="next-experiments-title"><h2 id="next-experiments-title">Next discriminating experiments</h2>{nextExperiments.length ? <div class="experiment-list">{nextExperiments.map((experiment) => <article><p class="eyebrow">{experiment.experiment_kind} · {experiment.intent} · illustrative-unadmitted</p><h3><a href={`/experiments/${experiment.experiment_id}`}>{experiment.title}</a></h3><p>{experiment.protocols[0].minimal_decisive_test}</p><p><strong>Strongest falsifier:</strong> {experiment.falsifiers[0].statement}</p><p><strong>Equipment capabilities:</strong> {experiment.equipment_requirements.map((requirement) => requirement.capability).join('; ')}</p><a href={`/api/experiments/${experiment.experiment_id}`}>Agent-readable experiment JSON</a></article>)}</div> : <p>No illustrative experiment is linked to this exact topic version.</p>}</section>
     <section class="topic-nonclaims"><h2>Explicit non-claims</h2><p>{topic.non_claims}</p></section>
     <section><h2>Exact origins</h2><ul>{topic.origins.map((origin: any) => <li><code>{origin.id}</code> · {label(origin.relationship)} · {label(origin.kind)}</li>)}</ul></section>
     {topic.coordinate === null && <section><h2>Search coordinate</h2><p>Unclassified. No prospective coordinate is published or admitted for this topic.</p></section>}
     <section><h2>Typed topic relations</h2>{relations.length ? <ul>{relations.map((relation) => <li><code>{relation.source}</code> {label(relation.kind)} <code>{relation.target}</code></li>)}</ul> : <p>No illustrative relation is recorded for this exact version.</p>}</section>
     <details><summary>History and provenance</summary><dl class="provenance-list"><div><dt>Topic</dt><dd><code>{topic.topic_id}</code></dd></div><div><dt>Revision</dt><dd>{topic.revision}</dd></div><div><dt>Authority</dt><dd>{authority}</dd></div><div><dt>Canonical admission</dt><dd>{authority === 'governed-domain-registry' ? 'yes' : 'no'}</dd></div><div><dt>History rows</dt><dd>{topic.history?.length ?? 2}</dd></div><div><dt>Provenance claims</dt><dd>{topic.provenance?.length ?? 0}</dd></div></dl><p><a href={`/api/research-topics/${encodeURIComponent(topic.topic_id)}/history`}>Bounded history JSON</a> · <a href={`/api/research-topics/${encodeURIComponent(topic.topic_id)}/provenance`}>Bounded provenance JSON</a></p></details>
     <p><a class="primary-action" href={`/proposals/new/?kind=research-topic&parent_topic=${encodeURIComponent(topic.topic_id)}&parent_revision=${topic.revision}`} target="_blank" rel="noopener">Propose a linked topic <span aria-hidden="true">↗</span></a></p>
+    <p><a href="/experiments/">Browse all proposed experiments</a> · <a href="/equipment-types/">Browse equipment capability types</a></p>
   </article>
 </SiteLayout>
+
+<style>
+  .next-experiments { border: 2px solid #0a5275; padding: 1rem 1.1rem; margin-top: 2rem; }
+  .experiment-list { display: grid; gap: 1rem; }
+  .experiment-list article { border-top: 1px solid #d7dce3; padding-top: .85rem; }
+  .experiment-list h3 { margin: .2rem 0; }
+  .experiment-list p { line-height: 1.55; }
+  .eyebrow { color: #7d341f; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+  a { color: #0a5275; }
+</style>

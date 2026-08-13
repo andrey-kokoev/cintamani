@@ -1,0 +1,100 @@
+{
+  "fixture_schema": "cintamani.illustrative-equipment-types.v1",
+  "authority": "illustrative-unadmitted-fixture",
+  "canonical_admission": false,
+  "public_d1_seed": false,
+  "inventory_boundary": "Capability types only. These records are not inventory, vendor, procurement, budget, scheduling, or availability records.",
+  "items": [
+    {
+      "equipment_type_id": "chiral-nematic-microscopy-cell",
+      "revision": 1,
+      "title": "Chiral-nematic sample cell with controlled drive",
+      "description": "A capability type for a documented chiral-nematic cell, electric-drive interface, environmental control, and sample preparation record.",
+      "capabilities": [{"capability_id": "chiral-cell-drive", "capability": "controlled electric pulse drive", "units": "V/µm", "specification": "declared pulse amplitude, duration, and spatial uniformity"}, {"capability_id": "chiral-cell-temperature", "capability": "sample temperature control", "units": "°C", "specification": "temperature logging synchronized with pulse history"}],
+      "operating_limits": [{"operating_limit_id": "chiral-cell-pulse-limit", "parameter": "pulse amplitude", "lower_bound": "0", "upper_bound": "declared per sample", "units": "V/µm", "notes": "Use a sample-specific safety envelope."}],
+      "calibrations": [{"equipment_calibration_id": "chiral-cell-field-calibration", "quantity": "electric field", "units": "V/µm", "method": "fiducial load and probe calibration", "traceability": "record calibration date and sample geometry"}],
+      "safety_requirements": [{"safety_requirement_id": "chiral-cell-high-voltage", "hazard": "high-voltage pulse", "requirement": "interlocked enclosure and discharge path", "mitigation": "operator training and logged interlock checks"}],
+      "interface_requirements": [{"interface_requirement_id": "chiral-cell-trigger", "interface_kind": "timing", "specification": "common trigger with imaging system", "units": "ns"}],
+      "nonclaims": ["No particular cell, vendor, or available instrument is implied.", "This type does not establish that a sample supports an interaction-net rule."],
+      "citations": [{"source_id": "chiral-context", "label": "Operator-supplied chiral-nematic context", "url": "https://arxiv.org/abs/2410.19293"}]
+    },
+    {
+      "equipment_type_id": "calibrated-optical-detector-array",
+      "revision": 1,
+      "title": "Calibrated phase-resolved optical detector array",
+      "description": "A capability type for complex field, spectral, or multiview optical acquisition with raw artifact retention.",
+      "capabilities": [{"capability_id": "optical-complex-readout", "capability": "phase-resolved multimode optical readout", "units": "complex samples", "specification": "declared spatial, temporal, and dynamic-range limits"}, {"capability_id": "optical-raw-retention", "capability": "immutable raw acquisition retention", "units": "artifact", "specification": "raw frames, calibration, and synchronized metadata"}],
+      "operating_limits": [{"operating_limit_id": "optical-detector-dynamic-range", "parameter": "dynamic range", "lower_bound": "declared", "upper_bound": "declared", "units": "dB", "notes": "Saturation and clipping must be logged."}],
+      "calibrations": [{"equipment_calibration_id": "optical-detector-linearity", "quantity": "responsivity and linearity", "units": "A/W", "method": "traceable power sweep", "traceability": "retain reference source certificate"}],
+      "safety_requirements": [{"safety_requirement_id": "optical-laser-safety", "hazard": "laser exposure", "requirement": "wavelength-specific enclosure and interlock", "mitigation": "controlled access and eyewear"}],
+      "interface_requirements": [{"interface_requirement_id": "optical-detector-trigger", "interface_kind": "synchronization", "specification": "common clock or trigger with source and controller", "units": "ns"}],
+      "nonclaims": ["This is a capability type, not a detector inventory or performance guarantee.", "A calibrated detector does not validate a scientific interpretation."],
+      "citations": [{"source_id": "optical-detector-context", "label": "Optical detector capability context", "url": "https://www.rp-photonics.com/photodetectors.html"}]
+    },
+    {
+      "equipment_type_id": "oam-mode-sorter",
+      "revision": 1,
+      "title": "Phase-resolved OAM and multimode sorter",
+      "description": "A capability type for separating and measuring finite orbital-angular-momentum and transverse-mode bases.",
+      "capabilities": [{"capability_id": "oam-modal-decomposition", "capability": "finite OAM/modal decomposition", "units": "mode", "specification": "declared basis size and cross-talk matrix"}, {"capability_id": "oam-phase-reference", "capability": "phase-referenced complex field measurement", "units": "rad", "specification": "stable reference and timestamped phase calibration"}],
+      "operating_limits": [{"operating_limit_id": "oam-basis-limit", "parameter": "modal basis size", "lower_bound": "1", "upper_bound": "declared", "units": "modes", "notes": "Report truncation tails."}],
+      "calibrations": [{"equipment_calibration_id": "oam-cross-talk", "quantity": "modal cross-talk", "units": "fraction", "method": "single-mode sweep", "traceability": "retain calibration matrix"}],
+      "safety_requirements": [{"safety_requirement_id": "oam-beam-enclosure", "hazard": "focused beam", "requirement": "beam enclosure", "mitigation": "interlocked path"}],
+      "interface_requirements": [{"interface_requirement_id": "oam-data-interface", "interface_kind": "data", "specification": "complex modal amplitudes plus calibration metadata", "units": "file"}],
+      "nonclaims": ["No OAM conservation or collision result follows from this capability type."],
+      "citations": [{"source_id": "oam-light-context", "label": "Orbital angular momentum of light context", "url": "https://arxiv.org/abs/1009.2675"}]
+    },
+    {
+      "equipment_type_id": "fs-writing-material-platform",
+      "revision": 1,
+      "title": "Femtosecond 3-D writing and metrology platform",
+      "description": "A capability type for writing and inspecting finite 3-D optical paths in a declared material volume.",
+      "capabilities": [{"capability_id": "fs-3d-placement", "capability": "repeatable 3-D femtosecond placement", "units": "µm", "specification": "logged write coordinates and address pitch"}, {"capability_id": "fs-depth-metrology", "capability": "depth-resolved optical metrology", "units": "µm", "specification": "fiducial grid and aberration calibration"}],
+      "operating_limits": [{"operating_limit_id": "fs-pulse-energy", "parameter": "pulse energy", "lower_bound": "declared", "upper_bound": "declared", "units": "nJ", "notes": "Material-specific damage limits required."}],
+      "calibrations": [{"equipment_calibration_id": "fs-axis-calibration", "quantity": "stage axes", "units": "µm", "method": "traceable 3-D fiducial", "traceability": "retain fiducial map"}],
+      "safety_requirements": [{"safety_requirement_id": "fs-laser-safety", "hazard": "femtosecond laser", "requirement": "enclosure and interlock", "mitigation": "laser safety procedure"}],
+      "interface_requirements": [{"interface_requirement_id": "fs-write-log", "interface_kind": "control", "specification": "machine-readable write log and material identifier", "units": "record"}],
+      "nonclaims": ["Femtosecond writing does not imply exact or volumetric computing."],
+      "citations": [{"source_id": "direct-laser-writing-context", "label": "Direct laser writing photonics context", "url": "https://doi.org/10.1038/nphoton.2012.178"}]
+    },
+    {
+      "equipment_type_id": "rf-acoustic-modulation-controller",
+      "revision": 1,
+      "title": "Independent RF/acoustic multimode controller",
+      "description": "A capability type for synchronized but independently logged RF and acoustic control of a multimode optical operator.",
+      "capabilities": [{"capability_id": "rf-phase-control", "capability": "phase-controlled RF drive", "units": "rad", "specification": "phase noise and amplitude limits declared"}, {"capability_id": "acoustic-delay-control", "capability": "logged acoustic delay and waveform control", "units": "ns", "specification": "independent pickup and trigger"}],
+      "operating_limits": [{"operating_limit_id": "rf-acoustic-power", "parameter": "drive power", "lower_bound": "0", "upper_bound": "declared", "units": "dBm", "notes": "Thermal and transducer limits required."}],
+      "calibrations": [{"equipment_calibration_id": "rf-acoustic-delay", "quantity": "relative delay", "units": "ns", "method": "loopback pickup", "traceability": "common clock and cable characterization"}],
+      "safety_requirements": [{"safety_requirement_id": "rf-acoustic-interlock", "hazard": "RF power and acoustic transducer", "requirement": "power and thermal interlocks", "mitigation": "independent shutdown path"}],
+      "interface_requirements": [{"interface_requirement_id": "rf-acoustic-log", "interface_kind": "timing-data", "specification": "drive waveform, phase, delay, and output timestamp", "units": "record"}],
+      "nonclaims": ["The controller type does not claim a joint optical operator exists."],
+      "citations": [{"source_id": "acousto-optic-context", "label": "Acousto-optic modulation context", "url": "https://www.rp-photonics.com/acousto_optic_modulators.html"}]
+    },
+    {
+      "equipment_type_id": "coincidence-addressed-tensor-fpga",
+      "revision": 1,
+      "title": "Deterministic coincidence-addressed tensor FPGA",
+      "description": "A capability type for finite 3-D coincidence address logic with cycle-accurate event logs.",
+      "capabilities": [{"capability_id": "tensor-3d-address", "capability": "3-D coincidence address routing", "units": "events/cycle", "specification": "declared address width and collision semantics"}, {"capability_id": "tensor-event-trace", "capability": "deterministic raw event trace", "units": "cycle", "specification": "overflow-safe counters and bitstream hash"}],
+      "operating_limits": [{"operating_limit_id": "tensor-clock", "parameter": "clock frequency", "lower_bound": "declared", "upper_bound": "declared", "units": "MHz", "notes": "Report timing closure and counter width."}],
+      "calibrations": [{"equipment_calibration_id": "tensor-loopback", "quantity": "cycle offset", "units": "cycle", "method": "software/hardware loopback", "traceability": "retain bitstream and toolchain"}],
+      "safety_requirements": [{"safety_requirement_id": "tensor-board-power", "hazard": "board power and thermal load", "requirement": "current and temperature monitor", "mitigation": "thermal shutdown"}],
+      "interface_requirements": [{"interface_requirement_id": "tensor-seed-interface", "interface_kind": "data", "specification": "deterministic workload seed and exact event log", "units": "record"}],
+      "nonclaims": ["This type does not imply a deployed FPGA or tensor benchmark."],
+      "citations": [{"source_id": "amd-fpga-context", "label": "AMD FPGA acceleration documentation", "url": "https://docs.amd.com/r/en-US/ug1186-fpga-acceleration"}]
+    },
+    {
+      "equipment_type_id": "rust-hvm-oracle-harness",
+      "revision": 1,
+      "title": "Reproducible Rust exact-oracle and HVM harness",
+      "description": "A capability type for exact finite arithmetic, typed encoding, symbolic reduction, and trace retention.",
+      "capabilities": [{"capability_id": "rust-exact-arithmetic", "capability": "reproducible exact arithmetic", "units": "expression", "specification": "locked compiler and dependency graph"}, {"capability_id": "hvm-reduction-trace", "capability": "bounded HVM symbolic reduction trace", "units": "steps", "specification": "timeout, resource bound, and source hash"}],
+      "operating_limits": [{"operating_limit_id": "hvm-resource-bound", "parameter": "reduction resource bound", "lower_bound": "1", "upper_bound": "declared", "units": "steps", "notes": "Timeout is a reported outcome, not a silent omission."}],
+      "calibrations": [{"equipment_calibration_id": "hvm-golden-corpus", "quantity": "identity/zero oracle agreement", "units": "exact", "method": "golden corpus", "traceability": "retain source and tool versions"}],
+      "safety_requirements": [{"safety_requirement_id": "hvm-sandbox", "hazard": "unbounded symbolic computation", "requirement": "process and memory limits", "mitigation": "isolated runner and timeout"}],
+      "interface_requirements": [{"interface_requirement_id": "hvm-trace-interface", "interface_kind": "artifact", "specification": "exact AST, source, and reduction trace", "units": "file"}],
+      "nonclaims": ["Tool agreement does not establish a physical amplitude or infinity result."],
+      "citations": [{"source_id": "rust-language", "label": "Rust language project", "url": "https://www.rust-lang.org/"}, {"source_id": "hvm-symbolic-runtime", "label": "HVM symbolic runtime project", "url": "https://github.com/HigherOrderCO/HVM"}]
+    }
+  ]
+}

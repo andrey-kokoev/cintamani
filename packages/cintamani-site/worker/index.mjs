@@ -1,7 +1,23 @@
 import frontier from '../src/data/frontier.json' with { type: 'json' }
 import admittedTopics from '../src/data/research-topics.json' with { type: 'json' }
 import illustrativeTopics from '../src/data/research-topic-fixture.json' with { type: 'json' }
-import { axisMetadata, proposalKinds, researchTopicLoci, text, validateProposal } from '../src/lib/proposals.mjs'
+import {
+  axisMetadata,
+  experimentIntents,
+  experimentKinds,
+  proposalKinds,
+  researchTopicLoci,
+  text,
+  validateProposal,
+} from '../src/lib/proposals.mjs'
+import {
+  equipmentForExperiment,
+  experimentForTopic,
+  illustrativeEquipmentCatalog,
+  illustrativeExperimentCatalog,
+  humanExperimentSearchText,
+  volumetricOriginStory,
+} from '../src/lib/experiments.mjs'
 import {
   changeOperatorRole,
   createAppeal,
@@ -423,14 +439,31 @@ function boundedTopicCollection(url) {
     authority: 'governed-domain-registry',
     canonical_admission: true,
   }))
-  const fixture = illustrativeTopics.items.map((item) => ({
+  const originTopic = {
+    topic_id: volumetricOriginStory.story_id,
+    revision: 1,
+    title: volumetricOriginStory.label,
+    loci: ['theoretical', 'simulation', 'experimental'],
+    open_problem: 'Can a finite, calibrated 3-D optical volume preserve a declared state and operator across recurrent passes?',
+    why_open: 'The origin story is a design conjecture assembled from material and computing ideas; it is not a demonstrated result.',
+    scope: 'Exact finite operators, volumetric addressability, recurrence, calibration, and falsifier-first controls.',
+    next_discriminating_criticism_or_test: 'Run the finite volume-addressed operator test and compare against planar and feedback-off controls.',
+    non_claims: volumetricOriginStory.nonclaims.join(' '),
+    origins: [{ kind: 'illustrative-origin-story', id: `${volumetricOriginStory.story_id}@1`, relationship: 'motivated-by' }],
+    coordinate: null,
+  }
+  const fixture = [...illustrativeTopics.items, originTopic].map((item) => ({
     ...item,
     status: illustrativeTopics.workflow_status,
     authority: illustrativeTopics.authority,
     canonical_admission: false,
     source_fixture: illustrativeTopics.fixture_schema,
+    next_experiments: experimentForTopic(item.topic_id).map(experimentSummary),
   }))
-  const items = [...canonical, ...fixture]
+  const items = [
+    ...canonical.map((item) => ({ ...item, next_experiments: experimentSummaryForTopic(item.topic_id) })),
+    ...fixture,
+  ]
     .filter((item) => item.topic_id > cursor)
     .filter((item) => !locus || item.loci?.includes(locus))
     .filter((item) => !status || item.status === status)
@@ -464,7 +497,21 @@ function boundedTopicCollection(url) {
 function exactTopic(topicId) {
   const canonical = admittedTopics.items.find((item) => item.topic_id === topicId)
   if (canonical) return { ...canonical, authority: 'governed-domain-registry', canonical_admission: true }
-  const fixture = illustrativeTopics.items.find((item) => item.topic_id === topicId)
+  const fixture = topicId === volumetricOriginStory.story_id
+    ? {
+        topic_id: volumetricOriginStory.story_id,
+        revision: 1,
+        title: volumetricOriginStory.label,
+        loci: ['theoretical', 'simulation', 'experimental'],
+        open_problem: 'Can a finite, calibrated 3-D optical volume preserve a declared state and operator across recurrent passes?',
+        why_open: 'The origin story is a design conjecture assembled from material and computing ideas; it is not a demonstrated result.',
+        scope: 'Exact finite operators, volumetric addressability, recurrence, calibration, and falsifier-first controls.',
+        next_discriminating_criticism_or_test: 'Run the finite volume-addressed operator test and compare against planar and feedback-off controls.',
+        non_claims: volumetricOriginStory.nonclaims.join(' '),
+        origins: [{ kind: 'illustrative-origin-story', id: `${volumetricOriginStory.story_id}@1`, relationship: 'motivated-by' }],
+        coordinate: null,
+      }
+    : illustrativeTopics.items.find((item) => item.topic_id === topicId)
   if (!fixture) throw new ResponseError(404, 'research_topic_not_found', 'The research topic does not exist')
   return {
     ...fixture,
@@ -476,6 +523,175 @@ function exactTopic(topicId) {
     sources: illustrativeTopics.sources,
     relations: illustrativeTopics.relations.filter((relation) =>
       relation.source.startsWith(`${topicId}@`) || relation.target.startsWith(`${topicId}@`)),
+    next_experiments: experimentForTopic(topicId).map(experimentSummary),
+  }
+}
+
+function experimentSummary(experiment) {
+  return {
+    experiment_id: experiment.experiment_id,
+    revision: experiment.revision,
+    title: experiment.title,
+    experiment_kind: experiment.experiment_kind,
+    intent: experiment.intent,
+    minimal_decisive_test: experiment.protocols[0]?.minimal_decisive_test,
+    strongest_falsifier: experiment.falsifiers[0],
+    equipment_capabilities: experiment.equipment_requirements.map((requirement) => ({
+      group_id: requirement.group_id,
+      group_kind: requirement.group_kind,
+      selection_rule: requirement.selection_rule,
+      quantity: requirement.quantity,
+      capability: requirement.capability,
+      units: requirement.units,
+    })),
+    authority: illustrativeExperimentCatalog.authority,
+    canonical_admission: false,
+  }
+}
+
+function experimentSummaryForTopic(topicId) {
+  return experimentForTopic(topicId).map(experimentSummary)
+}
+
+function fixtureExperiment(experimentId) {
+  const experiment = illustrativeExperimentCatalog.items.find((item) => item.experiment_id === experimentId)
+  if (!experiment) throw new ResponseError(404, 'experiment_not_found', 'The proposed experiment does not exist')
+  return {
+    ...experiment,
+    authority: illustrativeExperimentCatalog.authority,
+    source_fixture: illustrativeExperimentCatalog.fixture_schema,
+    canonical_admission: false,
+    public_d1_seed: false,
+    evidence_claim: false,
+    equipment_types: equipmentForExperiment(experiment),
+  }
+}
+
+function boundedExperimentCollection(url) {
+  const limit = Math.min(Math.max(Number.parseInt(url.searchParams.get('limit') ?? '20', 10) || 20, 1), 50)
+  const cursor = url.searchParams.get('cursor') ?? ''
+  const query = (url.searchParams.get('q') ?? '').trim().toLowerCase()
+  const kind = url.searchParams.get('kind')
+  const intent = url.searchParams.get('intent')
+  const capability = url.searchParams.get('capability')
+  if (kind && !experimentKinds.includes(kind)) throw new ResponseError(400, 'invalid_experiment_kind', 'The experiment kind is not supported')
+  if (intent && !experimentIntents.includes(intent)) throw new ResponseError(400, 'invalid_experiment_intent', 'The experiment intent is not supported')
+  const items = illustrativeExperimentCatalog.items
+    .filter((item) => item.experiment_id > cursor)
+    .filter((item) => !kind || item.experiment_kind === kind)
+    .filter((item) => !intent || item.intent === intent)
+    .filter((item) => !capability || item.equipment_requirements.some((requirement) => requirement.capability === capability || requirement.capability.includes(capability)))
+    .filter((item) => !query || humanExperimentSearchText(item).toLowerCase().includes(query))
+    .sort((left, right) => left.experiment_id.localeCompare(right.experiment_id))
+  const page = items.slice(0, limit + 1)
+  const hasMore = page.length > limit
+  const selected = (hasMore ? page.slice(0, limit) : page).map(experimentSummary)
+  return {
+    collection: 'experiments',
+    items: selected,
+    next_cursor: hasMore ? selected.at(-1).experiment_id : null,
+    bounded: true,
+    authority: illustrativeExperimentCatalog.authority,
+    canonical_admission: false,
+    public_d1_seed: false,
+    epistemic_ranking: false,
+  }
+}
+
+function experimentHistory(experimentId) {
+  const experiment = fixtureExperiment(experimentId)
+  return {
+    collection: `experiment-history:${experimentId}`,
+    items: [{
+      history_family: 'experiment-version',
+      event_id: `${experimentId}@${experiment.revision}`,
+      revision: experiment.revision,
+      event_kind: 'definition',
+      status: experiment.status,
+      title: experiment.title,
+    }],
+    next_cursor: null,
+    bounded: true,
+    authority: experiment.authority,
+    canonical_admission: false,
+  }
+}
+
+function experimentProvenance(experimentId) {
+  const experiment = fixtureExperiment(experimentId)
+  return {
+    collection: `experiment-provenance:${experimentId}`,
+    authority: experiment.authority,
+    canonical_admission: false,
+    exact_targets: experiment.targets,
+    provenance: experiment.provenance,
+    citations: experiment.provenance.citations,
+    bounded: true,
+  }
+}
+
+function boundedEquipmentCollection(url) {
+  const limit = Math.min(Math.max(Number.parseInt(url.searchParams.get('limit') ?? '20', 10) || 20, 1), 50)
+  const cursor = url.searchParams.get('cursor') ?? ''
+  const query = (url.searchParams.get('q') ?? '').trim().toLowerCase()
+  const items = illustrativeEquipmentCatalog.items
+    .filter((item) => item.equipment_type_id > cursor)
+    .filter((item) => !query || JSON.stringify(item).toLowerCase().includes(query))
+    .sort((left, right) => left.equipment_type_id.localeCompare(right.equipment_type_id))
+  const page = items.slice(0, limit + 1)
+  const hasMore = page.length > limit
+  const selected = hasMore ? page.slice(0, limit) : page
+  return {
+    collection: 'equipment-types',
+    items: selected.map((item) => ({
+      equipment_type_id: item.equipment_type_id,
+      revision: item.revision,
+      title: item.title,
+      capabilities: item.capabilities,
+      authority: illustrativeEquipmentCatalog.authority,
+      canonical_admission: false,
+    })),
+    next_cursor: hasMore ? selected.at(-1).equipment_type_id : null,
+    bounded: true,
+    authority: illustrativeEquipmentCatalog.authority,
+    canonical_admission: false,
+    inventory: false,
+  }
+}
+
+function fixtureEquipment(equipmentTypeId) {
+  const item = illustrativeEquipmentCatalog.items.find((candidate) => candidate.equipment_type_id === equipmentTypeId)
+  if (!item) throw new ResponseError(404, 'equipment_type_not_found', 'The equipment type does not exist')
+  return {
+    ...item,
+    authority: illustrativeEquipmentCatalog.authority,
+    source_fixture: illustrativeEquipmentCatalog.fixture_schema,
+    canonical_admission: false,
+    inventory: false,
+    procurement: false,
+  }
+}
+
+function equipmentHistory(equipmentTypeId) {
+  const item = fixtureEquipment(equipmentTypeId)
+  return {
+    collection: `equipment-type-history:${equipmentTypeId}`,
+    items: [{ history_family: 'equipment-type-version', event_id: `${equipmentTypeId}@${item.revision}`, revision: item.revision, event_kind: 'definition', title: item.title }],
+    next_cursor: null,
+    bounded: true,
+    authority: item.authority,
+    canonical_admission: false,
+  }
+}
+
+function equipmentProvenance(equipmentTypeId) {
+  const item = fixtureEquipment(equipmentTypeId)
+  return {
+    collection: `equipment-type-provenance:${equipmentTypeId}`,
+    authority: item.authority,
+    canonical_admission: false,
+    provenance: { citations: item.citations, boundary: item.inventory_boundary ?? illustrativeEquipmentCatalog.inventory_boundary },
+    bounded: true,
   }
 }
 
@@ -761,6 +977,10 @@ async function routeApi(request, env) {
   if (request.method === 'GET' && pathname === '/api/config') {
     return json({
       proposal_kinds: proposalKinds,
+      experiment_kinds: experimentKinds,
+      experiment_intents: experimentIntents,
+      experiment_requirement_groups: ['required', 'optional', 'alternative'],
+      experiment_requirement_selection_rules: ['any-one', 'at-least-n'],
       frontier: {
         coordinate_key_version: frontier.items[0]?.coordinate_key_version ?? null,
         validation_generation: frontier.items[0]?.validation_generation ?? null,
@@ -780,6 +1000,24 @@ async function routeApi(request, env) {
   if (request.method === 'GET' && pathname === '/api/research-topics') {
     return json(boundedTopicCollection(url))
   }
+  if (request.method === 'GET' && pathname === '/api/experiments') {
+    return json(boundedExperimentCollection(url))
+  }
+  let experimentValues = captures(pathname, /^\/api\/experiments\/([^/]+)$/u)
+  if (request.method === 'GET' && experimentValues) return json(fixtureExperiment(experimentValues[0]))
+  experimentValues = captures(pathname, /^\/api\/experiments\/([^/]+)\/history$/u)
+  if (request.method === 'GET' && experimentValues) return json(experimentHistory(experimentValues[0]))
+  experimentValues = captures(pathname, /^\/api\/experiments\/([^/]+)\/provenance$/u)
+  if (request.method === 'GET' && experimentValues) return json(experimentProvenance(experimentValues[0]))
+  if (request.method === 'GET' && pathname === '/api/equipment-types') {
+    return json(boundedEquipmentCollection(url))
+  }
+  let equipmentValues = captures(pathname, /^\/api\/equipment-types\/([^/]+)$/u)
+  if (request.method === 'GET' && equipmentValues) return json(fixtureEquipment(equipmentValues[0]))
+  equipmentValues = captures(pathname, /^\/api\/equipment-types\/([^/]+)\/history$/u)
+  if (request.method === 'GET' && equipmentValues) return json(equipmentHistory(equipmentValues[0]))
+  equipmentValues = captures(pathname, /^\/api\/equipment-types\/([^/]+)\/provenance$/u)
+  if (request.method === 'GET' && equipmentValues) return json(equipmentProvenance(equipmentValues[0]))
   let topicValues = captures(pathname, /^\/api\/research-topics\/([^/]+)$/u)
   if (request.method === 'GET' && topicValues) return json(exactTopic(topicValues[0]))
   topicValues = captures(pathname, /^\/api\/research-topics\/([^/]+)\/history$/u)

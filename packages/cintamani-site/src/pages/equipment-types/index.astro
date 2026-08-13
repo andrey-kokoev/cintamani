@@ -1,0 +1,37 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { illustrativeEquipmentCatalog } from '../../lib/experiments.mjs'
+const items = illustrativeEquipmentCatalog.items
+---
+
+<SiteLayout
+  title="Equipment capability types | Cintamani"
+  description="Illustrative, unadmitted equipment capability types for bounded experiment design."
+>
+  <main class="catalog" aria-labelledby="page-title">
+    <p class="eyebrow">Research design · capability vocabulary</p>
+    <h1 id="page-title">Equipment capability types</h1>
+    <p class="lede">Versioned capability descriptions let proposals say what a decisive test requires without becoming inventory, vendor, procurement, budget, or scheduling records.</p>
+    <p class="boundary"><strong>Boundary:</strong> every item is illustrative and unadmitted. A capability type is not evidence that equipment exists or is available.</p>
+    <nav class="catalog-links" aria-label="Related catalogs"><a href="/experiments/">Proposed experiments</a><a href="/research-topics/">Research topics</a></nav>
+    <section class="grid" aria-label="Illustrative equipment capability types">
+      {items.map((item) => <article class="card"><p class="meta">revision {item.revision} · illustrative-unadmitted</p><h2><a href={`/equipment-types/${item.equipment_type_id}`}>{item.title}</a></h2><p>{item.description}</p><h3>Capabilities</h3><ul>{item.capabilities.map((capability) => <li><strong>{capability.capability}</strong> ({capability.units})</li>)}</ul><p><a href={`/api/equipment-types/${item.equipment_type_id}`}>Agent-readable JSON</a></p></article>)}
+    </section>
+  </main>
+</SiteLayout>
+
+<style>
+  .catalog { max-width: 1120px; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  .eyebrow, .meta { color: #5d6675; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+  h1 { max-width: 15ch; font-size: clamp(2.5rem, 7vw, 5.6rem); line-height: .95; margin: .35rem 0 1.25rem; }
+  .lede { max-width: 72ch; font-size: 1.18rem; line-height: 1.65; }
+  .boundary { border-left: 4px solid #a4572b; background: #fff4e9; padding: 1rem 1.1rem; max-width: 78ch; line-height: 1.55; }
+  .catalog-links { display: flex; gap: 1.2rem; margin: 1.6rem 0 2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1rem; }
+  .card { border: 1px solid #d7dce3; border-radius: .65rem; padding: 1.2rem; background: #fff; }
+  .card h2 { font-size: 1.35rem; line-height: 1.15; }
+  .card h3 { font-size: .85rem; margin-bottom: .25rem; }
+  .card p, .card li { line-height: 1.55; }
+  .card ul { padding-left: 1.2rem; }
+  a { color: #0a5275; }
+</style>

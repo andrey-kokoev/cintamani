@@ -1,9 +1,9 @@
 {
-  "snapshot_schema": "cintamani.site-registry-summary.v3",
+  "snapshot_schema": "cintamani.site-registry-summary.v5",
   "snapshot_mode": "build-time-static",
   "registry_authority": "Rust/SQLite Cintamani domain registry",
   "mutable_edge_registry": false,
-  "schema_version": "4",
+  "schema_version": "5",
   "projection_kind": "rebuildable-site-domain-registry",
   "chain_generation": "bootstrap-0004-0e32d9248223",
   "check_status": "passed",
@@ -26,6 +26,10 @@
     "interfaces": 2,
     "siege_cells": 2,
     "research_topics": 0,
+    "experiments": 0,
+    "experiment_versions": 0,
+    "equipment_types": 0,
+    "equipment_type_versions": 0,
     "provenance_claims": 77
   }
 }

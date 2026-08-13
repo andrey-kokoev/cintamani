@@ -1,0 +1,56 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { equipmentForExperiment, illustrativeExperimentCatalog } from '../../lib/experiments.mjs'
+
+export function getStaticPaths() {
+  return illustrativeExperimentCatalog.items.map((experiment) => ({ params: { experiment_id: experiment.experiment_id }, props: { experiment } }))
+}
+
+const { experiment } = Astro.props
+const equipment = equipmentForExperiment(experiment)
+---
+
+<SiteLayout
+  title={`${experiment.title} | Cintamani`}
+  description={`${experiment.title}: an illustrative, unadmitted experiment definition for bounded criticism.`}
+>
+  <main class="detail" aria-labelledby="page-title">
+    <p class="eyebrow">Illustrative · unadmitted · revision {experiment.revision}</p>
+    <h1 id="page-title">{experiment.title}</h1>
+    <p class="boundary">This is a proposed definition for criticism. It is not an experiment run, result, evidence claim, canonical admission, inventory record, or procurement request.</p>
+    <dl class="facts"><div><dt>Stable identifier</dt><dd><code>{experiment.experiment_id}</code></dd></div><div><dt>Kind</dt><dd>{experiment.experiment_kind}</dd></div><div><dt>Intent</dt><dd>{experiment.intent}</dd></div></dl>
+
+    <section aria-labelledby="target-title"><h2 id="target-title">Exact target</h2><ul>{experiment.targets.map((target) => <li><strong>{target.target_kind}</strong> · <code>{target.target_id}</code>{target.target_revision ? ` @ revision ${target.target_revision}` : ''} — {target.target_label}</li>)}</ul></section>
+    <section aria-labelledby="protocol-title"><h2 id="protocol-title">Minimal decisive protocol</h2>{experiment.protocols.map((protocol) => <article class="subcard"><h3>{'protocol_name' in protocol ? protocol.protocol_name : protocol.name}</h3><p>{protocol.minimal_decisive_test}</p><ol>{protocol.steps.map((step) => <li>{step}</li>)}</ol><p><strong>Decision rule:</strong> {protocol.decision_rule}</p>{'boundary' in protocol && <p><strong>Boundary:</strong> {protocol.boundary}</p>}</article>)}</section>
+    <section aria-labelledby="control-title"><h2 id="control-title">Controls</h2><ul>{experiment.controls.map((control) => <li><strong>{control.control_kind}:</strong> {control.description} <span>({control.controlled_variable}; {control.expected_relation})</span></li>)}</ul></section>
+    <section aria-labelledby="observable-title"><h2 id="observable-title">Observables and units</h2><div class="table-wrap"><table><caption class="sr-only">Observables</caption><thead><tr><th scope="col">Observable</th><th scope="col">Units</th><th scope="col">Measurement</th><th scope="col">Uncertainty reporting</th></tr></thead><tbody>{experiment.observables.map((observable) => <tr><th scope="row">{observable.name}</th><td>{observable.units}</td><td>{observable.measurement}</td><td>{observable.uncertainty_reporting}</td></tr>)}</tbody></table></div></section>
+    <section class="two-col"><div><h2>Calibration and repetitions</h2><ul>{experiment.calibration.map((item) => <li><strong>{item.quantity}:</strong> {item.method} — {item.acceptance} ({item.units})</li>)}</ul><p><strong>Replicate unit:</strong> {experiment.repetitions.replicate_unit}; minimum {experiment.repetitions.minimum_repetitions}, independent {experiment.repetitions.independent_repetitions}.</p><p><strong>Randomization:</strong> {experiment.repetitions.randomization}</p><p><strong>Stopping rule:</strong> {experiment.repetitions.stopping_rule}</p><p><strong>Uncertainty:</strong> {experiment.uncertainty.sources}; {experiment.uncertainty.propagation}; {experiment.uncertainty.reporting}</p></div><div><h2>Success and falsifiers</h2><h3>Success</h3><ul>{experiment.success_criteria.map((criterion) => <li>{criterion.statement} <small>({criterion.metric} {criterion.comparator} {criterion.threshold_text} {criterion.units})</small></li>)}</ul><h3>Falsifiers</h3><ul>{experiment.falsifiers.map((criterion) => <li>{criterion.statement} <small>({criterion.metric} {criterion.comparator} {criterion.threshold_text} {criterion.units})</small></li>)}</ul></div></section>
+    <section aria-labelledby="equipment-title"><h2 id="equipment-title">Required capability groups</h2><ul>{experiment.equipment_requirements.map((requirement) => <li><strong>{requirement.group_id}</strong> · {requirement.group_kind}, {requirement.selection_rule}, quantity {requirement.quantity}: {requirement.capability} ({requirement.units}) — {requirement.specification}</li>)}</ul>{equipment.length > 0 && <p>Related capability types: {equipment.map((item) => <a href={`/equipment-types/${item.equipment_type_id}`}>{item.title}</a>)}</p>}</section>
+    <section class="two-col"><div><h2>Confounds and raw artifacts</h2><ul>{experiment.confounds.map((confound) => <li><strong>{confound.confound}:</strong> {confound.detection_control}; mitigation: {confound.mitigation}</li>)}</ul><ul>{experiment.raw_artifacts.map((artifact) => <li>{artifact.artifact_kind} · {artifact.format} · {artifact.retention}</li>)}</ul></div><div><h2>Nonclaims</h2><ul>{experiment.nonclaims.map((nonclaim) => <li>{nonclaim}</li>)}</ul></div></section>
+    <section aria-labelledby="provenance-title"><h2 id="provenance-title">Provenance boundary</h2><p>{experiment.provenance.boundary}</p>{experiment.provenance.citations.length > 0 ? <ul>{experiment.provenance.citations.map((citation) => <li><a href={citation.url}>{citation.label}</a> <code>{citation.source_id}</code></li>)}</ul> : <p>No external citation was supplied in the task context for this proposal.</p>}</section>
+    <p class="actions"><a href={`/api/experiments/${experiment.experiment_id}`}>Agent-readable JSON</a> · <a href={`/api/experiments/${experiment.experiment_id}/history`}>History</a> · <a href={`/api/experiments/${experiment.experiment_id}/provenance`}>Provenance</a> · <a href="/experiments/">Back to experiments</a></p>
+  </main>
+</SiteLayout>
+
+<style>
+  .detail { max-width: 980px; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  .eyebrow { color: #7d341f; letter-spacing: .08em; font-size: .8rem; text-transform: uppercase; }
+  h1 { font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1; max-width: 18ch; }
+  h2 { margin-top: 2.2rem; border-bottom: 1px solid #d7dce3; padding-bottom: .35rem; }
+  h3 { margin-bottom: .25rem; }
+  p, li, td, th { line-height: 1.55; }
+  .boundary { border: 2px solid #a4572b; background: #fff4e9; padding: 1rem; font-weight: 600; }
+  .facts { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; }
+  .facts div { background: #f2f5f7; padding: .75rem 1rem; min-width: 170px; }
+  dt { color: #5d6675; font-size: .78rem; text-transform: uppercase; }
+  dd { margin: .25rem 0 0; }
+  .subcard { border-left: 3px solid #0a5275; padding: .25rem 1rem; margin: 1rem 0; }
+  .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #d7dce3; padding: .6rem; text-align: left; vertical-align: top; }
+  th { background: #f2f5f7; }
+  .actions { margin-top: 2.5rem; }
+  a { color: #0a5275; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>

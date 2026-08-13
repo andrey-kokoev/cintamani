@@ -1,8 +1,9 @@
 use crate::{
     AdmissionManifest, AdmissionV2, ManifestEntry, RegistryPaths, compute_entry_hash, inspect,
-    rebuild, verify_chain,
+    projection::relation_counts, rebuild, verify_chain,
 };
 use anyhow::{Context, Result, bail};
+use rusqlite::{Connection, OpenFlags};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::{
@@ -113,6 +114,13 @@ pub fn preview_admission(
     let mut guard = PreviewGuard::stage(paths, &proposal, &bytes)?;
     let current_counts = inspect(paths)
         .map(|report| report.relation_counts)
+        .or_else(|_| {
+            let connection = Connection::open_with_flags(
+                &paths.database_path,
+                OpenFlags::SQLITE_OPEN_READ_ONLY,
+            )?;
+            relation_counts(&connection)
+        })
         .unwrap_or_default();
     let preview_paths = RegistryPaths::for_workspace(&paths.workspace_root)
         .with_database(&guard.database)

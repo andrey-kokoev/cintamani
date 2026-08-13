@@ -1,9 +1,11 @@
 use crate::{
     Change,
+    projection::definition_provenance,
     query::{COORDINATE_KEY_VERSION, coordinate_key},
 };
 use anyhow::{Result, bail};
 use rusqlite::{OptionalExtension, Transaction, params};
+use std::collections::BTreeMap;
 
 pub(crate) fn insert_change(
     transaction: &Transaction<'_>,
@@ -887,6 +889,584 @@ pub(crate) fn insert_change(
                     admission
                 ],
             )?;
+        }
+        Change::Experiment {
+            experiment_id,
+            label,
+        } => {
+            transaction.execute(
+                "INSERT INTO experiments VALUES (?1,?2,?3)",
+                params![experiment_id, label, admission],
+            )?;
+            definition_provenance(transaction, admission, "experiment_id", experiment_id)?;
+        }
+        Change::ExperimentVersion {
+            experiment_version_id,
+            experiment_id,
+            revision,
+            event_kind,
+            occurred_at,
+            title,
+            experiment_kind,
+            intent,
+            targets,
+            protocols,
+            controls,
+            observables,
+            calibrations,
+            repetition,
+            uncertainty,
+            criteria,
+            confounds,
+            raw_artifacts,
+            non_claims,
+            dependencies,
+            relations,
+            equipment_requirements,
+            topic_links,
+        } => {
+            if targets.is_empty()
+                || protocols.is_empty()
+                || observables.is_empty()
+                || criteria
+                    .iter()
+                    .all(|item| item.criterion_kind != "falsifier")
+                || criteria.iter().all(|item| item.criterion_kind != "success")
+                || raw_artifacts.is_empty()
+                || non_claims.is_empty()
+                || equipment_requirements.is_empty()
+            {
+                bail!(
+                    "experiment version {experiment_version_id} requires target, protocol, observable, success, falsifier, raw-artifact, equipment, and non-claim rows"
+                );
+            }
+            let mut requirement_groups: BTreeMap<&str, (&str, &str, u32, usize)> = BTreeMap::new();
+            for requirement in equipment_requirements.iter() {
+                if requirement.selection_rule == "any-one" && requirement.quantity != 1 {
+                    bail!(
+                        "equipment requirement group {} with any-one selection must have quantity 1",
+                        requirement.group_id
+                    );
+                }
+                let entry = requirement_groups
+                    .entry(requirement.group_id.as_str())
+                    .or_insert((
+                        requirement.group_kind.as_str(),
+                        requirement.selection_rule.as_str(),
+                        requirement.quantity,
+                        0,
+                    ));
+                if entry.0 != requirement.group_kind
+                    || entry.1 != requirement.selection_rule
+                    || entry.2 != requirement.quantity
+                {
+                    bail!(
+                        "equipment requirement group {} has inconsistent kind, selection rule, or quantity",
+                        requirement.group_id
+                    );
+                }
+                entry.3 += 1;
+            }
+            for (group_id, (group_kind, selection_rule, quantity, option_count)) in
+                requirement_groups
+            {
+                if group_kind == "alternative" && option_count < 2 {
+                    bail!(
+                        "alternative equipment requirement group {group_id} needs at least two options"
+                    );
+                }
+                if selection_rule == "at-least-n" && option_count < quantity as usize {
+                    bail!(
+                        "equipment requirement group {group_id} needs at least {quantity} options"
+                    );
+                }
+            }
+            transaction.execute(
+                "INSERT INTO experiment_versions VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                params![
+                    experiment_version_id,
+                    experiment_id,
+                    revision,
+                    event_kind,
+                    occurred_at,
+                    title,
+                    experiment_kind,
+                    intent,
+                    admission
+                ],
+            )?;
+            definition_provenance(
+                transaction,
+                admission,
+                "experiment_version_id",
+                experiment_version_id,
+            )?;
+            for target in targets {
+                if matches!(
+                    target.target_kind.as_str(),
+                    "problem-version" | "conjecture-version" | "research-topic-version"
+                ) && target.target_revision.is_none()
+                {
+                    bail!(
+                        "experiment target {} requires an exact revision",
+                        target.target_id
+                    );
+                }
+                match target.target_kind.as_str() {
+                    "problem-version" => {
+                        let revision: u32 = transaction.query_row(
+                            "SELECT revision FROM problem_versions WHERE problem_version_id=?1",
+                            [&target.target_id_value],
+                            |row| row.get(0),
+                        )?;
+                        if target.target_revision != Some(revision) {
+                            bail!(
+                                "experiment target {} does not identify the exact problem revision",
+                                target.target_id
+                            );
+                        }
+                    }
+                    "conjecture-version" => {
+                        let revision: u32 = transaction.query_row(
+                            "SELECT revision FROM conjecture_versions WHERE conjecture_version_id=?1",
+                            [&target.target_id_value],
+                            |row| row.get(0),
+                        )?;
+                        if target.target_revision != Some(revision) {
+                            bail!(
+                                "experiment target {} does not identify the exact conjecture revision",
+                                target.target_id
+                            );
+                        }
+                    }
+                    "research-topic-version" => {
+                        let revision: u32 = transaction.query_row(
+                            "SELECT revision FROM research_topic_versions WHERE topic_version_id=?1",
+                            [&target.target_id_value],
+                            |row| row.get(0),
+                        )?;
+                        if target.target_revision != Some(revision) {
+                            bail!(
+                                "experiment target {} does not identify the exact research-topic revision",
+                                target.target_id
+                            );
+                        }
+                    }
+                    "coordinate" | "public-proposal-revision" | "external-reference" => {}
+                    other => bail!("unsupported experiment target kind {other}"),
+                }
+                transaction.execute(
+                    "INSERT INTO experiment_targets VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                    params![
+                        target.target_id,
+                        experiment_version_id,
+                        target.target_order,
+                        target.target_kind,
+                        target.target_id_value,
+                        target.target_revision,
+                        target.target_label,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "experiment_target_id",
+                    &target.target_id,
+                )?;
+            }
+            for protocol in protocols {
+                transaction.execute(
+                    "INSERT INTO experiment_protocols VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                    params![
+                        protocol.protocol_id,
+                        experiment_version_id,
+                        protocol.protocol_order,
+                        protocol.protocol_name,
+                        protocol.minimal_decisive_test,
+                        serde_json::to_string(&protocol.steps)?,
+                        protocol.decision_rule,
+                        protocol.boundary,
+                        admission
+                    ],
+                )?;
+            }
+            for control in controls {
+                transaction.execute(
+                    "INSERT INTO experiment_controls VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                    params![
+                        control.control_id,
+                        experiment_version_id,
+                        control.control_order,
+                        control.control_kind,
+                        control.description,
+                        control.controlled_variable,
+                        control.expected_relation,
+                        admission
+                    ],
+                )?;
+            }
+            for observable in observables {
+                transaction.execute(
+                    "INSERT INTO experiment_observables VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                    params![
+                        observable.observable_id,
+                        experiment_version_id,
+                        observable.observable_order,
+                        observable.name,
+                        observable.units,
+                        observable.measurement,
+                        observable.aggregation,
+                        observable.uncertainty_reporting,
+                        admission
+                    ],
+                )?;
+            }
+            for calibration in calibrations {
+                transaction.execute(
+                    "INSERT INTO experiment_calibrations VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                    params![
+                        calibration.calibration_id,
+                        experiment_version_id,
+                        calibration.calibration_order,
+                        calibration.quantity,
+                        calibration.units,
+                        calibration.method,
+                        calibration.acceptance,
+                        admission
+                    ],
+                )?;
+            }
+            transaction.execute(
+                "INSERT INTO experiment_repetitions VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                params![
+                    repetition.repetition_id,
+                    experiment_version_id,
+                    repetition.replicate_unit,
+                    repetition.minimum_repetitions,
+                    repetition.independent_repetitions,
+                    repetition.randomization,
+                    repetition.stopping_rule,
+                    admission
+                ],
+            )?;
+            transaction.execute(
+                "INSERT INTO experiment_uncertainty VALUES (?1,?2,?3,?4,?5,?6)",
+                params![
+                    uncertainty.uncertainty_id,
+                    experiment_version_id,
+                    uncertainty.sources,
+                    uncertainty.propagation,
+                    uncertainty.reporting,
+                    admission
+                ],
+            )?;
+            for criterion in criteria {
+                transaction.execute(
+                    "INSERT INTO experiment_criteria VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
+                    params![
+                        criterion.criterion_id,
+                        experiment_version_id,
+                        criterion.criterion_order,
+                        criterion.criterion_kind,
+                        criterion.statement,
+                        criterion.metric,
+                        criterion.comparator,
+                        criterion.threshold_text,
+                        criterion.units,
+                        admission
+                    ],
+                )?;
+            }
+            for confound in confounds {
+                transaction.execute(
+                    "INSERT INTO experiment_confounds VALUES (?1,?2,?3,?4,?5,?6,?7)",
+                    params![
+                        confound.confound_id,
+                        experiment_version_id,
+                        confound.confound_order,
+                        confound.confound,
+                        confound.detection_control,
+                        confound.mitigation,
+                        admission
+                    ],
+                )?;
+            }
+            for artifact in raw_artifacts {
+                transaction.execute(
+                    "INSERT INTO experiment_raw_artifacts VALUES (?1,?2,?3,?4,?5,?6,?7)",
+                    params![
+                        artifact.raw_artifact_id,
+                        experiment_version_id,
+                        artifact.artifact_order,
+                        artifact.artifact_kind,
+                        artifact.format,
+                        artifact.retention,
+                        admission
+                    ],
+                )?;
+            }
+            for (index, statement) in non_claims.iter().enumerate() {
+                transaction.execute(
+                    "INSERT INTO experiment_nonclaims VALUES (?1,?2,?3,?4,?5)",
+                    params![
+                        format!("{experiment_version_id}-nonclaim-{}", index + 1),
+                        experiment_version_id,
+                        index as u32 + 1,
+                        statement,
+                        admission
+                    ],
+                )?;
+            }
+            for dependency in dependencies {
+                transaction.execute(
+                    "INSERT INTO experiment_dependencies VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                    params![
+                        dependency.dependency_id,
+                        experiment_version_id,
+                        dependency.dependency_order,
+                        dependency.target_experiment_id,
+                        dependency.target_revision,
+                        dependency.relation_kind,
+                        dependency.rationale,
+                        admission
+                    ],
+                )?;
+            }
+            for relation in relations {
+                transaction.execute(
+                    "INSERT INTO experiment_relations VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                    params![
+                        relation.relation_id,
+                        experiment_version_id,
+                        relation.target_experiment_id,
+                        relation.target_revision,
+                        relation.relation_kind,
+                        relation.relation_claim,
+                        relation.relation_scope,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "experiment_relation_id",
+                    &relation.relation_id,
+                )?;
+            }
+            for requirement in equipment_requirements {
+                transaction.execute(
+                    "INSERT INTO experiment_equipment_requirements VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
+                    params![
+                        requirement.requirement_id,
+                        experiment_version_id,
+                        requirement.group_id,
+                        requirement.group_order,
+                        requirement.group_kind,
+                        requirement.selection_rule,
+                        requirement.quantity,
+                        requirement.capability,
+                        requirement.units,
+                        requirement.specification,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "experiment_equipment_requirement_id",
+                    &requirement.requirement_id,
+                )?;
+            }
+            for link in topic_links {
+                transaction.execute(
+                    "INSERT INTO research_topic_experiment_links VALUES (?1,?2,?3,?4,?5,?6)",
+                    params![
+                        link.link_id,
+                        link.topic_version_id,
+                        experiment_version_id,
+                        link.relation_kind,
+                        link.rationale,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "research_topic_experiment_link_id",
+                    &link.link_id,
+                )?;
+            }
+        }
+        Change::EquipmentType {
+            equipment_type_id,
+            label,
+        } => {
+            transaction.execute(
+                "INSERT INTO equipment_types VALUES (?1,?2,?3)",
+                params![equipment_type_id, label, admission],
+            )?;
+            definition_provenance(
+                transaction,
+                admission,
+                "equipment_type_id",
+                equipment_type_id,
+            )?;
+        }
+        Change::EquipmentTypeVersion {
+            equipment_type_version_id,
+            equipment_type_id,
+            revision,
+            event_kind,
+            occurred_at,
+            title,
+            description,
+            capabilities,
+            operating_limits,
+            calibrations,
+            safety_requirements,
+            interface_requirements,
+            non_claims,
+        } => {
+            if capabilities.is_empty() || safety_requirements.is_empty() || non_claims.is_empty() {
+                bail!(
+                    "equipment type version {equipment_type_version_id} requires capabilities, safety requirements, and non-claims"
+                );
+            }
+            transaction.execute(
+                "INSERT INTO equipment_type_versions VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                params![
+                    equipment_type_version_id,
+                    equipment_type_id,
+                    revision,
+                    event_kind,
+                    occurred_at,
+                    title,
+                    description,
+                    admission
+                ],
+            )?;
+            definition_provenance(
+                transaction,
+                admission,
+                "equipment_type_version_id",
+                equipment_type_version_id,
+            )?;
+            for capability in capabilities {
+                transaction.execute(
+                    "INSERT INTO equipment_capabilities VALUES (?1,?2,?3,?4,?5,?6,?7)",
+                    params![
+                        capability.capability_id,
+                        equipment_type_version_id,
+                        capability.capability_order,
+                        capability.capability,
+                        capability.units,
+                        capability.specification,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "equipment_capability_id",
+                    &capability.capability_id,
+                )?;
+            }
+            for limit in operating_limits {
+                transaction.execute(
+                    "INSERT INTO equipment_operating_limits VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                    params![
+                        limit.operating_limit_id,
+                        equipment_type_version_id,
+                        limit.limit_order,
+                        limit.parameter,
+                        limit.lower_bound,
+                        limit.upper_bound,
+                        limit.units,
+                        limit.notes,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "equipment_operating_limit_id",
+                    &limit.operating_limit_id,
+                )?;
+            }
+            for calibration in calibrations {
+                transaction.execute(
+                    "INSERT INTO equipment_calibrations VALUES (?1,?2,?3,?4,?5,?6,?7,?8)",
+                    params![
+                        calibration.equipment_calibration_id,
+                        equipment_type_version_id,
+                        calibration.calibration_order,
+                        calibration.quantity,
+                        calibration.units,
+                        calibration.method,
+                        calibration.traceability,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "equipment_calibration_id",
+                    &calibration.equipment_calibration_id,
+                )?;
+            }
+            for safety in safety_requirements {
+                transaction.execute(
+                    "INSERT INTO equipment_safety_requirements VALUES (?1,?2,?3,?4,?5,?6,?7)",
+                    params![
+                        safety.safety_requirement_id,
+                        equipment_type_version_id,
+                        safety.safety_order,
+                        safety.hazard,
+                        safety.requirement,
+                        safety.mitigation,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "equipment_safety_requirement_id",
+                    &safety.safety_requirement_id,
+                )?;
+            }
+            for interface in interface_requirements {
+                transaction.execute(
+                    "INSERT INTO equipment_interface_requirements VALUES (?1,?2,?3,?4,?5,?6,?7)",
+                    params![
+                        interface.interface_requirement_id,
+                        equipment_type_version_id,
+                        interface.interface_order,
+                        interface.interface_kind,
+                        interface.specification,
+                        interface.units,
+                        admission
+                    ],
+                )?;
+                definition_provenance(
+                    transaction,
+                    admission,
+                    "equipment_interface_requirement_id",
+                    &interface.interface_requirement_id,
+                )?;
+            }
+            for (index, statement) in non_claims.iter().enumerate() {
+                transaction.execute(
+                    "INSERT INTO equipment_nonclaims VALUES (?1,?2,?3,?4,?5)",
+                    params![
+                        format!("{equipment_type_version_id}-nonclaim-{}", index + 1),
+                        equipment_type_version_id,
+                        index as u32 + 1,
+                        statement,
+                        admission
+                    ],
+                )?;
+            }
         }
         Change::FalsificationCriterion {
             criterion_id,

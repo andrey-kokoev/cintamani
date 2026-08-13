@@ -112,8 +112,8 @@ fn frozen_v1_bytes_rebuild_idempotently_into_v2() {
     let first = rebuild(&paths(&temp)).unwrap();
     let logical = deterministic_logical_readback(&paths(&temp).database_path).unwrap();
     let second = rebuild(&paths(&temp)).unwrap();
-    assert_eq!(first.schema_version, "4");
-    assert_eq!(second.migration_kind, "owned-v4-rebuild");
+    assert_eq!(first.schema_version, "5");
+    assert_eq!(second.migration_kind, "owned-v5-rebuild");
     assert_eq!(
         logical,
         deterministic_logical_readback(&paths(&temp).database_path).unwrap()
@@ -735,7 +735,7 @@ fn dimensions_view_preserves_axis_history_current_assessments_and_empty_axes() {
     assert_eq!(missing_view_report.migration_violations, 1);
     assert!(missing_view_report.migration_violation_details[0].contains("siege_space_dimensions"));
     let error = dimensions(&registry.database_path).unwrap_err().to_string();
-    assert!(error.contains("rebuild the owned schema-4 projection"));
+    assert!(error.contains("rebuild the owned schema-5 projection"));
 
     let empty_database = temp.path().join("empty-schema-2.sqlite");
     let empty = Connection::open(&empty_database).unwrap();

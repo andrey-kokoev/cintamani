@@ -72,7 +72,31 @@ import SiteLayout from '../../layouts/SiteLayout.astro'
             <option value="ontology-change">Ontology change</option>
             <option value="explanatory-conjecture">Explanatory conjecture</option>
             <option value="research-topic">Research topic</option>
+            <option value="proposed-experiment">Proposed experiment</option>
+            <option value="equipment-type-proposal">Equipment capability type</option>
           </select>
+        </label>
+        <label>Experiment kind
+          <select data-proposal-filter data-filter-experiment-kind>
+            <option value="">All experiment kinds</option>
+            <option value="physical">Physical</option>
+            <option value="simulation">Simulation</option>
+            <option value="analytical">Analytical</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+        </label>
+        <label>Experiment intent
+          <select data-proposal-filter data-filter-experiment-intent>
+            <option value="">All experiment intents</option>
+            <option value="falsification">Falsification</option>
+            <option value="discrimination">Discrimination</option>
+            <option value="characterization">Characterization</option>
+            <option value="calibration">Calibration</option>
+            <option value="replication">Replication</option>
+          </select>
+        </label>
+        <label>Required capability
+          <input data-proposal-filter data-filter-capability type="search" maxlength="240" placeholder="e.g., phase-resolved readout" />
         </label>
         <label>Administrative state
           <select data-proposal-filter data-filter-state>

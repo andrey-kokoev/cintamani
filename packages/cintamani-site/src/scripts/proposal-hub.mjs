@@ -73,8 +73,14 @@ export async function initializeProposalHub(root = document) {
     const filters = new URLSearchParams({ limit: '50' })
     const kind = root.querySelector('[data-filter-kind]').value
     const state = root.querySelector('[data-filter-state]').value
+    const experimentKind = root.querySelector('[data-filter-experiment-kind]')?.value
+    const experimentIntent = root.querySelector('[data-filter-experiment-intent]')?.value
+    const capability = root.querySelector('[data-filter-capability]')?.value.trim()
     if (kind) filters.set('kind', kind)
     if (state) filters.set('state', state)
+    if (experimentKind) filters.set('experiment_kind', experimentKind)
+    if (experimentIntent) filters.set('intent', experimentIntent)
+    if (capability) filters.set('capability', capability)
     const data = await readJson(`/api/proposals?${filters}`)
     renderProposalList(root, data)
     renderSearchOverlay(root, config, data.items)

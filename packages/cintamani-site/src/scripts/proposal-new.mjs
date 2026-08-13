@@ -86,6 +86,12 @@ const fieldContracts = {
     { name: 'next_discriminating_criticism_or_test', label: 'Next discriminating criticism or test', kind: 'textarea', max: 12000, rows: 5, help: 'Describe the next result that would distinguish live alternatives or expose a failure.' },
     { name: 'non_claims', label: 'Explicit non-claims', kind: 'textarea', max: 12000, rows: 5, help: 'Say what publication does not establish, including evidence and roadmap authority.' },
   ],
+  'proposed-experiment': [
+    { name: 'definition_json', label: 'Structured experiment definition (JSON)', kind: 'textarea', max: 60000, rows: 18, help: 'Paste experiment_id, experiment_version, kind, intent, exact targets, minimal protocol, controls, observables with units, calibration, repetitions, uncertainty, success criteria, falsifiers, confounds, raw artifacts, nonclaims, dependencies, relations, capability groups, topic links, and optional citations. Do not include rank, confidence, epistemic status, runs, or results.' },
+  ],
+  'equipment-type-proposal': [
+    { name: 'definition_json', label: 'Structured equipment capability definition (JSON)', kind: 'textarea', max: 50000, rows: 16, help: 'Paste equipment_type_id, equipment_type_version, title, description, capabilities, operating limits, calibrations, safety requirements, interfaces, nonclaims, and optional citations. This is not inventory or procurement.' },
+  ],
 }
 
 export const detailFieldPlaceholders = Object.freeze({
@@ -157,6 +163,12 @@ export const detailFieldPlaceholders = Object.freeze({
     topic_scope: 'e.g., Exact public conjecture revision 1 and bounded finite defect graphs only.',
     next_discriminating_criticism_or_test: 'e.g., Find matched local inputs whose outputs differ only with remote graph context.',
     non_claims: 'e.g., No physical realization, canonical coordinate, truth, priority, or interaction-net computation is claimed.',
+  }),
+  'proposed-experiment': Object.freeze({
+    definition_json: '{\n  "experiment_id": "my-proposed-experiment",\n  "experiment_version": 1,\n  "experiment_kind": "physical",\n  "intent": "falsification",\n  "targets": [],\n  "protocols": [],\n  "controls": [],\n  "observables": [],\n  "calibration": [],\n  "repetitions": {},\n  "uncertainty": {},\n  "criteria": [],\n  "confounds": [],\n  "raw_artifacts": [],\n  "nonclaims": [],\n  "dependencies": [],\n  "relations": [],\n  "equipment_requirements": [],\n  "topic_links": []\n}',
+  }),
+  'equipment-type-proposal': Object.freeze({
+    definition_json: '{\n  "equipment_type_id": "my-equipment-capability",\n  "equipment_type_version": 1,\n  "title": "Capability type",\n  "description": "Bounded capability description",\n  "capabilities": [],\n  "operating_limits": [],\n  "calibrations": [],\n  "safety_requirements": [],\n  "interface_requirements": [],\n  "nonclaims": []\n}',
   }),
 })
 
@@ -494,6 +506,15 @@ export function validateProposalForm(form) {
       addInvalid(invalid, form.querySelector('[data-add-topic-origin]'), 'Add at least one exact problem or conjecture origin.')
     }
   }
+  if (['proposed-experiment', 'equipment-type-proposal'].includes(form.elements.kind.value)) {
+    const jsonField = form.elements.definition_json
+    try {
+      const parsed = JSON.parse(jsonField.value)
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('an object is required')
+    } catch (error) {
+      addInvalid(invalid, jsonField, `Enter one structured JSON object: ${error.message}`)
+    }
+  }
 
   for (const { control, message } of invalid) {
     control.setAttribute('aria-invalid', 'true')
@@ -600,6 +621,11 @@ function proposalBody(form, parent, { includeTurnstile = true } = {}) {
           https_url: values.get('reference_url'),
         }]
       : [],
+  }
+  if (['proposed-experiment', 'equipment-type-proposal'].includes(body.kind)) {
+    const definition = JSON.parse(body.detail.definition_json)
+    delete body.detail.definition_json
+    body.detail = definition
   }
   if (body.kind === 'explanatory-conjecture') {
     body.assumptions = String(body.detail.assumptions ?? '').split('\n').map((value) => value.trim()).filter(Boolean)

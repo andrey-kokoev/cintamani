@@ -186,6 +186,132 @@ function detail(kind, suffix = 'candidate') {
         next_discriminating_criticism_or_test: 'Vary remote context while holding the local pair and boundary fixed.',
         non_claims: 'No evidence, canonical coordinate, priority, or interaction-net realization is claimed.',
       }
+    case 'proposed-experiment':
+      return {
+        experiment_id: `experiment-${suffix}`,
+        experiment_version: 1,
+        experiment_kind: 'physical',
+        intent: 'falsification',
+        targets: [{
+          target_id: `external-target-${suffix}`,
+          target_kind: 'external-reference',
+          target_label: 'A bounded operator-supplied target',
+        }],
+        protocols: [{
+          protocol_id: `protocol-${suffix}`,
+          protocol_name: 'Minimal decisive protocol',
+          minimal_decisive_test: 'Run the smallest matched test with raw artifacts retained.',
+          steps: ['Calibrate the readout.', 'Run matched and ablated trials.', 'Compare with the exact reference.'],
+          decision_rule: 'Use the predeclared success and falsifier thresholds.',
+          boundary: 'This applies only to the named finite setup and version.',
+        }],
+        controls: [{
+          control_id: `control-${suffix}`,
+          control_kind: 'ablated',
+          description: 'Remove the proposed interaction while preserving readout.',
+          controlled_variable: 'interaction path',
+          expected_relation: 'The decisive signature should disappear.',
+        }],
+        observables: [{
+          observable_id: `observable-${suffix}`,
+          name: 'normalized output error',
+          units: 'dimensionless',
+          measurement: 'Decoded output compared with the exact reference.',
+          aggregation: 'per trial and aggregate block',
+          uncertainty_reporting: 'Report calibration and detector uncertainty.',
+        }],
+        calibration: [{
+          calibration_id: `calibration-${suffix}`,
+          quantity: 'detector linearity',
+          units: 'fraction',
+          method: 'Traceable input sweep.',
+          acceptance: 'Residual error remains below the declared budget.',
+        }],
+        repetitions: {
+          repetition_id: `repetition-${suffix}`,
+          replicate_unit: 'independently prepared trial',
+          minimum_repetitions: 10,
+          independent_repetitions: 5,
+          randomization: 'Randomize trial order and inputs.',
+          stopping_rule: 'Complete all blocks unless a safety stop applies.',
+        },
+        uncertainty: {
+          uncertainty_id: `uncertainty-${suffix}`,
+          sources: 'Preparation, readout, and environmental drift.',
+          propagation: 'Propagate the calibrated covariance through decoding.',
+          reporting: 'Publish per-trial values and exclusions.',
+        },
+        criteria: [
+          {
+            criterion_id: `success-${suffix}`,
+            criterion_kind: 'success',
+            statement: 'The decoded output agrees with the exact reference.',
+            metric: 'relative error',
+            comparator: '<=',
+            threshold_text: 'predeclared error budget',
+            units: 'dimensionless',
+          },
+          {
+            criterion_id: `falsifier-${suffix}`,
+            criterion_kind: 'falsifier',
+            statement: 'The same signature remains after the interaction is ablated.',
+            metric: 'ablated signal',
+            comparator: '>=',
+            threshold_text: 'predeclared leakage threshold',
+            units: 'fraction',
+          },
+        ],
+        confounds: [{
+          confound_id: `confound-${suffix}`,
+          confound: 'Readout drift could mimic the signature.',
+          detection_control: 'Interleave calibration references.',
+          mitigation: 'Lock and remeasure the readout.',
+        }],
+        raw_artifacts: [{
+          raw_artifact_id: `raw-${suffix}`,
+          artifact_kind: 'raw-spectrum',
+          format: 'binary data plus JSON metadata',
+          retention: 'Retain the original files and immutable hash.',
+        }],
+        nonclaims: ['No run, result, evidence, canonical admission, or equipment availability is claimed.'],
+        dependencies: [],
+        relations: [],
+        equipment_requirements: [{
+          requirement_id: `equipment-${suffix}`,
+          group_id: `readout-${suffix}`,
+          group_order: 1,
+          group_kind: 'required',
+          selection_rule: 'any-one',
+          quantity: 1,
+          capability: 'calibrated readout',
+          units: 'system',
+          specification: 'Retain raw values and calibration traceability.',
+        }],
+        topic_links: [],
+      }
+    case 'equipment-type-proposal':
+      return {
+        equipment_type_id: `equipment-${suffix}`,
+        equipment_type_version: 1,
+        title: 'Calibrated capability type',
+        description: 'A capability description, not an inventory record.',
+        capabilities: [{
+          capability_id: `capability-${suffix}`,
+          capability: 'Calibrated readout',
+          units: 'system',
+          specification: 'Declared dynamic range and raw artifact retention.',
+        }],
+        operating_limits: [],
+        calibrations: [],
+        safety_requirements: [{
+          safety_requirement_id: `safety-${suffix}`,
+          hazard: 'Stored energy',
+          requirement: 'Use a bounded operating procedure.',
+          mitigation: 'Verify interlocks before operation.',
+        }],
+        interface_requirements: [],
+        nonclaims: ['This does not claim equipment existence, availability, vendor, procurement, or budget.'],
+      }
     default:
       throw new Error(`unknown kind ${kind}`)
   }
@@ -358,7 +484,7 @@ test('operator authority is derived from append-only D1 role events', async () =
   h.database.close()
 })
 
-test('all nine typed proposal kinds publish immediately as submitted and unreviewed', async () => {
+test('all eleven typed proposal kinds publish immediately as submitted and unreviewed', async () => {
   const h = await harness()
   const kinds = [
     'theoretical-model-member',
@@ -370,6 +496,8 @@ test('all nine typed proposal kinds publish immediately as submitted and unrevie
     'ontology-change',
     'explanatory-conjecture',
     'research-topic',
+    'proposed-experiment',
+    'equipment-type-proposal',
   ]
   for (const [index, kind] of kinds.entries()) {
     const created = await createOne(h, kind, `candidate-${index}`)
@@ -381,6 +509,57 @@ test('all nine typed proposal kinds publish immediately as submitted and unrevie
   assert.equal(list.response.status, 200)
   assert.deepEqual(new Set(list.body.items.map((item) => item.proposal_kind)), new Set(kinds))
   assert.equal(h.database.database.prepare('SELECT COUNT(*) AS count FROM public_schema_violations').get().count, 0)
+  h.database.close()
+})
+
+test('experiment and equipment proposals round-trip through D1 and accept exact nested criticism', async () => {
+  const h = await harness()
+  const created = await createOne(h, 'proposed-experiment', 'nested')
+  const read = await responseJson(await h.call(`/api/proposals/${created.proposal_id}`))
+  assert.equal(read.response.status, 200)
+  assert.equal(read.body.revisions[0].detail.experiment_id, 'experiment-nested')
+  assert.equal(read.body.revisions[0].detail.observables[0].units, 'dimensionless')
+  assert.equal(read.body.revisions[0].detail.criteria.some((item) => item.criterion_kind === 'falsifier'), true)
+  const criticism = await responseJson(await h.call(
+    `/api/proposals/${created.proposal_id}/revisions/1/criticisms`,
+    {
+      method: 'POST',
+      actor: h.outsider,
+      body: {
+        title: 'The ablation boundary needs stronger controls',
+        criticism: 'The proposed control may not isolate the interaction from readout drift.',
+        scope: 'The exact experiment observable and revision only.',
+        focus_kind: 'experiment-observable',
+        focus_ref: 'observable-nested',
+        turnstile_token: 'test-pass',
+      },
+      key: 'experiment-focused-criticism-1',
+    },
+  ))
+  assert.equal(criticism.response.status, 201, JSON.stringify(criticism.body))
+
+  const equipment = await createOne(h, 'equipment-type-proposal', 'nested-equipment')
+  const equipmentRead = await responseJson(await h.call(`/api/proposals/${equipment.proposal_id}`))
+  assert.equal(equipmentRead.response.status, 200)
+  assert.equal(equipmentRead.body.revisions[0].detail.capabilities[0].capability, 'Calibrated readout')
+  const experimentApi = await responseJson(await h.call('/api/experiments?q=graphene&limit=2'))
+  assert.equal(experimentApi.response.status, 200)
+  assert.ok(experimentApi.body.items.length > 0)
+  assert.equal(experimentApi.body.canonical_admission, false)
+  const experimentExact = await responseJson(await h.call(`/api/experiments/${experimentApi.body.items[0].experiment_id}`))
+  assert.equal(experimentExact.response.status, 200)
+  assert.equal(experimentExact.body.canonical_admission, false)
+  assert.equal(experimentExact.body.evidence_claim, false)
+  const history = await responseJson(await h.call(`/api/experiments/${experimentApi.body.items[0].experiment_id}/history`))
+  assert.equal(history.response.status, 200)
+  assert.equal(history.body.items[0].history_family, 'experiment-version')
+  const provenance = await responseJson(await h.call(`/api/experiments/${experimentApi.body.items[0].experiment_id}/provenance`))
+  assert.equal(provenance.response.status, 200)
+  assert.ok(Array.isArray(provenance.body.exact_targets))
+  const equipmentApi = await responseJson(await h.call('/api/equipment-types?q=calibrated'))
+  assert.equal(equipmentApi.response.status, 200)
+  assert.ok(equipmentApi.body.items.length > 0)
+  assert.equal(equipmentApi.body.inventory, false)
   h.database.close()
 })
 

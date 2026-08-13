@@ -8,6 +8,7 @@
     "generate:data": "node scripts/generate-domain-snapshots.mjs --write",
     "check:data": "node scripts/generate-domain-snapshots.mjs --check",
     "db:check": "node scripts/check-public-d1.mjs",
+    "db:check:populated": "node scripts/check-public-d1-populated.mjs",
     "db:migrate:local": "wrangler d1 migrations apply PROPOSALS_DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply PROPOSALS_DB --remote",
     "operator:bootstrap": "node scripts/bootstrap-operator.mjs",

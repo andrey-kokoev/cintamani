@@ -423,11 +423,18 @@ test('public-write examples cover core, every typed family, and exact-revision c
     'ontology-change': ['change_kind', 'target_key', 'proposed_definition', 'compatibility_effect', 'migration_requirements'],
     'explanatory-conjecture': ['problem_statement', 'explanatory_claim', 'essential_mechanism', 'explanation_scope', 'failure_condition', 'assumptions'],
     'research-topic': ['open_problem', 'why_open', 'topic_scope', 'next_discriminating_criticism_or_test', 'non_claims'],
+    'proposed-experiment': ['definition_json'],
+    'equipment-type-proposal': ['definition_json'],
   }
   assert.deepEqual(Object.keys(detailFieldPlaceholders), Object.keys(expectedKinds))
   for (const [kind, fields] of Object.entries(expectedKinds)) {
     assert.deepEqual(Object.keys(detailFieldPlaceholders[kind]), fields, `${kind} must cover every typed control`)
-    for (const example of Object.values(detailFieldPlaceholders[kind])) {
+    for (const [field, example] of Object.entries(detailFieldPlaceholders[kind])) {
+      if (field === 'definition_json') {
+        assert.ok(example.length > 0 && example.length <= 2000, `${kind} structured examples must stay bounded`)
+        assert.doesNotThrow(() => JSON.parse(example), `${kind} structured examples must be valid JSON`)
+        continue
+      }
       assert.ok(example.length > 0 && example.length <= 180, `${kind} examples must stay bounded`)
       assert.doesNotMatch(example, /[<>]/u, `${kind} examples must remain plain attribute text`)
       if (example.startsWith('Choose ')) {

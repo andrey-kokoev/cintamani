@@ -29,6 +29,7 @@ struct Cli {
     command: Command,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Subcommand)]
 enum Command {
     Init,
@@ -106,6 +107,14 @@ struct FilterArgs {
     origin: Option<String>,
     #[arg(long)]
     coordinate: Option<String>,
+    #[arg(long, alias = "kind")]
+    experiment_kind: Option<String>,
+    #[arg(long)]
+    intent: Option<String>,
+    #[arg(long)]
+    capability: Option<String>,
+    #[arg(long)]
+    topic_id: Option<String>,
 }
 
 impl From<FilterArgs> for QueryFilters {
@@ -122,6 +131,10 @@ impl From<FilterArgs> for QueryFilters {
             locus: value.locus,
             origin: value.origin,
             coordinate: value.coordinate,
+            experiment_kind: value.experiment_kind,
+            intent: value.intent,
+            capability: value.capability,
+            topic_id: value.topic_id,
         }
     }
 }

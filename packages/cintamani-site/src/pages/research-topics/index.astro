@@ -2,11 +2,26 @@
 import SiteLayout from '../../layouts/SiteLayout.astro'
 import admitted from '../../data/research-topics.json'
 import fixture from '../../data/research-topic-fixture.json'
+import { experimentForTopic, volumetricOriginStory } from '../../lib/experiments.mjs'
 import type { ResearchTopicView } from '../../lib/research-topics'
 
+const originTopic = {
+  topic_id: volumetricOriginStory.story_id,
+  revision: 1,
+  title: volumetricOriginStory.label,
+  loci: ['theoretical', 'simulation', 'experimental'],
+  open_problem: 'Can a finite, calibrated 3-D optical volume preserve a declared state and operator across recurrent passes?',
+  why_open: 'This is a design-origin conjecture, not a demonstrated result.',
+  scope: 'Exact finite operators, volumetric addressability, recurrence, calibration, and falsifier-first controls.',
+  next_discriminating_criticism_or_test: 'Run the finite volume-addressed operator test against planar and feedback-off controls.',
+  non_claims: volumetricOriginStory.nonclaims.join(' '),
+  origins: [{ kind: 'illustrative-origin-story', id: `${volumetricOriginStory.story_id}@1`, relationship: 'motivated-by' }],
+  coordinate: null,
+}
 const topics = [
   ...(admitted.items as ResearchTopicView[]).map((item) => ({ ...item, authority: 'governed-domain-registry', status: item.status ?? 'active' })),
   ...(fixture.items as ResearchTopicView[]).map((item) => ({ ...item, authority: fixture.authority, status: fixture.workflow_status as 'active' })),
+  { ...originTopic, authority: fixture.authority, status: 'active' },
 ]
 const loci = ['theoretical', 'simulation', 'physical-material', 'mechanism', 'observation', 'control-resource', 'experimental', 'ontology']
 const label = (value: string) => value.replaceAll('-', ' ')
@@ -48,6 +63,7 @@ const label = (value: string) => value.replaceAll('-', ' ')
           <p>{topic.open_problem}</p>
           <ul class="topic-loci" aria-label="Research loci">{topic.loci.map((item: string) => <li>{label(item)}</li>)}</ul>
           <p class="topic-next"><strong>Next criticism or test:</strong> {topic.next_discriminating_criticism_or_test}</p>
+          {experimentForTopic(topic.topic_id).length > 0 && <p class="topic-next"><strong>Next discriminating experiment:</strong> <a href={`/experiments/${experimentForTopic(topic.topic_id)[0].experiment_id}`}>{experimentForTopic(topic.topic_id)[0].title}</a></p>}
           {topic.coordinate === null && <p class="topic-boundary">Unclassified: no prospective coordinate is published.</p>}
         </li>
       ))}

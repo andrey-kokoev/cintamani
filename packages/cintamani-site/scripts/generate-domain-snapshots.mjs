@@ -13,11 +13,15 @@ const MAX_FRONTIER_PAGES = 1_000
 const MAX_FRONTIER_ROWS = 100_000
 const MAX_TOPIC_PAGES = 1_000
 const MAX_TOPIC_ROWS = 100_000
+const MAX_EXPERIMENT_PAGES = 1_000
+const MAX_EXPERIMENT_ROWS = 100_000
 
 const snapshotPaths = {
   dimensions: resolve(dataRoot, 'dimensions.json'),
   frontier: resolve(dataRoot, 'frontier.json'),
   topics: resolve(dataRoot, 'research-topics.json'),
+  experiments: resolve(dataRoot, 'experiments.json'),
+  equipmentTypes: resolve(dataRoot, 'equipment-types.json'),
   summary: resolve(dataRoot, 'registry-summary.json'),
 }
 
@@ -78,7 +82,7 @@ function assertCleanCheck(report) {
     'artifact_observation_drift',
   ]
   if (
-    report.schema_version !== '4' ||
+    report.schema_version !== '5' ||
     report.projection_kind !== 'rebuildable-site-domain-registry' ||
     report.integrity !== 'ok' ||
     report.admission_chain_consistent !== true
@@ -203,10 +207,43 @@ export function readResearchTopics(
   fail(`research-topic pagination exceeded the ${maxPages}-page safety bound`)
 }
 
+export function readCanonicalCollection(
+  collection,
+  run = runDomain,
+  { maxPages = MAX_EXPERIMENT_PAGES, maxRows = MAX_EXPERIMENT_ROWS } = {},
+) {
+  const items = []
+  const seen = new Set()
+  let cursor = null
+  for (let pageNumber = 1; pageNumber <= maxPages; pageNumber += 1) {
+    const args = [collection, '--limit', '100']
+    if (cursor) args.push('--cursor', cursor)
+    const page = run('list', args)
+    if (page.collection !== collection || !Array.isArray(page.items)) fail(`${collection} page ${pageNumber} has an invalid shape`)
+    for (const item of page.items) {
+      const key = item.experiment_id ?? item.equipment_type_id
+      if (typeof key !== 'string' || seen.has(key)) fail(`${collection} pagination repeated a stable identity`)
+      seen.add(key)
+      const history = collection === 'experiments'
+        ? run('history', ['experiments', key, '--limit', '100'])
+        : run('history', ['equipment-types', key, '--limit', '100'])
+      const why = collection === 'experiments'
+        ? run('why', ['experiments', key, '--limit', '100'])
+        : run('why', ['equipment-types', key, '--limit', '100'])
+      items.push({ ...item, history: history.items ?? [], history_next_cursor: history.next_cursor ?? null, provenance: why.provenance ?? [], provenance_bounded_limit: why.bounded_limit ?? 100 })
+      if (items.length > maxRows) fail(`${collection} snapshot exceeded the ${maxRows}-row safety bound`)
+    }
+    if (!page.next_cursor) return items
+    if (!page.items.length || page.next_cursor === cursor) fail(`${collection} pagination returned an invalid cursor`)
+    cursor = page.next_cursor
+  }
+  fail(`${collection} pagination exceeded the ${maxPages}-page safety bound`)
+}
+
 function stableSummary(report) {
   const counts = report.relation_counts ?? {}
   return {
-    snapshot_schema: 'cintamani.site-registry-summary.v3',
+    snapshot_schema: 'cintamani.site-registry-summary.v5',
     snapshot_mode: 'build-time-static',
     registry_authority: 'Rust/SQLite Cintamani domain registry',
     mutable_edge_registry: false,
@@ -233,6 +270,10 @@ function stableSummary(report) {
       interfaces: counts.interfaces,
       siege_cells: counts.siege_cells,
       research_topics: counts.research_topics,
+      experiments: counts.experiments,
+      experiment_versions: counts.experiment_versions,
+      equipment_types: counts.equipment_types,
+      equipment_type_versions: counts.equipment_type_versions,
       provenance_claims: counts.provenance_claims,
     },
   }
@@ -250,6 +291,8 @@ export function generateSnapshots() {
   assertDimensions(dimensions)
   const frontierItems = readFrontier()
   const topics = readResearchTopics()
+  const experiments = readCanonicalCollection('experiments')
+  const equipmentTypes = readCanonicalCollection('equipment-types')
   return {
     dimensions: serialize(dimensions),
     frontier: serialize({
@@ -262,6 +305,18 @@ export function generateSnapshots() {
       authority: 'governed-domain-registry',
       item_count: topics.length,
       items: topics,
+    }),
+    experiments: serialize({
+      collection: 'experiments',
+      authority: 'governed-domain-registry',
+      item_count: experiments.length,
+      items: experiments,
+    }),
+    equipmentTypes: serialize({
+      collection: 'equipment-types',
+      authority: 'governed-domain-registry',
+      item_count: equipmentTypes.length,
+      items: equipmentTypes,
     }),
     summary: serialize(stableSummary(report)),
   }

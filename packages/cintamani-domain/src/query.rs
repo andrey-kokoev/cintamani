@@ -6,6 +6,19 @@ use sha2::{Digest, Sha256};
 use std::{fmt, path::Path, str::FromStr};
 
 pub const COORDINATE_KEY_VERSION: &str = "cintamani.coordinate-key.v1";
+pub const COMPOUND_SELECT_TERM_BUDGET: usize = 48;
+
+pub fn compound_select_term_count(sql: &str) -> usize {
+    1 + sql.to_ascii_uppercase().match_indices("UNION").count()
+}
+
+pub fn assert_compound_select_budget(sql: &str) -> Result<()> {
+    let terms = compound_select_term_count(sql);
+    if terms > COMPOUND_SELECT_TERM_BUDGET {
+        bail!("compound SELECT term budget exceeded: {terms} > {COMPOUND_SELECT_TERM_BUDGET}");
+    }
+    Ok(())
+}
 
 pub fn coordinate_key(model: &str, material: &str, mechanism: &str, interface: &str) -> String {
     format!(
@@ -51,10 +64,15 @@ pub enum Collection {
     Comparisons,
     Admissions,
     Provenance,
+    Experiments,
+    ExperimentVersions,
+    ExperimentRequirements,
+    EquipmentTypes,
+    EquipmentTypeVersions,
 }
 
 impl Collection {
-    pub const ALL: [Self; 25] = [
+    pub const ALL: [Self; 30] = [
         Self::Models,
         Self::Materials,
         Self::Mechanisms,
@@ -80,6 +98,11 @@ impl Collection {
         Self::Comparisons,
         Self::Admissions,
         Self::Provenance,
+        Self::Experiments,
+        Self::ExperimentVersions,
+        Self::ExperimentRequirements,
+        Self::EquipmentTypes,
+        Self::EquipmentTypeVersions,
     ];
 
     pub fn as_str(self) -> &'static str {
@@ -109,6 +132,11 @@ impl Collection {
             Self::Comparisons => "comparisons",
             Self::Admissions => "admissions",
             Self::Provenance => "provenance",
+            Self::Experiments => "experiments",
+            Self::ExperimentVersions => "experiment-versions",
+            Self::ExperimentRequirements => "experiment-equipment-requirements",
+            Self::EquipmentTypes => "equipment-types",
+            Self::EquipmentTypeVersions => "equipment-type-versions",
         }
     }
 }
@@ -143,6 +171,10 @@ pub struct QueryFilters {
     pub locus: Option<String>,
     pub origin: Option<String>,
     pub coordinate: Option<String>,
+    pub experiment_kind: Option<String>,
+    pub intent: Option<String>,
+    pub capability: Option<String>,
+    pub topic_id: Option<String>,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -255,7 +287,7 @@ pub fn dimensions(database: &Path) -> Result<SearchSpaceDimensions> {
          FROM siege_space_dimensions ORDER BY dimension_order,member_order,member_id",
         )
         .context(
-            "legacy compatibility view siege_space_dimensions is unavailable; rebuild the owned schema-4 projection first",
+            "legacy compatibility view siege_space_dimensions is unavailable; rebuild the owned schema-5 projection first",
         )?;
     let rows = statement.query_map([], |row| {
         Ok((
@@ -359,6 +391,8 @@ pub fn list_page(
         values.push(SqlValue::Text(format!("%{}%", text.to_ascii_lowercase())));
     }
     push_topic_filters(&mut sql, &mut values, collection, filters)?;
+    push_experiment_filters(&mut sql, &mut values, collection, filters)?;
+    assert_compound_select_budget(&sql)?;
     sql.push_str(" ORDER BY key LIMIT ?");
     values.push(SqlValue::Integer((limit + 1) as i64));
     let mut statement = connection.prepare(&sql)?;
@@ -432,10 +466,55 @@ fn push_topic_filters(
     Ok(())
 }
 
+fn push_experiment_filters(
+    sql: &mut String,
+    values: &mut Vec<SqlValue>,
+    collection: Collection,
+    filters: &QueryFilters,
+) -> Result<()> {
+    let has_experiment_filter = filters.experiment_kind.is_some()
+        || filters.intent.is_some()
+        || filters.capability.is_some()
+        || filters.topic_id.is_some();
+    if !has_experiment_filter {
+        return Ok(());
+    }
+    let version_key = match collection {
+        Collection::Experiments => {
+            "(SELECT experiment_version_id FROM current_experiment_versions WHERE experiment_id=q.key)"
+        }
+        Collection::ExperimentVersions => "q.key",
+        Collection::ExperimentRequirements => "q.experiment_version_id",
+        _ => bail!("experiment filters apply only to experiment collections"),
+    };
+    if let Some(topic_id) = &filters.topic_id {
+        sql.push_str(&format!(
+            " AND EXISTS (SELECT 1 FROM research_topic_experiment_links tl JOIN research_topic_versions tv ON tv.topic_version_id=tl.topic_version_id WHERE tv.topic_id=? AND tl.experiment_version_id={version_key})"
+        ));
+        values.push(SqlValue::Text(topic_id.clone()));
+    }
+    if let Some(experiment_kind) = &filters.experiment_kind {
+        sql.push_str(&format!(" AND EXISTS (SELECT 1 FROM experiment_versions ev WHERE ev.experiment_version_id={version_key} AND ev.experiment_kind=?)"));
+        values.push(SqlValue::Text(experiment_kind.clone()));
+    }
+    if let Some(intent) = &filters.intent {
+        sql.push_str(&format!(" AND EXISTS (SELECT 1 FROM experiment_versions ev WHERE ev.experiment_version_id={version_key} AND ev.intent=?)"));
+        values.push(SqlValue::Text(intent.clone()));
+    }
+    if let Some(capability) = &filters.capability {
+        sql.push_str(&format!(
+            " AND EXISTS (SELECT 1 FROM experiment_equipment_requirements er WHERE er.experiment_version_id={version_key} AND er.capability=?)"
+        ));
+        values.push(SqlValue::Text(capability.clone()));
+    }
+    Ok(())
+}
+
 pub fn entity_show(database: &Path, collection: Collection, id: &str) -> Result<Value> {
     let spec = collection_spec(collection);
     let connection = open(database)?;
     let sql = format!("SELECT payload FROM ({}) WHERE key=?1", spec.base_sql);
+    assert_compound_select_budget(&sql)?;
     let payload: String = connection
         .query_row(&sql, [id], |row| row.get(0))
         .with_context(|| format!("{} entity {id} not found", collection.as_str()))?;
@@ -463,6 +542,7 @@ pub fn entity_history(
             "SELECT key,payload FROM ({base}) WHERE parent_id=?1 AND key>?2 ORDER BY key LIMIT ?3"
         )
     };
+    assert_compound_select_budget(&sql)?;
     let mut statement = connection.prepare(&sql)?;
     let rows = statement.query_map(rusqlite::params![id, after, (limit + 1) as i64], |row| {
         Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
@@ -511,6 +591,7 @@ pub fn why(database: &Path, collection: Collection, id: &str, limit: usize) -> R
          LEFT JOIN ledger_links l ON l.ledger_link_id=p.ledger_link_id
          WHERE ({target_match}) ORDER BY p.provenance_id LIMIT ?2"
     );
+    assert_compound_select_budget(&sql)?;
     let mut statement = connection.prepare(&sql)?;
     let rows = statement.query_map(rusqlite::params![id, limit as i64], |row| {
         row.get::<_, String>(0)
@@ -580,6 +661,7 @@ pub fn frontier(
     );
     sql.push_str(" ORDER BY key LIMIT ?");
     values.push(SqlValue::Integer((limit + 1) as i64));
+    assert_compound_select_budget(&sql)?;
     let mut statement = connection.prepare(&sql)?;
     let rows = statement.query_map(params_from_iter(values), |row| {
         let model_id = row.get::<_, String>(1)?;
@@ -712,6 +794,47 @@ fn provenance_match(collection: Collection, key: &str) -> String {
             "p.research_topic_version_id={key} OR p.research_topic_relation_id IN (
                 SELECT relation_id FROM research_topic_relations
                 WHERE source_topic_version_id={key} OR target_topic_version_id={key})"
+        ),
+        Collection::Experiments => format!(
+            "p.experiment_id={key} OR p.experiment_version_id IN (
+                SELECT experiment_version_id FROM experiment_versions WHERE experiment_id={key}) OR
+             p.experiment_target_id IN (SELECT target_id FROM experiment_targets
+                WHERE experiment_version_id IN (SELECT experiment_version_id FROM experiment_versions WHERE experiment_id={key})) OR
+             p.experiment_relation_id IN (SELECT relation_id FROM experiment_relations
+                WHERE source_experiment_version_id IN (SELECT experiment_version_id FROM experiment_versions WHERE experiment_id={key})
+                   OR target_experiment_id={key}) OR
+             p.experiment_equipment_requirement_id IN (SELECT requirement_id FROM experiment_equipment_requirements
+                WHERE experiment_version_id IN (SELECT experiment_version_id FROM experiment_versions WHERE experiment_id={key}))"
+        ),
+        Collection::ExperimentVersions => format!(
+            "p.experiment_version_id={key} OR p.experiment_target_id IN (SELECT target_id FROM experiment_targets WHERE experiment_version_id={key}) OR
+             p.experiment_relation_id IN (SELECT relation_id FROM experiment_relations WHERE source_experiment_version_id={key}) OR
+             p.experiment_equipment_requirement_id IN (SELECT requirement_id FROM experiment_equipment_requirements WHERE experiment_version_id={key}) OR
+             p.research_topic_experiment_link_id IN (SELECT link_id FROM research_topic_experiment_links WHERE experiment_version_id={key})"
+        ),
+        Collection::ExperimentRequirements => format!(
+            "p.experiment_equipment_requirement_id={key}"
+        ),
+        Collection::EquipmentTypes => format!(
+            "p.equipment_type_id={key} OR p.equipment_type_version_id IN (
+                SELECT equipment_type_version_id FROM equipment_type_versions WHERE equipment_type_id={key}) OR
+             p.equipment_capability_id IN (SELECT capability_id FROM equipment_capabilities
+                WHERE equipment_type_version_id IN (SELECT equipment_type_version_id FROM equipment_type_versions WHERE equipment_type_id={key})) OR
+             p.equipment_operating_limit_id IN (SELECT operating_limit_id FROM equipment_operating_limits
+                WHERE equipment_type_version_id IN (SELECT equipment_type_version_id FROM equipment_type_versions WHERE equipment_type_id={key})) OR
+             p.equipment_calibration_id IN (SELECT equipment_calibration_id FROM equipment_calibrations
+                WHERE equipment_type_version_id IN (SELECT equipment_type_version_id FROM equipment_type_versions WHERE equipment_type_id={key})) OR
+             p.equipment_safety_requirement_id IN (SELECT safety_requirement_id FROM equipment_safety_requirements
+                WHERE equipment_type_version_id IN (SELECT equipment_type_version_id FROM equipment_type_versions WHERE equipment_type_id={key})) OR
+             p.equipment_interface_requirement_id IN (SELECT interface_requirement_id FROM equipment_interface_requirements
+                WHERE equipment_type_version_id IN (SELECT equipment_type_version_id FROM equipment_type_versions WHERE equipment_type_id={key}))"
+        ),
+        Collection::EquipmentTypeVersions => format!(
+            "p.equipment_type_version_id={key} OR p.equipment_capability_id IN (SELECT capability_id FROM equipment_capabilities WHERE equipment_type_version_id={key}) OR
+             p.equipment_operating_limit_id IN (SELECT operating_limit_id FROM equipment_operating_limits WHERE equipment_type_version_id={key}) OR
+             p.equipment_calibration_id IN (SELECT equipment_calibration_id FROM equipment_calibrations WHERE equipment_type_version_id={key}) OR
+             p.equipment_safety_requirement_id IN (SELECT safety_requirement_id FROM equipment_safety_requirements WHERE equipment_type_version_id={key}) OR
+             p.equipment_interface_requirement_id IN (SELECT interface_requirement_id FROM equipment_interface_requirements WHERE equipment_type_version_id={key})"
         ),
         Collection::Criteria => format!("p.criterion_id={key}"),
         Collection::Parameters => format!("p.parameter_id={key}"),
@@ -879,6 +1002,165 @@ fn collection_spec(collection: Collection) -> CollectionSpec {
              v.event_kind status,v.source_admission_id FROM research_topic_versions v",
             Some("research_topic_version_id"),
         ),
+        Collection::Experiments => (
+            "SELECT e.experiment_id key,json_object(
+                'experiment_id',e.experiment_id,'label',e.label,
+                'current_version_id',v.experiment_version_id,'revision',v.revision,
+                'event_kind',v.event_kind,'formulated_at',v.formulated_at,
+                'title',v.title,'experiment_kind',v.experiment_kind,'intent',v.intent,
+                'targets',json((SELECT json_group_array(json_object(
+                    'target_id',target_id,'order',target_order,'target_kind',target_kind,
+                    'target_id_value',target_id_value,'target_revision',target_revision,
+                    'target_label',target_label)) FROM experiment_targets WHERE experiment_version_id=v.experiment_version_id)),
+                'protocols',json((SELECT json_group_array(json_object(
+                    'protocol_id',protocol_id,'order',protocol_order,'name',protocol_name,
+                    'minimal_decisive_test',minimal_decisive_test,'steps',json(steps_json),
+                    'decision_rule',decision_rule,'boundary',boundary)) FROM experiment_protocols WHERE experiment_version_id=v.experiment_version_id)),
+                'controls',json((SELECT json_group_array(json_object(
+                    'control_id',control_id,'order',control_order,'kind',control_kind,
+                    'description',description,'controlled_variable',controlled_variable,
+                    'expected_relation',expected_relation)) FROM experiment_controls WHERE experiment_version_id=v.experiment_version_id)),
+                'observables',json((SELECT json_group_array(json_object(
+                    'observable_id',observable_id,'order',observable_order,'name',name,
+                    'units',units,'measurement',measurement,'aggregation',aggregation,
+                    'uncertainty_reporting',uncertainty_reporting)) FROM experiment_observables WHERE experiment_version_id=v.experiment_version_id)),
+                'calibration',json((SELECT json_group_array(json_object(
+                    'calibration_id',calibration_id,'order',calibration_order,'quantity',quantity,
+                    'units',units,'method',method,'acceptance',acceptance)) FROM experiment_calibrations WHERE experiment_version_id=v.experiment_version_id)),
+                'repetitions',json((SELECT json_object(
+                    'repetition_id',repetition_id,'replicate_unit',replicate_unit,
+                    'minimum_repetitions',minimum_repetitions,'independent_repetitions',independent_repetitions,
+                    'randomization',randomization,'stopping_rule',stopping_rule)
+                    FROM experiment_repetitions WHERE experiment_version_id=v.experiment_version_id)),
+                'uncertainty',json((SELECT json_object(
+                    'uncertainty_id',uncertainty_id,'sources',sources,'propagation',propagation,
+                    'reporting',reporting) FROM experiment_uncertainty WHERE experiment_version_id=v.experiment_version_id)),
+                'criteria',json((SELECT json_group_array(json_object(
+                    'criterion_id',criterion_id,'order',criterion_order,'kind',criterion_kind,
+                    'statement',statement,'metric',metric,'comparator',comparator,
+                    'threshold_text',threshold_text,'units',units)) FROM experiment_criteria WHERE experiment_version_id=v.experiment_version_id)),
+                'confounds',json((SELECT json_group_array(json_object(
+                    'confound_id',confound_id,'order',confound_order,'confound',confound,
+                    'detection_control',detection_control,'mitigation',mitigation)) FROM experiment_confounds WHERE experiment_version_id=v.experiment_version_id)),
+                'raw_artifacts',json((SELECT json_group_array(json_object(
+                    'raw_artifact_id',raw_artifact_id,'order',artifact_order,'kind',artifact_kind,
+                    'format',format,'retention',retention)) FROM experiment_raw_artifacts WHERE experiment_version_id=v.experiment_version_id)),
+                'non_claims',json((SELECT json_group_array(json_object(
+                    'nonclaim_id',nonclaim_id,'order',nonclaim_order,'statement',statement)) FROM experiment_nonclaims WHERE experiment_version_id=v.experiment_version_id)),
+                'equipment_requirements',json((SELECT json_group_array(json_object(
+                    'requirement_id',requirement_id,'group_id',group_id,'group_kind',group_kind,'selection_rule',selection_rule,
+                    'quantity',quantity,'capability',capability,'units',units,'specification',specification))
+                    FROM experiment_equipment_requirements WHERE experiment_version_id=v.experiment_version_id)),
+                'topic_links',json((SELECT json_group_array(json_object(
+                    'link_id',link_id,'topic_version_id',topic_version_id,'relation_kind',relation_kind,
+                    'rationale',rationale)) FROM research_topic_experiment_links WHERE experiment_version_id=v.experiment_version_id)),
+                'source_admission_id',v.source_admission_id) payload,
+                NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,
+                v.event_kind status,v.source_admission_id
+             FROM experiments e JOIN current_experiment_versions v USING(experiment_id)",
+            Some("experiment_id"),
+        ),
+        Collection::ExperimentVersions => (
+            "SELECT v.experiment_version_id key,json_object(
+                'experiment_version_id',v.experiment_version_id,'experiment_id',v.experiment_id,
+                'revision',v.revision,'event_kind',v.event_kind,'formulated_at',v.formulated_at,
+                'title',v.title,'experiment_kind',v.experiment_kind,'intent',v.intent,
+                'targets',json((SELECT json_group_array(json_object(
+                    'target_id',target_id,'order',target_order,'target_kind',target_kind,
+                    'target_id_value',target_id_value,'target_revision',target_revision,'target_label',target_label))
+                    FROM experiment_targets WHERE experiment_version_id=v.experiment_version_id)),
+                'protocols',json((SELECT json_group_array(json_object(
+                    'protocol_id',protocol_id,'order',protocol_order,'name',protocol_name,
+                    'minimal_decisive_test',minimal_decisive_test,'steps',json(steps_json),
+                    'decision_rule',decision_rule,'boundary',boundary)) FROM experiment_protocols WHERE experiment_version_id=v.experiment_version_id)),
+                'controls',json((SELECT json_group_array(json_object(
+                    'control_id',control_id,'order',control_order,'kind',control_kind,
+                    'description',description,'controlled_variable',controlled_variable,'expected_relation',expected_relation))
+                    FROM experiment_controls WHERE experiment_version_id=v.experiment_version_id)),
+                'observables',json((SELECT json_group_array(json_object(
+                    'observable_id',observable_id,'order',observable_order,'name',name,'units',units,
+                    'measurement',measurement,'aggregation',aggregation,'uncertainty_reporting',uncertainty_reporting))
+                    FROM experiment_observables WHERE experiment_version_id=v.experiment_version_id)),
+                'calibration',json((SELECT json_group_array(json_object(
+                    'calibration_id',calibration_id,'order',calibration_order,'quantity',quantity,'units',units,
+                    'method',method,'acceptance',acceptance)) FROM experiment_calibrations WHERE experiment_version_id=v.experiment_version_id)),
+                'repetitions',json((SELECT json_object('repetition_id',repetition_id,'replicate_unit',replicate_unit,
+                    'minimum_repetitions',minimum_repetitions,'independent_repetitions',independent_repetitions,
+                    'randomization',randomization,'stopping_rule',stopping_rule) FROM experiment_repetitions WHERE experiment_version_id=v.experiment_version_id)),
+                'uncertainty',json((SELECT json_object('uncertainty_id',uncertainty_id,'sources',sources,
+                    'propagation',propagation,'reporting',reporting) FROM experiment_uncertainty WHERE experiment_version_id=v.experiment_version_id)),
+                'criteria',json((SELECT json_group_array(json_object('criterion_id',criterion_id,'order',criterion_order,
+                    'kind',criterion_kind,'statement',statement,'metric',metric,'comparator',comparator,
+                    'threshold_text',threshold_text,'units',units)) FROM experiment_criteria WHERE experiment_version_id=v.experiment_version_id)),
+                'confounds',json((SELECT json_group_array(json_object('confound_id',confound_id,'order',confound_order,
+                    'confound',confound,'detection_control',detection_control,'mitigation',mitigation)) FROM experiment_confounds WHERE experiment_version_id=v.experiment_version_id)),
+                'raw_artifacts',json((SELECT json_group_array(json_object('raw_artifact_id',raw_artifact_id,'order',artifact_order,
+                    'kind',artifact_kind,'format',format,'retention',retention)) FROM experiment_raw_artifacts WHERE experiment_version_id=v.experiment_version_id)),
+                'non_claims',json((SELECT json_group_array(json_object('nonclaim_id',nonclaim_id,'order',nonclaim_order,'statement',statement))
+                    FROM experiment_nonclaims WHERE experiment_version_id=v.experiment_version_id)),
+                'dependencies',json((SELECT json_group_array(json_object('dependency_id',dependency_id,'order',dependency_order,
+                    'target_experiment_id',target_experiment_id,'target_revision',target_revision,'relation_kind',relation_kind,'rationale',rationale))
+                    FROM experiment_dependencies WHERE experiment_version_id=v.experiment_version_id)),
+                'relations',json((SELECT json_group_array(json_object('relation_id',relation_id,'target_experiment_id',target_experiment_id,
+                    'target_revision',target_revision,'relation_kind',relation_kind,'claim',relation_claim,'scope',relation_scope))
+                    FROM experiment_relations WHERE source_experiment_version_id=v.experiment_version_id)),
+                'equipment_requirements',json((SELECT json_group_array(json_object('requirement_id',requirement_id,
+                    'group_id',group_id,'group_kind',group_kind,'selection_rule',selection_rule,'quantity',quantity,'capability',capability,
+                    'units',units,'specification',specification)) FROM experiment_equipment_requirements WHERE experiment_version_id=v.experiment_version_id)),
+                'topic_links',json((SELECT json_group_array(json_object('link_id',link_id,'topic_version_id',topic_version_id,
+                    'relation_kind',relation_kind,'rationale',rationale)) FROM research_topic_experiment_links WHERE experiment_version_id=v.experiment_version_id)),
+                'source_admission_id',v.source_admission_id) payload,
+                NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,
+                v.event_kind status,v.source_admission_id FROM experiment_versions v",
+            Some("experiment_version_id"),
+        ),
+        Collection::ExperimentRequirements => (
+            "SELECT r.requirement_id key,json_object('requirement_id',r.requirement_id,'experiment_version_id',r.experiment_version_id,
+                'group_id',r.group_id,'group_kind',r.group_kind,'selection_rule',r.selection_rule,'quantity',r.quantity,'capability',r.capability,
+                'units',r.units,'specification',r.specification,'source_admission_id',r.source_admission_id) payload,
+                NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,r.group_kind status,r.source_admission_id,
+                r.experiment_version_id experiment_version_id
+             FROM experiment_equipment_requirements r",
+            Some("experiment_equipment_requirement_id"),
+        ),
+        Collection::EquipmentTypes => (
+            "SELECT e.equipment_type_id key,json_object('equipment_type_id',e.equipment_type_id,'label',e.label,
+                'current_version_id',v.equipment_type_version_id,'revision',v.revision,'event_kind',v.event_kind,
+                'formulated_at',v.formulated_at,'title',v.title,'description',v.description,
+                'capabilities',json((SELECT json_group_array(json_object('capability_id',capability_id,'capability',capability,'units',units,'specification',specification))
+                    FROM equipment_capabilities WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'operating_limits',json((SELECT json_group_array(json_object('operating_limit_id',operating_limit_id,'parameter',parameter,
+                    'lower_bound',lower_bound,'upper_bound',upper_bound,'units',units,'notes',notes)) FROM equipment_operating_limits WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'calibrations',json((SELECT json_group_array(json_object('equipment_calibration_id',equipment_calibration_id,'quantity',quantity,
+                    'units',units,'method',method,'traceability',traceability)) FROM equipment_calibrations WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'safety',json((SELECT json_group_array(json_object('safety_requirement_id',safety_requirement_id,'hazard',hazard,
+                    'requirement',requirement,'mitigation',mitigation)) FROM equipment_safety_requirements WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'interfaces',json((SELECT json_group_array(json_object('interface_requirement_id',interface_requirement_id,'kind',interface_kind,
+                    'specification',specification,'units',units)) FROM equipment_interface_requirements WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'source_admission_id',v.source_admission_id) payload,
+                NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,v.event_kind status,v.source_admission_id
+             FROM equipment_types e JOIN current_equipment_type_versions v USING(equipment_type_id)",
+            Some("equipment_type_id"),
+        ),
+        Collection::EquipmentTypeVersions => (
+            "SELECT v.equipment_type_version_id key,json_object('equipment_type_version_id',v.equipment_type_version_id,
+                'equipment_type_id',v.equipment_type_id,'revision',v.revision,'event_kind',v.event_kind,'formulated_at',v.formulated_at,
+                'title',v.title,'description',v.description,
+                'capabilities',json((SELECT json_group_array(json_object('capability_id',capability_id,'capability',capability,'units',units,'specification',specification))
+                    FROM equipment_capabilities WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'operating_limits',json((SELECT json_group_array(json_object('operating_limit_id',operating_limit_id,'parameter',parameter,
+                    'lower_bound',lower_bound,'upper_bound',upper_bound,'units',units,'notes',notes)) FROM equipment_operating_limits WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'calibrations',json((SELECT json_group_array(json_object('equipment_calibration_id',equipment_calibration_id,'quantity',quantity,
+                    'units',units,'method',method,'traceability',traceability)) FROM equipment_calibrations WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'safety',json((SELECT json_group_array(json_object('safety_requirement_id',safety_requirement_id,'hazard',hazard,
+                    'requirement',requirement,'mitigation',mitigation)) FROM equipment_safety_requirements WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'interfaces',json((SELECT json_group_array(json_object('interface_requirement_id',interface_requirement_id,'kind',interface_kind,
+                    'specification',specification,'units',units)) FROM equipment_interface_requirements WHERE equipment_type_version_id=v.equipment_type_version_id)),
+                'source_admission_id',v.source_admission_id) payload,
+                NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,v.event_kind status,v.source_admission_id
+             FROM equipment_type_versions v",
+            Some("equipment_type_version_id"),
+        ),
         Collection::Criteria => (
             "SELECT f.criterion_id key,json_object('criterion_id',f.criterion_id,'conjecture_version_id',f.conjecture_version_id,'description',f.description,'metric',f.metric,'comparator',f.comparator,'threshold_value',f.threshold_value,'threshold_text',f.threshold_text,'units',f.units,'predeclared',json(iif(f.predeclared=1,'true','false')),'source_admission_id',f.source_admission_id) payload,NULL model_id,NULL material_id,NULL mechanism_id,NULL interface_id,NULL status,f.source_admission_id FROM falsification_criteria f",
             Some("criterion_id"),
@@ -984,6 +1266,23 @@ fn history_base_sql(collection: Collection) -> Option<String> {
              FROM research_topic_versions UNION ALL {}",
             single("research_topic_workflow_events", "topic_id", "workflow_event_id", "occurred_at",
                 "status", "rationale", "workflow_scope", "administrative-workflow")),
+        Collection::Experiments =>
+            "SELECT printf('%010d:version:%s',revision,experiment_version_id) key,experiment_id parent_id,
+                json_object('history_family','experiment-version','event_id',experiment_version_id,
+                    'revision',revision,'event_kind',event_kind,'occurred_at',formulated_at,
+                    'title',title,'experiment_kind',experiment_kind,'intent',intent,
+                    'target_count',(SELECT COUNT(*) FROM experiment_targets WHERE experiment_version_id=experiment_versions.experiment_version_id),
+                    'protocol_count',(SELECT COUNT(*) FROM experiment_protocols WHERE experiment_version_id=experiment_versions.experiment_version_id),
+                    'falsifier_count',(SELECT COUNT(*) FROM experiment_criteria WHERE experiment_version_id=experiment_versions.experiment_version_id AND criterion_kind='falsifier'),
+                    'source_admission_id',source_admission_id) payload
+             FROM experiment_versions".to_owned(),
+        Collection::EquipmentTypes =>
+            "SELECT printf('%010d:version:%s',revision,equipment_type_version_id) key,equipment_type_id parent_id,
+                json_object('history_family','equipment-type-version','event_id',equipment_type_version_id,
+                    'revision',revision,'event_kind',event_kind,'occurred_at',formulated_at,
+                    'title',title,'capability_count',(SELECT COUNT(*) FROM equipment_capabilities WHERE equipment_type_version_id=equipment_type_versions.equipment_type_version_id),
+                    'source_admission_id',source_admission_id) payload
+             FROM equipment_type_versions".to_owned(),
         Collection::Regions =>
             "SELECT printf('%010d:version:%s',revision,region_version_id) key,region_id parent_id,
                 json_object('history_family','version','event_id',region_version_id,'revision',revision,

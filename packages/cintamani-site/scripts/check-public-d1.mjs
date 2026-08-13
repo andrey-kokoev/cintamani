@@ -1,18 +1,20 @@
 import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
-assert.ok(process.env.npm_execpath, 'pnpm npm_execpath is required')
 const stateRoot = mkdtempSync(join(tmpdir(), 'cintamani-d1-check-'))
+const siteRoot = fileURLToPath(new URL('..', import.meta.url))
+const wranglerScript = resolve(siteRoot, 'node_modules/wrangler/bin/wrangler.js')
 
 function wrangler(arguments_, { json = false } = {}) {
   const result = spawnSync(
     process.execPath,
-    [process.env.npm_execpath, 'exec', 'wrangler', 'd1', ...arguments_, '--local', '--persist-to', stateRoot],
+    [wranglerScript, '--local', '--persist-to', stateRoot, 'd1', ...arguments_],
     {
-      cwd: new URL('..', import.meta.url),
+      cwd: siteRoot,
       encoding: 'utf8',
       timeout: 60_000,
       windowsHide: true,
@@ -41,7 +43,7 @@ try {
   )
   assert.deepEqual(metadata, [
     { metadata_key: 'projection_kind', metadata_value: 'cintamani-public-proposals' },
-    { metadata_key: 'schema_version', metadata_value: '6' },
+    { metadata_key: 'schema_version', metadata_value: '7' },
   ])
 
   const violations = wrangler(
@@ -62,6 +64,8 @@ try {
     'principal_identity_link_events',
     'current_principal_identity_links',
     'principal_session_events',
+    'proposed_experiment_details',
+    'equipment_type_proposal_details',
   ]) {
     const rows = wrangler(
       ['execute', 'PROPOSALS_DB', '--command', `SELECT COUNT(*) AS count FROM ${table}`, '--json'],

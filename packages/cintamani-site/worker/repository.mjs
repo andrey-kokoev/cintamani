@@ -1,5 +1,7 @@
 import {
   administrativeStates,
+  experimentIntents,
+  experimentKinds,
   InputError,
   text,
   validateAppeal,
@@ -109,17 +111,84 @@ const detailTables = Object.freeze({
       'non_claims',
     ],
   },
+  'proposed-experiment': {
+    table: 'proposed_experiment_details',
+    fields: [
+      'experiment_id',
+      'experiment_version',
+      'experiment_kind',
+      'intent',
+      'targets_json',
+      'protocols_json',
+      'controls_json',
+      'observables_json',
+      'calibration_json',
+      'repetitions_json',
+      'uncertainty_json',
+      'criteria_json',
+      'confounds_json',
+      'raw_artifacts_json',
+      'nonclaims_json',
+      'dependencies_json',
+      'relations_json',
+      'equipment_requirements_json',
+      'topic_links_json',
+    ],
+    jsonFields: {
+      targets_json: 'targets',
+      protocols_json: 'protocols',
+      controls_json: 'controls',
+      observables_json: 'observables',
+      calibration_json: 'calibration',
+      repetitions_json: 'repetitions',
+      uncertainty_json: 'uncertainty',
+      criteria_json: 'criteria',
+      confounds_json: 'confounds',
+      raw_artifacts_json: 'raw_artifacts',
+      nonclaims_json: 'nonclaims',
+      dependencies_json: 'dependencies',
+      relations_json: 'relations',
+      equipment_requirements_json: 'equipment_requirements',
+      topic_links_json: 'topic_links',
+    },
+  },
+  'equipment-type-proposal': {
+    table: 'equipment_type_proposal_details',
+    fields: [
+      'equipment_type_id',
+      'equipment_type_version',
+      'title',
+      'description',
+      'capabilities_json',
+      'operating_limits_json',
+      'calibrations_json',
+      'safety_requirements_json',
+      'interface_requirements_json',
+      'nonclaims_json',
+    ],
+    jsonFields: {
+      capabilities_json: 'capabilities',
+      operating_limits_json: 'operating_limits',
+      calibrations_json: 'calibrations',
+      safety_requirements_json: 'safety_requirements',
+      interface_requirements_json: 'interface_requirements',
+      nonclaims_json: 'nonclaims',
+    },
+  },
 })
 
 function insertDetail(database, proposalId, revision, kind, detail) {
   const contract = detailTables[kind]
   const fields = ['proposal_id', 'revision', ...contract.fields]
+  const values = contract.fields.map((field) =>
+    field.endsWith('_json') ? JSON.stringify(detail[contract.jsonFields[field]]) : detail[field] ?? null,
+  )
   return database
     .prepare(
       `INSERT INTO ${contract.table} (${fields.join(', ')})
        VALUES (${fields.map(() => '?').join(', ')})`,
     )
-    .bind(proposalId, revision, ...contract.fields.map((field) => detail[field] ?? null))
+    .bind(proposalId, revision, ...values)
 }
 
 function insertRevisionStatements(database, { proposalId, revision, accountId, input, current }) {
@@ -163,6 +232,7 @@ export async function completeRevisionStatements(database, options) {
     loci: options.input.loci,
     origins: options.input.origins,
     topic_relations: options.input.topic_relations,
+    citations: options.input.detail.citations,
   }
   const contentHash = await sha256Hex(canonicalize(content))
   const statements = insertRevisionStatements(database, options)
@@ -333,7 +403,7 @@ export async function completeRevisionStatements(database, options) {
         ),
     )
   }
-  for (const item of options.input.references) {
+  for (const item of [...options.input.references, ...(options.input.detail.citations ?? [])]) {
     statements.push(
       database
         .prepare(
@@ -1131,8 +1201,17 @@ export async function listProposals(env, url) {
   const kind = url.searchParams.get('kind')
   const state = url.searchParams.get('state')
   const coordinateKey = url.searchParams.get('coordinate_key')
+  const experimentKind = url.searchParams.get('experiment_kind')
+  const experimentIntent = url.searchParams.get('intent')
+  const capability = url.searchParams.get('capability')
+  const topicId = url.searchParams.get('topic_id')
   if (kind && !detailTables[kind]) throw new InputError('kind filter is not supported', 'kind')
   if (state && !administrativeStates.includes(state)) throw new InputError('state filter is not supported', 'state')
+  if (experimentKind && !experimentKinds.includes(experimentKind)) throw new InputError('experiment_kind filter is not supported', 'experiment_kind')
+  if (experimentIntent && !experimentIntents.includes(experimentIntent)) throw new InputError('intent filter is not supported', 'intent')
+  for (const [value, field] of [[capability, 'capability'], [topicId, 'topic_id']]) {
+    if (value && (value.length < 1 || value.length > 240)) throw new InputError(`${field} filter is too long`, field)
+  }
   const clauses = ['p.proposal_id > ?']
   const bindings = [cursor]
   if (kind) {
@@ -1150,6 +1229,38 @@ export async function listProposals(env, url) {
         AND framing.coordinate_key=?
     )`)
     bindings.push(coordinateKey)
+  }
+  if (experimentKind) {
+    clauses.push(`EXISTS (
+      SELECT 1 FROM proposed_experiment_details experiment
+      WHERE experiment.proposal_id=p.proposal_id AND experiment.revision=p.current_revision
+        AND experiment.experiment_kind=?
+    )`)
+    bindings.push(experimentKind)
+  }
+  if (experimentIntent) {
+    clauses.push(`EXISTS (
+      SELECT 1 FROM proposed_experiment_details experiment
+      WHERE experiment.proposal_id=p.proposal_id AND experiment.revision=p.current_revision
+        AND experiment.intent=?
+    )`)
+    bindings.push(experimentIntent)
+  }
+  if (capability) {
+    clauses.push(`EXISTS (
+      SELECT 1 FROM proposed_experiment_details experiment, json_each(experiment.equipment_requirements_json) requirement
+      WHERE experiment.proposal_id=p.proposal_id AND experiment.revision=p.current_revision
+        AND json_extract(requirement.value,'$.capability') LIKE '%' || ? || '%'
+    )`)
+    bindings.push(capability)
+  }
+  if (topicId) {
+    clauses.push(`EXISTS (
+      SELECT 1 FROM proposed_experiment_details experiment, json_each(experiment.topic_links_json) topic
+      WHERE experiment.proposal_id=p.proposal_id AND experiment.revision=p.current_revision
+        AND (json_extract(topic.value,'$.topic_version_id')=? OR json_extract(topic.value,'$.topic_version_id')=? || '@1')
+    )`)
+    bindings.push(topicId, topicId)
   }
   bindings.push(limit + 1)
   const rows = await all(
@@ -1180,6 +1291,7 @@ export async function listProposals(env, url) {
       next_cursor: hasMore ? items.at(-1).proposal_id : null,
       administrative_states_only: true,
       epistemic_ranking: false,
+      filters: { kind, state, coordinate_key: coordinateKey, experiment_kind: experimentKind, intent: experimentIntent, capability, topic_id: topicId },
     },
   }
 }
@@ -1190,6 +1302,12 @@ async function readDetail(database, kind, proposalId, revision) {
     .prepare(`SELECT ${contract.fields.join(', ')} FROM ${contract.table} WHERE proposal_id = ? AND revision = ?`)
     .bind(proposalId, revision)
     .first()
+  if (detail && contract.jsonFields) {
+    for (const [column, field] of Object.entries(contract.jsonFields)) {
+      detail[field] = JSON.parse(detail[column])
+      delete detail[column]
+    }
+  }
   if (['explanatory-conjecture', 'research-topic'].includes(kind) && detail) {
     detail.framings = await all(
       database,

@@ -12,7 +12,219 @@ pub struct AdmissionV2 {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentTarget {
+    pub target_id: String,
+    pub target_order: u32,
+    pub target_kind: String,
+    pub target_id_value: String,
+    pub target_revision: Option<u32>,
+    pub target_label: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentProtocol {
+    pub protocol_id: String,
+    pub protocol_order: u32,
+    pub protocol_name: String,
+    pub minimal_decisive_test: String,
+    pub steps: Vec<String>,
+    pub decision_rule: String,
+    pub boundary: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentControl {
+    pub control_id: String,
+    pub control_order: u32,
+    pub control_kind: String,
+    pub description: String,
+    pub controlled_variable: String,
+    pub expected_relation: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentObservable {
+    pub observable_id: String,
+    pub observable_order: u32,
+    pub name: String,
+    pub units: String,
+    pub measurement: String,
+    pub aggregation: String,
+    pub uncertainty_reporting: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentCalibration {
+    pub calibration_id: String,
+    pub calibration_order: u32,
+    pub quantity: String,
+    pub units: String,
+    pub method: String,
+    pub acceptance: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentRepetition {
+    pub repetition_id: String,
+    pub replicate_unit: String,
+    pub minimum_repetitions: u32,
+    pub independent_repetitions: u32,
+    pub randomization: String,
+    pub stopping_rule: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentUncertainty {
+    pub uncertainty_id: String,
+    pub sources: String,
+    pub propagation: String,
+    pub reporting: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentCriterion {
+    pub criterion_id: String,
+    pub criterion_order: u32,
+    pub criterion_kind: String,
+    pub statement: String,
+    pub metric: String,
+    pub comparator: String,
+    pub threshold_text: String,
+    pub units: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentConfound {
+    pub confound_id: String,
+    pub confound_order: u32,
+    pub confound: String,
+    pub detection_control: String,
+    pub mitigation: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentRawArtifact {
+    pub raw_artifact_id: String,
+    pub artifact_order: u32,
+    pub artifact_kind: String,
+    pub format: String,
+    pub retention: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentDependency {
+    pub dependency_id: String,
+    pub dependency_order: u32,
+    pub target_experiment_id: String,
+    pub target_revision: u32,
+    pub relation_kind: String,
+    pub rationale: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentRelation {
+    pub relation_id: String,
+    pub target_experiment_id: String,
+    pub target_revision: u32,
+    pub relation_kind: String,
+    pub relation_claim: String,
+    pub relation_scope: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ExperimentEquipmentRequirement {
+    pub requirement_id: String,
+    pub group_id: String,
+    pub group_order: u32,
+    pub group_kind: String,
+    pub selection_rule: String,
+    pub quantity: u32,
+    pub capability: String,
+    pub units: String,
+    pub specification: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResearchTopicExperimentLink {
+    pub link_id: String,
+    pub topic_version_id: String,
+    pub relation_kind: String,
+    pub rationale: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EquipmentCapability {
+    pub capability_id: String,
+    pub capability_order: u32,
+    pub capability: String,
+    pub units: String,
+    pub specification: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EquipmentOperatingLimit {
+    pub operating_limit_id: String,
+    pub limit_order: u32,
+    pub parameter: String,
+    pub lower_bound: Option<String>,
+    pub upper_bound: Option<String>,
+    pub units: String,
+    pub notes: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EquipmentCalibrationRequirement {
+    pub equipment_calibration_id: String,
+    pub calibration_order: u32,
+    pub quantity: String,
+    pub units: String,
+    pub method: String,
+    pub traceability: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EquipmentSafetyRequirement {
+    pub safety_requirement_id: String,
+    pub safety_order: u32,
+    pub hazard: String,
+    pub requirement: String,
+    pub mitigation: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EquipmentInterfaceRequirement {
+    pub interface_requirement_id: String,
+    pub interface_order: u32,
+    pub interface_kind: String,
+    pub specification: String,
+    pub units: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
+// Admission records intentionally keep one self-describing change object per immutable
+// revision. ExperimentVersion carries its complete protocol/criteria/equipment definition;
+// boxing would change the stable internally-tagged JSON contract.
+#[allow(clippy::large_enum_variant)]
 pub enum Change {
     TheoreticalModel {
         model_id: String,
@@ -332,6 +544,54 @@ pub enum Change {
         rationale: String,
         scope: String,
     },
+    Experiment {
+        experiment_id: String,
+        label: String,
+    },
+    ExperimentVersion {
+        experiment_version_id: String,
+        experiment_id: String,
+        revision: u32,
+        event_kind: String,
+        occurred_at: String,
+        title: String,
+        experiment_kind: String,
+        intent: String,
+        targets: Vec<ExperimentTarget>,
+        protocols: Vec<ExperimentProtocol>,
+        controls: Vec<ExperimentControl>,
+        observables: Vec<ExperimentObservable>,
+        calibrations: Vec<ExperimentCalibration>,
+        repetition: Box<ExperimentRepetition>,
+        uncertainty: Box<ExperimentUncertainty>,
+        criteria: Vec<ExperimentCriterion>,
+        confounds: Vec<ExperimentConfound>,
+        raw_artifacts: Vec<ExperimentRawArtifact>,
+        non_claims: Vec<String>,
+        dependencies: Vec<ExperimentDependency>,
+        relations: Vec<ExperimentRelation>,
+        equipment_requirements: Vec<ExperimentEquipmentRequirement>,
+        topic_links: Vec<ResearchTopicExperimentLink>,
+    },
+    EquipmentType {
+        equipment_type_id: String,
+        label: String,
+    },
+    EquipmentTypeVersion {
+        equipment_type_version_id: String,
+        equipment_type_id: String,
+        revision: u32,
+        event_kind: String,
+        occurred_at: String,
+        title: String,
+        description: String,
+        capabilities: Vec<EquipmentCapability>,
+        operating_limits: Vec<EquipmentOperatingLimit>,
+        calibrations: Vec<EquipmentCalibrationRequirement>,
+        safety_requirements: Vec<EquipmentSafetyRequirement>,
+        interface_requirements: Vec<EquipmentInterfaceRequirement>,
+        non_claims: Vec<String>,
+    },
     FalsificationCriterion {
         criterion_id: String,
         conjecture_version_id: String,
@@ -491,6 +751,19 @@ pub enum ProvenanceTarget {
     ResearchTopicVersion(String),
     ResearchTopicWorkflowEvent(String),
     ResearchTopicRelation(String),
+    Experiment(String),
+    ExperimentVersion(String),
+    ExperimentTarget(String),
+    ExperimentRelation(String),
+    ExperimentEquipmentRequirement(String),
+    EquipmentType(String),
+    EquipmentTypeVersion(String),
+    EquipmentCapability(String),
+    EquipmentOperatingLimit(String),
+    EquipmentCalibration(String),
+    EquipmentSafetyRequirement(String),
+    EquipmentInterfaceRequirement(String),
+    ResearchTopicExperimentLink(String),
     Criterion(String),
     Protocol(String),
     ProtocolVersion(String),

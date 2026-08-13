@@ -379,6 +379,93 @@ function researchTopicChanges(canonical, contentHash) {
   return changes
 }
 
+function experimentChanges(canonical, contentHash) {
+  const revision = canonical.selected_revision
+  const detail = revision.detail
+  const unresolvedTargets = detail.targets.filter((target) =>
+    !['problem-version', 'conjecture-version', 'research-topic-version'].includes(target.target_kind),
+  )
+  if (unresolvedTargets.length > 0) {
+    const kinds = [...new Set(unresolvedTargets.map((target) => target.target_kind))].join(', ')
+    throw new Error(
+      `proposed experiment contains unresolved public-only or prospective target kinds (${kinds}); admit canonical targets before export`,
+    )
+  }
+  const experimentId = detail.experiment_id
+  const versionId = `${experimentId}-version-${detail.experiment_version}`
+  const changes = [
+    { kind: 'experiment', experiment_id: experimentId, label: revision.title },
+    {
+      kind: 'experiment-version',
+      experiment_version_id: versionId,
+      experiment_id: experimentId,
+      revision: detail.experiment_version,
+      event_kind: detail.experiment_version === 1 ? 'definition' : 'correction',
+      occurred_at: revision.source_timestamp,
+      title: revision.title,
+      experiment_kind: detail.experiment_kind,
+      intent: detail.intent,
+      targets: detail.targets.map((target, index) => ({
+        target_id: target.target_id ?? `${versionId}-target-${index + 1}`,
+        target_order: index + 1,
+        target_kind: target.target_kind,
+        target_id_value: target.target_id_value ?? target.target_id,
+        target_revision: target.target_revision,
+        target_label: target.target_label,
+      })),
+      protocols: detail.protocols.map((protocol, index) => ({ ...protocol, protocol_order: index + 1 })),
+      controls: detail.controls.map((control, index) => ({ ...control, control_order: index + 1 })),
+      observables: detail.observables.map((observable, index) => ({ ...observable, observable_order: index + 1 })),
+      calibrations: detail.calibration.map((calibration, index) => ({ ...calibration, calibration_order: index + 1 })),
+      repetition: detail.repetitions,
+      uncertainty: detail.uncertainty,
+      criteria: detail.criteria.map((criterion, index) => ({ ...criterion, criterion_order: index + 1 })),
+      confounds: detail.confounds.map((confound, index) => ({ ...confound, confound_order: index + 1 })),
+      raw_artifacts: detail.raw_artifacts.map((artifact, index) => ({ ...artifact, artifact_order: index + 1 })),
+      non_claims: detail.nonclaims,
+      dependencies: detail.dependencies.map((dependency, index) => ({ ...dependency, dependency_order: index + 1 })),
+      relations: detail.relations,
+      equipment_requirements: detail.equipment_requirements.map((requirement, index) => ({ ...requirement, group_order: requirement.group_order ?? index + 1 })),
+      topic_links: detail.topic_links,
+    },
+    provenance('experiment', experimentId, 'definition', `Proposed experiment identity selected from public proposal ${canonical.proposal.proposal_id} revision ${revision.revision}; no run or result is admitted. Export SHA-256 ${contentHash}.`, 'identity-definition'),
+    provenance('experiment-version', versionId, 'limitation', `Exact proposed experiment version selected from public proposal ${canonical.proposal.proposal_id}; it remains a criticizable definition without evidence. Export SHA-256 ${contentHash}.`, 'version-limitation'),
+  ]
+  for (const target of detail.targets) {
+    const targetId = target.target_id ?? target.target_id_value
+    changes.push(provenance('experiment-target', targetId, 'limitation', `Exact target retained from public experiment proposal ${canonical.proposal.proposal_id}; target type and revision are not an outcome.`, `target-${safeId(targetId)}`))
+  }
+  return changes
+}
+
+function equipmentTypeChanges(canonical, contentHash) {
+  const revision = canonical.selected_revision
+  const detail = revision.detail
+  const equipmentTypeId = detail.equipment_type_id
+  const versionId = `${equipmentTypeId}-version-${detail.equipment_type_version}`
+  return [
+    { kind: 'equipment-type', equipment_type_id: equipmentTypeId, label: detail.title },
+    {
+      kind: 'equipment-type-version',
+      equipment_type_version_id: versionId,
+      equipment_type_id: equipmentTypeId,
+      revision: detail.equipment_type_version,
+      event_kind: detail.equipment_type_version === 1 ? 'definition' : 'correction',
+      occurred_at: revision.source_timestamp,
+      title: detail.title,
+      description: detail.description,
+      capabilities: detail.capabilities.map((capability, index) => ({ ...capability, capability_order: index + 1 })),
+      operating_limits: detail.operating_limits.map((limit, index) => ({ ...limit, limit_order: index + 1 })),
+      calibrations: detail.calibrations.map((calibration, index) => ({ ...calibration, calibration_order: index + 1 })),
+      safety_requirements: detail.safety_requirements.map((safety, index) => ({ ...safety, safety_order: index + 1 })),
+      interface_requirements: detail.interface_requirements.map((item, index) => ({ ...item, interface_order: index + 1 })),
+      non_claims: detail.nonclaims,
+    },
+    provenance('equipment-type', equipmentTypeId, 'definition', `Capability-based equipment type selected from public proposal ${canonical.proposal.proposal_id}; this is not inventory or procurement. Export SHA-256 ${contentHash}.`, 'identity-definition'),
+    provenance('equipment-type-version', versionId, 'limitation', `Exact capability type version selected from public proposal ${canonical.proposal.proposal_id}; availability and vendors are not claimed. Export SHA-256 ${contentHash}.`, 'version-limitation'),
+  ]
+}
+
 export function verifyExport(document) {
   const canonical = document.canonical ?? document
   const expectedHash = document.content_sha256
@@ -403,6 +490,12 @@ export function prepareAdmission(document, options) {
   }
   if (!changes && kind === 'research-topic') {
     changes = researchTopicChanges(canonical, contentHash)
+  }
+  if (!changes && kind === 'proposed-experiment') {
+    changes = experimentChanges(canonical, contentHash)
+  }
+  if (!changes && kind === 'equipment-type-proposal') {
+    changes = equipmentTypeChanges(canonical, contentHash)
   }
   if (!changes && kind === 'existing-member-assessment') {
     if (!Number.isInteger(options.assessmentRevision) || options.assessmentRevision < 1) {

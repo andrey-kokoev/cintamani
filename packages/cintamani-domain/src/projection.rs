@@ -21,11 +21,12 @@ use std::os::windows::ffi::OsStrExt;
 #[cfg(windows)]
 use windows_sys::Win32::Storage::FileSystem::ReplaceFileW;
 
-pub const SCHEMA_VERSION: &str = "4";
+pub const SCHEMA_VERSION: &str = "5";
 pub const PROJECTION_KIND: &str = "rebuildable-site-domain-registry";
 const MIGRATION_V2: &str = include_str!("../migrations/002_v2.sql");
 const MIGRATION_V3: &str = include_str!("../migrations/003_v3.sql");
 const MIGRATION_V4: &str = include_str!("../migrations/004_v4.sql");
+const MIGRATION_V5: &str = include_str!("../migrations/005_v5.sql");
 const DEFAULT_DATABASE: &str = ".narada/db/cintamani-domain.sqlite";
 
 const DOMAIN_TABLES: &[&str] = &[
@@ -68,6 +69,31 @@ const DOMAIN_TABLES: &[&str] = &[
     "research_topic_public_links",
     "research_topic_relations",
     "research_topic_workflow_events",
+    "experiments",
+    "experiment_versions",
+    "experiment_targets",
+    "experiment_protocols",
+    "experiment_controls",
+    "experiment_observables",
+    "experiment_calibrations",
+    "experiment_repetitions",
+    "experiment_uncertainty",
+    "experiment_criteria",
+    "experiment_confounds",
+    "experiment_raw_artifacts",
+    "experiment_nonclaims",
+    "experiment_dependencies",
+    "experiment_relations",
+    "equipment_types",
+    "equipment_type_versions",
+    "equipment_capabilities",
+    "equipment_operating_limits",
+    "equipment_calibrations",
+    "equipment_safety_requirements",
+    "equipment_interface_requirements",
+    "equipment_nonclaims",
+    "experiment_equipment_requirements",
+    "research_topic_experiment_links",
     "falsification_criteria",
     "protocols",
     "protocol_versions",
@@ -214,7 +240,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         transaction.execute(
             "INSERT INTO migration_lineage VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             params![
-                format!("migration-{}-to-v4", chain.generation),
+                format!("migration-{}-to-v5", chain.generation),
                 source_schema,
                 SCHEMA_VERSION,
                 migration_kind,
@@ -257,6 +283,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         transaction.commit()?;
         connection.execute_batch(MIGRATION_V3)?;
         connection.execute_batch(MIGRATION_V4)?;
+        connection.execute_batch(MIGRATION_V5)?;
         let transaction = connection.transaction()?;
         for record in &v2 {
             insert_v2_record(&transaction, record)?;
@@ -268,7 +295,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
     if let Err(error) = build_result {
         let _ = fs::remove_file(&stage);
         return Err(error)
-            .context("failed to build sibling v4 projection; live database preserved");
+            .context("failed to build sibling v5 projection; live database preserved");
     }
 
     let stage_paths = paths.clone().with_database(&stage);
@@ -277,7 +304,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         Ok(report) => {
             let _ = fs::remove_file(&stage);
             bail!(
-                "sibling v4 projection failed validation (history={}, paths={}, provenance={}, ledger={}, config={}, artifacts={}); live database preserved",
+                "sibling v5 projection failed validation (history={}, paths={}, provenance={}, ledger={}, config={}, artifacts={}); live database preserved",
                 report.history_violations,
                 report.path_violations,
                 report.provenance_violations,
@@ -289,7 +316,7 @@ pub fn rebuild(paths: &RegistryPaths) -> Result<RebuildReport> {
         Err(error) => {
             let _ = fs::remove_file(&stage);
             return Err(error)
-                .context("failed to inspect sibling v4 projection; live database preserved");
+                .context("failed to inspect sibling v5 projection; live database preserved");
         }
     };
     atomic_replace(&stage, &paths.database_path)?;
@@ -418,7 +445,7 @@ fn existing_projection_posture(path: &Path) -> Result<(&'static str, &'static st
         .map(|metadata| metadata.len() > 0)
         .unwrap_or(false);
     if !nonempty {
-        return Ok(("none", "clean-v4"));
+        return Ok(("none", "clean-v5"));
     }
     let connection = Connection::open_with_flags(path, OpenFlags::SQLITE_OPEN_READ_ONLY)
         .with_context(|| format!("refusing non-SQLite live projection {}", path.display()))?;
@@ -445,7 +472,7 @@ fn existing_projection_posture(path: &Path) -> Result<(&'static str, &'static st
         )
         .optional()?;
     if kind.as_deref() != Some(PROJECTION_KIND)
-        || !matches!(schema.as_deref(), Some("1" | "2" | "3" | "4"))
+        || !matches!(schema.as_deref(), Some("1" | "2" | "3" | "4" | "5"))
     {
         bail!(
             "refusing incompatible database ownership metadata (schema={schema:?}, projection={kind:?})"
@@ -455,7 +482,8 @@ fn existing_projection_posture(path: &Path) -> Result<(&'static str, &'static st
         Some("1") => ("1", "owned-v1-upgrade"),
         Some("2") => ("2", "owned-v2-upgrade"),
         Some("3") => ("3", "owned-v3-rebuild"),
-        Some("4") => ("4", "owned-v4-rebuild"),
+        Some("4") => ("4", "owned-v5-rebuild"),
+        Some("5") => ("5", "owned-v5-rebuild"),
         _ => unreachable!(),
     })
 }
@@ -1298,9 +1326,17 @@ fn projected_chain_mismatches(
     Ok(errors)
 }
 
-fn relation_counts(connection: &Connection) -> Result<BTreeMap<String, usize>> {
+pub(crate) fn relation_counts(connection: &Connection) -> Result<BTreeMap<String, usize>> {
     let mut counts = BTreeMap::new();
     for table in DOMAIN_TABLES {
+        let present: bool = connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type='table' AND name=?1)",
+            [table],
+            |row| row.get(0),
+        )?;
+        if !present {
+            continue;
+        }
         let count: i64 =
             connection.query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |row| {
                 row.get(0)
@@ -1344,11 +1380,12 @@ fn migration_violations(
         }
         let valid = matches!(
             (source.as_str(), kind.as_str()),
-            ("none", "clean-v4")
+            ("none", "clean-v5")
                 | ("1", "owned-v1-upgrade")
                 | ("2", "owned-v2-upgrade")
                 | ("3", "owned-v3-rebuild")
-                | ("4", "owned-v4-rebuild")
+                | ("4", "owned-v5-rebuild")
+                | ("5", "owned-v5-rebuild")
         );
         if !valid {
             errors.push(format!(
@@ -1364,7 +1401,7 @@ fn migration_violations(
     )?;
     if dimension_view_present != 1 {
         errors.push(
-            "schema-4 projection is missing legacy compatibility view siege_space_dimensions; rebuild required".to_owned(),
+            "schema-5 projection is missing legacy compatibility view siege_space_dimensions; rebuild required".to_owned(),
         );
     }
     let topic_invariant_violations: i64 = connection.query_row(
@@ -1375,6 +1412,16 @@ fn migration_violations(
     if topic_invariant_violations != 0 {
         errors.push(format!(
             "research topic projection has {topic_invariant_violations} origin/locus invariant violation(s)"
+        ));
+    }
+    let experiment_invariant_violations: i64 = connection.query_row(
+        "SELECT COUNT(*) FROM experiment_invariant_violations",
+        [],
+        |row| row.get(0),
+    )?;
+    if experiment_invariant_violations != 0 {
+        errors.push(format!(
+            "experiment/equipment proposal projection has {experiment_invariant_violations} required-field invariant violation(s)"
         ));
     }
     Ok(errors)
@@ -1591,6 +1638,20 @@ fn history_families() -> Vec<HistoryFamily> {
             identity_column: "topic_id",
         },
         HistoryFamily {
+            table: "experiment_versions",
+            parent_column: "experiment_id",
+            status_column: "event_kind",
+            identity_table: Some("experiments"),
+            identity_column: "experiment_id",
+        },
+        HistoryFamily {
+            table: "equipment_type_versions",
+            parent_column: "equipment_type_id",
+            status_column: "event_kind",
+            identity_table: Some("equipment_types"),
+            identity_column: "equipment_type_id",
+        },
+        HistoryFamily {
             table: "protocol_versions",
             parent_column: "protocol_id",
             status_column: "event_kind",
@@ -1710,7 +1771,9 @@ fn legal_transition(table: &str, from: &str, to: &str) -> bool {
         "problem_versions"
         | "conjecture_versions"
         | "research_topic_versions"
-        | "protocol_versions" => matches!(
+        | "protocol_versions"
+        | "experiment_versions"
+        | "equipment_type_versions" => matches!(
             (from, to),
             ("definition", "correction" | "supersession") | ("correction", "supersession")
         ),
@@ -2190,7 +2253,7 @@ fn legacy_link_has_kind(link: &LedgerLink, kind: &str) -> bool {
     }
 }
 
-fn definition_provenance(
+pub(crate) fn definition_provenance(
     transaction: &Transaction<'_>,
     admission: &str,
     target: &str,
@@ -2282,6 +2345,25 @@ fn provenance_target(target: &ProvenanceTarget) -> (&'static str, &str) {
             ("research_topic_workflow_event_id", id)
         }
         ProvenanceTarget::ResearchTopicRelation(id) => ("research_topic_relation_id", id),
+        ProvenanceTarget::Experiment(id) => ("experiment_id", id),
+        ProvenanceTarget::ExperimentVersion(id) => ("experiment_version_id", id),
+        ProvenanceTarget::ExperimentTarget(id) => ("experiment_target_id", id),
+        ProvenanceTarget::ExperimentRelation(id) => ("experiment_relation_id", id),
+        ProvenanceTarget::ExperimentEquipmentRequirement(id) => {
+            ("experiment_equipment_requirement_id", id)
+        }
+        ProvenanceTarget::EquipmentType(id) => ("equipment_type_id", id),
+        ProvenanceTarget::EquipmentTypeVersion(id) => ("equipment_type_version_id", id),
+        ProvenanceTarget::EquipmentCapability(id) => ("equipment_capability_id", id),
+        ProvenanceTarget::EquipmentOperatingLimit(id) => ("equipment_operating_limit_id", id),
+        ProvenanceTarget::EquipmentCalibration(id) => ("equipment_calibration_id", id),
+        ProvenanceTarget::EquipmentSafetyRequirement(id) => ("equipment_safety_requirement_id", id),
+        ProvenanceTarget::EquipmentInterfaceRequirement(id) => {
+            ("equipment_interface_requirement_id", id)
+        }
+        ProvenanceTarget::ResearchTopicExperimentLink(id) => {
+            ("research_topic_experiment_link_id", id)
+        }
         ProvenanceTarget::Criterion(id) => ("criterion_id", id),
         ProvenanceTarget::Protocol(id) => ("protocol_id", id),
         ProvenanceTarget::ProtocolVersion(id) => ("protocol_version_id", id),
@@ -2326,6 +2408,19 @@ fn provenance_target_columns() -> Vec<&'static str> {
         "research_topic_version_id",
         "research_topic_workflow_event_id",
         "research_topic_relation_id",
+        "experiment_id",
+        "experiment_version_id",
+        "experiment_target_id",
+        "experiment_relation_id",
+        "experiment_equipment_requirement_id",
+        "equipment_type_id",
+        "equipment_type_version_id",
+        "equipment_capability_id",
+        "equipment_operating_limit_id",
+        "equipment_calibration_id",
+        "equipment_safety_requirement_id",
+        "equipment_interface_requirement_id",
+        "research_topic_experiment_link_id",
         "criterion_id",
         "protocol_id",
         "protocol_version_id",
