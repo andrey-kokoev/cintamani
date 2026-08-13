@@ -3,7 +3,7 @@
   "artifact_role": "site_capability_surface_registry_not_mcp_client_config",
   "site_id": "cintamani",
   "generated_by": "mcp-registrar",
-  "generated_at": "2026-08-11T01:38:51.591Z",
+  "generated_at": "2026-08-13T18:53:10.7451113Z",
   "generation_policy": {
     "source": ".ai/mcp + registrar surface catalog",
     "mode": "enabled_surface_tool_authority",
@@ -16,7 +16,6 @@
         "surface_id": "agent-context",
         "projection_id": "default",
         "injection_scope": "local_site",
-        "default_injection": "all_site_bound_sessions",
         "runtime_requirements": [],
         "exposed_tools": [
           "agent_orientation_read",
@@ -3018,6 +3017,7 @@
             }
           }
         },
+        "default_injection": "all_site_bound_sessions",
         "lifecycle": {
           "mode": "restart_required",
           "restart_owner": "local_site",
@@ -3028,25 +3028,27 @@
       "display_name": "narada-cintamani-agent-context",
       "server_name": "narada-cintamani-agent-context",
       "runtime_binding": {
-        "runtime_kind": "bun-stdio",
+        "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:\\Users\\andrey\\src\\mcp-surfaces\\packages\\agent-context-mcp\\dist\\src\\main.js",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/46f081022afd5cf4912ef3d00bb7ed2484d61452b0f4910ebedbe080afad53af/narada-agent-context-mcp.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/e547b80ffad7c16c0ef34d26283e4d6c894220c5e49dd70b9b30b8124e7f3f40/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "agent-context",
             "--child-command",
-            "C:/Users/andrey/.bun/bin/bun.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/46f081022afd5cf4912ef3d00bb7ed2484d61452b0f4910ebedbe080afad53af/narada-agent-context-mcp.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
-            "6",
+            "8",
             "--entrypoint",
-            "C:\\Users\\andrey\\src\\mcp-surfaces\\packages\\agent-context-mcp\\dist\\src\\main.js",
+            "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/46f081022afd5cf4912ef3d00bb7ed2484d61452b0f4910ebedbe080afad53af/narada-agent-context-mcp.exe",
+            "--child-invocation-kind",
+            "native_entrypoint",
             "--",
             "--site-root",
             "C:\\Users\\andrey\\src\\cintamani",
@@ -3099,7 +3101,6 @@
         "surface_id": "artifacts",
         "projection_id": "default",
         "injection_scope": "local_site",
-        "default_injection": "all_site_bound_sessions",
         "runtime_requirements": [],
         "exposed_tools": [
           "artifacts_guidance",
@@ -3471,6 +3472,7 @@
             }
           }
         },
+        "default_injection": "all_site_bound_sessions",
         "lifecycle": {
           "mode": "replayable",
           "reason": "Artifacts are registered in durable Site/session storage and can be reattached safely."
@@ -3482,28 +3484,30 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/e547b80ffad7c16c0ef34d26283e4d6c894220c5e49dd70b9b30b8124e7f3f40/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "artifacts",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
-            "6",
+            "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
             "--surface-id",
-            "artifacts"
+            "artifacts",
+            "--site-root",
+            "C:\\Users\\andrey\\src\\cintamani"
           ]
         }
       },
@@ -3564,7 +3568,6 @@
         "surface_id": "mailbox",
         "projection_id": "stdio",
         "injection_scope": "local_site",
-        "default_injection": "all_site_bound_sessions",
         "runtime_requirements": [],
         "exposed_tools": [
           "mailbox_guidance",
@@ -4460,6 +4463,7 @@
             }
           }
         },
+        "default_injection": "all_site_bound_sessions",
         "lifecycle": {
           "mode": "replayable",
           "reason": "Mailbox reads are replayable; mutation tools enforce durable operation keys, leases, and receipts."
@@ -4471,23 +4475,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/e547b80ffad7c16c0ef34d26283e4d6c894220c5e49dd70b9b30b8124e7f3f40/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "mailbox",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
-            "6",
+            "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
@@ -4591,7 +4595,6 @@
         "surface_id": "scheduler",
         "projection_id": "default",
         "injection_scope": "local_site",
-        "default_injection": "all_site_bound_sessions",
         "runtime_requirements": [],
         "exposed_tools": [
           "scheduler_guidance",
@@ -5988,6 +5991,7 @@
             }
           }
         },
+        "default_injection": "all_site_bound_sessions",
         "lifecycle": {
           "mode": "replayable",
           "reason": "Task Scheduler is the authority; the MCP process holds no durable session state."
@@ -5999,23 +6003,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/e547b80ffad7c16c0ef34d26283e4d6c894220c5e49dd70b9b30b8124e7f3f40/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "scheduler",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
-            "6",
+            "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
@@ -6146,7 +6150,6 @@
         "surface_id": "task-lifecycle",
         "projection_id": "stdio",
         "injection_scope": "local_site",
-        "default_injection": "all_site_bound_sessions",
         "runtime_requirements": [],
         "exposed_tools": [
           "task_lifecycle_doctor",
@@ -9841,6 +9844,7 @@
             }
           }
         },
+        "default_injection": "all_site_bound_sessions",
         "lifecycle": {
           "mode": "restart_required",
           "restart_owner": "mcp-loader",
@@ -9853,23 +9857,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/narada-task-lifecycle-mcp.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-task-lifecycle-mcp.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/e547b80ffad7c16c0ef34d26283e4d6c894220c5e49dd70b9b30b8124e7f3f40/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "task-lifecycle",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/narada-task-lifecycle-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-task-lifecycle-mcp.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
-            "6",
+            "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/narada-task-lifecycle-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-task-lifecycle-mcp.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
@@ -10121,7 +10125,6 @@
         "surface_id": "work-lifecycle",
         "projection_id": "default",
         "injection_scope": "local_site",
-        "default_injection": "all_site_bound_sessions",
         "runtime_requirements": [],
         "exposed_tools": [
           "work_lifecycle_doctor",
@@ -14594,6 +14597,7 @@
             }
           }
         },
+        "default_injection": "all_site_bound_sessions",
         "lifecycle": {
           "mode": "replayable",
           "reason": "SQLite WAL transactions, idempotency keys, and revision checks allow independent runtime processes."
@@ -14605,23 +14609,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/narada-work-lifecycle-mcp.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-work-lifecycle-mcp.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/e547b80ffad7c16c0ef34d26283e4d6c894220c5e49dd70b9b30b8124e7f3f40/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "work-lifecycle",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/narada-work-lifecycle-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-work-lifecycle-mcp.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
-            "6",
+            "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/narada-work-lifecycle-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-work-lifecycle-mcp.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
