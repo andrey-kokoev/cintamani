@@ -1072,6 +1072,336 @@ button.primary-action,
   padding-bottom: 34px;
 }
 
+/* Computing paradigms */
+
+.paradigm-page {
+  width: min(1080px, calc(100% - 40px));
+  margin-inline: auto;
+  padding: clamp(64px, 8vw, 104px) 0 112px;
+}
+
+.paradigm-page > h1 {
+  max-width: 900px;
+  margin: 0 0 32px;
+  font-size: clamp(2.7rem, 6vw, 5.4rem);
+  line-height: 0.98;
+}
+
+.paradigm-page > h2,
+.paradigm-page > h3,
+.paradigm-page > p,
+.paradigm-page > blockquote,
+.paradigm-page > ol,
+.paradigm-page > ul {
+  max-width: 840px;
+}
+
+.paradigm-page h2 {
+  margin: 64px 0 18px;
+  color: var(--ink);
+  font-size: clamp(1.65rem, 3vw, 2.4rem);
+  line-height: 1.08;
+}
+
+.paradigm-page h3 {
+  margin: 38px 0 14px;
+  font-size: 1.15rem;
+}
+
+.paradigm-page p,
+.paradigm-page li,
+.paradigm-page dd {
+  color: var(--muted);
+}
+
+.paradigm-page a {
+  color: var(--ochre);
+  text-decoration-color: rgb(255 174 98 / 48%);
+  text-underline-offset: 4px;
+}
+
+.paradigm-page a:hover,
+.paradigm-page a:focus-visible {
+  color: var(--ochre-hover);
+  text-decoration-color: currentColor;
+}
+
+.paradigm-page blockquote {
+  margin: 30px 0;
+  padding: 4px 0 4px 24px;
+  border-left: 3px solid var(--ochre);
+  font: 500 clamp(1.08rem, 2.2vw, 1.35rem)/1.55 Georgia, "Times New Roman", serif;
+}
+
+.paradigm-page blockquote p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.paradigm-page > table {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  margin: 24px 0 40px;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.paradigm-page > table th,
+.paradigm-page > table td {
+  min-width: 110px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  text-align: left;
+}
+
+.paradigm-page > table th {
+  color: var(--ink);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.paradigm-page .matrix-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin: 24px 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.paradigm-page .matrix-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.paradigm-page .matrix-scroll-hint {
+  display: none;
+  margin: 12px 0 -8px;
+  color: var(--dim);
+  font: 0.76rem/1.4 "SFMono-Regular", Consolas, monospace;
+  text-transform: uppercase;
+}
+
+.paradigm-page .matrix-scroll {
+  max-width: 100%;
+  margin: 22px 0 34px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgb(12 26 33 / 82%);
+  box-shadow: 0 18px 60px rgb(0 0 0 / 18%);
+}
+
+.paradigm-page .maturity-matrix {
+  display: table;
+  width: 100%;
+  min-width: 760px;
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.paradigm-page .maturity-matrix th,
+.paradigm-page .maturity-matrix td {
+  min-width: auto;
+  padding: 12px 10px;
+  border-right: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.paradigm-page .maturity-matrix tr > :last-child {
+  border-right: 0;
+}
+
+.paradigm-page .maturity-matrix tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.paradigm-page .maturity-matrix thead th {
+  color: var(--ink);
+  background: var(--panel-raised);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.paradigm-page .maturity-matrix thead th:first-child,
+.paradigm-page .maturity-matrix tbody th {
+  position: sticky;
+  left: 0;
+  text-align: left;
+}
+
+.paradigm-page .maturity-matrix thead th:first-child {
+  z-index: 2;
+}
+
+.paradigm-page .maturity-matrix tbody th {
+  z-index: 1;
+  min-width: 196px;
+  color: var(--ink);
+  background: var(--panel);
+  font-weight: 650;
+}
+
+.paradigm-page .maturity-matrix tbody tr:nth-child(even) td {
+  background: rgb(255 255 255 / 1.5%);
+}
+
+.paradigm-page .maturity-matrix td.stage {
+  position: relative;
+  width: 86px;
+  height: 52px;
+  padding: 0;
+  text-align: center;
+}
+
+.paradigm-page .matrix-state {
+  display: inline-block;
+  min-width: 20px;
+  font-size: 1.15rem;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.paradigm-page .matrix-cell-link,
+.paradigm-page .maturity-matrix td.stage > .matrix-state--none {
+  display: grid;
+  width: 100%;
+  min-height: 52px;
+  place-items: center;
+}
+
+.paradigm-page .matrix-cell-link {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: auto;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+}
+
+.paradigm-page .matrix-cell-link:hover,
+.paradigm-page .matrix-cell-link:focus-visible {
+  color: var(--ochre-hover);
+  background: rgb(255 174 98 / 10%);
+  text-decoration: none;
+}
+
+.paradigm-page .matrix-cell-link:focus-visible {
+  outline: 2px solid var(--ochre);
+  outline-offset: -3px;
+}
+
+.paradigm-page .matrix-status-mark {
+  line-height: 1;
+}
+
+.paradigm-page .matrix-drilldown {
+  color: var(--ochre);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.paradigm-page .matrix-state--full {
+  color: var(--status-good);
+}
+
+.paradigm-page .matrix-state--partial {
+  color: var(--ochre);
+}
+
+.paradigm-page .matrix-state--none {
+  color: var(--dim);
+}
+
+.paradigm-page .matrix-caption {
+  margin: -14px 0 38px;
+  color: var(--dim);
+  font-size: 0.84rem;
+}
+
+.paradigm-page .paradigm-group {
+  margin-top: 36px;
+}
+
+.paradigm-page .paradigm-entry,
+.paradigm-page .cell-evidence {
+  margin: 18px 0 26px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgb(16 35 42 / 82%), rgb(8 22 28 / 82%));
+}
+
+.paradigm-page .paradigm-entry h3 {
+  margin: 0 0 14px;
+  color: var(--ink);
+}
+
+.paradigm-page .paradigm-entry dl,
+.paradigm-page .cell-evidence dl {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 8px 18px;
+  margin: 0;
+}
+
+.paradigm-page .paradigm-entry dt,
+.paradigm-page .cell-evidence dt {
+  color: var(--ink);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.paradigm-page .paradigm-entry dd,
+.paradigm-page .cell-evidence dd {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .paradigm-page {
+    width: min(100% - 28px, 1080px);
+    padding-top: 54px;
+  }
+
+  .paradigm-page .matrix-scroll-hint {
+    display: block;
+  }
+
+  .paradigm-page .paradigm-entry,
+  .paradigm-page .cell-evidence {
+    padding: 18px;
+  }
+
+  .paradigm-page .paradigm-entry dl,
+  .paradigm-page .cell-evidence dl {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .paradigm-page .paradigm-entry dd,
+  .paradigm-page .cell-evidence dd {
+    margin: 0 0 12px;
+  }
+}
+
 /* Public proposal and criticism surfaces */
 .public-hero,
 .proposal-detail-hero {

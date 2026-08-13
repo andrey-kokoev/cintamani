@@ -1,0 +1,10 @@
+---
+import SiteLayout from './SiteLayout.astro'
+
+const { frontmatter } = Astro.props
+---
+<SiteLayout title={frontmatter.title} description={frontmatter.description}>
+  <article class="paradigm-page">
+    <slot />
+  </article>
+</SiteLayout>
