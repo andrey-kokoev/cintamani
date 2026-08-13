@@ -278,7 +278,14 @@ function renderDetailFields(form, config) {
   }
   container.replaceChildren(...fieldContracts[kind].map((contract) => fieldNode(contract, config, kind)))
   syncMemberSelect(container, config)
-  form.querySelector('[data-conjecture-framings]').hidden = !['explanatory-conjecture', 'research-topic'].includes(kind)
+  const framingKinds = ['explanatory-conjecture', 'research-topic']
+  form.querySelector('[data-conjecture-framings]').hidden = !framingKinds.includes(kind)
+  const framingHelp = form.querySelector('[data-framing-help]')
+  if (framingHelp) {
+    framingHelp.textContent = kind === 'research-topic'
+      ? 'Leave this empty for a general, unclassified conjecture or topic.'
+      : 'Leave this empty for a general, unclassified conjecture.'
+  }
   form.querySelector('[data-topic-fields]').hidden = kind !== 'research-topic'
   form.querySelector('[data-conjecture-relations]').hidden = kind !== 'explanatory-conjecture'
   syncConditionalSections(form)

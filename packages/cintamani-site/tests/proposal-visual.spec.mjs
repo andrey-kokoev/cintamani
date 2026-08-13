@@ -218,6 +218,7 @@ test('every frontier coordinate opens an exact focused form while general entry 
   }
 
   const focusedHref = await links.nth(2).getAttribute('href')
+  const topicHref = await topicLinks.nth(1).getAttribute('href')
   await page.goto(`${testInfo.project.use.baseURL}${focusedHref}`, { waitUntil: 'networkidle' })
   await expect(page.locator('#proposal-kind')).toHaveValue('explanatory-conjecture')
   await expect(page.locator('[data-framing-list] .coordinate-framing-row')).toHaveCount(1)
@@ -228,7 +229,6 @@ test('every frontier coordinate opens an exact focused form while general entry 
   await expect(page.locator('[data-framing-list] .coordinate-framing-row')).toHaveCount(0)
   await expect(page.getByText('Leave this empty for a general, unclassified conjecture.')).toBeVisible()
 
-  const topicHref = await topicLinks.nth(1).getAttribute('href')
   await page.goto(`${testInfo.project.use.baseURL}${topicHref}`, { waitUntil: 'networkidle' })
   await expect(page.locator('#proposal-kind')).toHaveValue('research-topic')
   await expect(page.locator('[data-framing-list] .coordinate-framing-row')).toHaveCount(1)
