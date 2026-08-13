@@ -1,0 +1,19 @@
+[package]
+name = "cintamani-amplitudes-at-infinity"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Bounded exact rational planar-triangulation propagator experiment and reducer"
+
+[dependencies]
+num-bigint = "0.4"
+num-rational = "0.4"
+num-traits = "0.2"
+
+[lib]
+name = "amplitudes_at_infinity"
+path = "src/lib.rs"
+
+[[bin]]
+name = "amplitudes-at-infinity"
+path = "src/main.rs"

@@ -2,6 +2,8 @@
 **/artifacts/
 **/output/
 **/data/
+!packages/amplitudes-at-infinity/artifacts/
+!packages/amplitudes-at-infinity/artifacts/**
 !packages/cintamani-site/src/data/
 !packages/cintamani-site/src/data/*.json
 **/.astro/

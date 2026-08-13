@@ -1,0 +1,12 @@
+{
+  "name": "@cintamani/amplitudes-at-infinity",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "cargo build",
+    "check": "cargo check --all-targets",
+    "test": "cargo test --all-targets",
+    "run:bounded": "cargo run --release -- run --max-n 8 --output artifacts/task-11-exact-generic"
+  }
+}

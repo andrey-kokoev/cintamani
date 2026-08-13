@@ -1,0 +1,48 @@
+{
+  "collection": "research-memory",
+  "schema_version": 2,
+  "epistemic_boundary": "Research memory preserves bounded observations and their uncertainty. Experimental/unreviewed entries are not canonical admissions, rankings, evidence promotion, or scientific endorsement.",
+  "items": [
+    {
+      "memory_id": "research-memory-task-11-exact-generic-20260812",
+      "memory_kind": "experimental-result",
+      "status": "experimental-unreviewed",
+      "review_status": "unreviewed",
+      "title": "Task #11: exact rational planar propagator checkpoint",
+      "result_id": "task-11-exact-generic-20260812",
+      "experiment_id": "rust-exact-oracle-hvm-amplitudes-infinity",
+      "summary": "The corrected Rust release run computes the requested rational propagator expression with exact Laurent coefficients for n=4..8, including all 132 n=8 triangulations, and records deterministic integer assignments, finite-z tail certificates, reducer equality, cancellation orders, and timings.",
+      "observations": [
+        "The primary generic-a run has exact rational coefficients and a nonzero leading order for every n=4..8; no nontrivial cancellation was observed in the generic families.",
+        "The special-alternating signed control is explicitly nongeneric and produces a leading-coefficient cancellation at n=4, with cancellation order 1 and the first surviving coefficient reported exactly.",
+        "Every primary case has exact finite-z checks at z=1009,1013,1019 whose errors lie within the summed geometric tail bound.",
+        "The n=8 primary case enumerates 132 triangulations; the Catalan counts n=4..9 verify as 2, 5, 14, 42, 132, 429.",
+        "The actual Rust release generator completed the full primary run; HVM execution remains a separate unavailable runtime."
+      ],
+      "uncertainties_and_limits": [
+        "No published g-vector definition was sourced; w_e are declared channel weights, not g-vectors.",
+        "Published worlds-at-infinity are not reproduced, and no physical amplitude or canonical infinity limit is claimed.",
+        "HVM, HVM2, and Bend are not installed; the HVM file is a design-only export with no external runtime result.",
+        "Published n=5/6/7 validation formulas and conventions were unavailable or underspecified, so no comparison fixture was fabricated."
+      ],
+      "links": [
+        {
+          "label": "Experiment result",
+          "href": "/experiment-results/task-11-exact-generic-20260812/"
+        },
+        {
+          "label": "Rust/HVM experiment fixture",
+          "href": "/experiments/rust-exact-oracle-hvm-amplitudes-infinity/"
+        },
+        {
+          "label": "Rust package",
+          "path": "packages/amplitudes-at-infinity/"
+        },
+        {
+          "label": "Raw result artifact",
+          "path": "packages/amplitudes-at-infinity/artifacts/task-11-exact-generic/results.json"
+        }
+      ]
+    }
+  ]
+}

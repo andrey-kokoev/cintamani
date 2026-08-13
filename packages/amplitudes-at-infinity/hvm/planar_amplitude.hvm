@@ -1,0 +1,70 @@
+; Cintamani Task #11 — concrete interaction-net design export.
+; Status: design-only in this checkout. It was not compiler-validated because
+; hvm, hvm2, and bend were absent from PATH during the bounded run.
+;
+; The syntax below is intentionally explicit about agents and rewrite rules.
+; An HVM2 adapter can lower these declarations to its concrete parser without
+; changing the net semantics or the declared integer channel assignment.
+
+; ---------------------------------------------------------------------------
+; Agents
+; ---------------------------------------------------------------------------
+; Propagator(r) is a nullary token for 1/(X[r] + z*w[r]).
+; LaurentAtom(e,numerator,denominator) is an exact rational Laurent atom.
+; Add and Mul are binary interaction agents.
+
+agent Propagator(rank)
+agent LaurentAtom(exponent, numerator, denominator)
+agent Add(left, right)
+agent Mul(left, right)
+agent Zero
+
+; ---------------------------------------------------------------------------
+; Exact reducer rules
+; ---------------------------------------------------------------------------
+; The channel assignment and finite series order are supplied by the run.
+;
+; Propagator(r) expands to the declared finite window:
+;   1/(X[r] + z*w[r]) =
+;     sum_(j=0..series_order) (-X[r])^j/w[r]^(j+1) z^(-(j+1))
+rule Propagator(r) -> Expansion(r, X[r], w[r], series_order)
+rule Expansion(r, x, w, j) -> LaurentAtom(-(j+1), (-x)^j, w^(j+1))
+
+rule Mul(LaurentAtom(e1, n1, d1), LaurentAtom(e2, n2, d2))
+  -> LaurentAtom(e1 + e2, n1 * n2, d1 * d2)
+rule Add(LaurentAtom(e, n1, d1), LaurentAtom(e, n2, d2))
+  -> AddRational(e, n1, d1, n2, d2)
+rule Add(LaurentAtom(e, 0, d), x) -> x
+rule Add(x, LaurentAtom(e, 0, d)) -> x
+rule Mul(LaurentAtom(e, 0, d), x) -> Zero
+rule Mul(x, LaurentAtom(e, 0, d)) -> Zero
+
+; OrderedAdd is a canonical sparse-map insertion. It is represented as a
+; balanced interaction-net map in the target HVM adapter; the exact finite
+; artifact records its resulting support and coefficient groups.
+agent OrderedAdd(lower, higher)
+rule OrderedAdd(LaurentAtom(e1, n1, d1), LaurentAtom(e2, n2, d2))
+  -> OrderedAdd(LaurentAtom(e1, n1, d1), LaurentAtom(e2, n2, d2)) when e1 < e2
+
+; ---------------------------------------------------------------------------
+; Net construction
+; ---------------------------------------------------------------------------
+; For a triangulation T=[r0,r1,...,rk], construct the shared product
+; Mul(...Mul(Propagator(r0), Propagator(r1))..., Propagator(rk)).
+; Fold all products in deterministic triangulation order with Add. Propagator
+; tokens are globally shared by rank before reduction.
+
+def triangle_term(r0, r1, r2, r3, r4) =
+  Mul(Mul(Mul(Mul(Propagator(r0), Propagator(r1)), Propagator(r2)), Propagator(r3)), Propagator(r4))
+
+; Explicit n=4 net (channel ranks 0 and 1):
+def A4 = Add(Propagator(0), Propagator(1))
+
+; For n>4 the runner emits the same construction from the deterministic
+; triangulation list. It passes the exact exponent window
+; [-(n-3+series_order), -(n-3)] to the finite reducer.
+
+; The design intentionally leaves runtime scheduling, allocator behavior, and
+; HVM/Bend command syntax to the adapter. No external runtime result is
+; implied by this file. The weights are declared channel weights rather than
+; sourced g-vectors; published worlds-at-infinity are not reproduced.

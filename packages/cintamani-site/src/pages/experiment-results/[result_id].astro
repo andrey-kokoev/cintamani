@@ -1,0 +1,127 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { experimentResultCatalog, validateExperimentResultCatalog } from '../../lib/experiment-results.mjs'
+
+validateExperimentResultCatalog()
+
+export function getStaticPaths() {
+  return experimentResultCatalog.items.map((result) => ({ params: { result_id: result.result_id }, props: { result } }))
+}
+
+const { result } = Astro.props
+const allCatalanVerified = result.catalan_counts.every((item) => item.verified)
+---
+
+<SiteLayout
+  title={`${result.title} | Cintamani`}
+  description={`${result.title}: experimental and unreviewed bounded result memory.`}
+>
+  <main class="detail" aria-labelledby="page-title">
+    <p class="eyebrow">{result.status} · {result.review_status}</p>
+    <h1 id="page-title">{result.title}</h1>
+    <p class="boundary">This is a bounded computational result record, not a canonical admission, physical amplitude claim, published formula, ranking, or scientific promotion.</p>
+
+    <dl class="facts">
+      <div><dt>Result id</dt><dd><code>{result.result_id}</code></dd></div>
+      <div><dt>Experiment fixture</dt><dd><a href={result.linked_fixture.public_path}><code>{result.experiment_id}</code></a></dd></div>
+      <div><dt>HVM/Bend</dt><dd>{result.hvm.status}</dd></div>
+      <div><dt>Catalan counts</dt><dd>{allCatalanVerified ? 'n=4..9 verified' : 'verification incomplete'}</dd></div>
+    </dl>
+
+    <section aria-labelledby="scope-title">
+      <h2 id="scope-title">What ran</h2>
+      <p>{result.summary}</p>
+      <ul>
+        <li>Full exact expression cases: n={result.run_scope.full_expression_cases[0]}..{result.run_scope.full_expression_cases[1]}.</li>
+        <li>Catalan count verification: n={result.run_scope.catalan_count_verification[0]}..{result.run_scope.catalan_count_verification[1]}.</li>
+        <li>Independent exact finite-z checks: z={result.inputs.finite_integer_z_values.join(', ')} for every primary case.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="convention-title">
+      <h2 id="convention-title">Declared convention</h2>
+      <dl class="definition-list">
+        <div><dt>Channels</dt><dd>{result.convention.channel_definition}</dd></div>
+        <div><dt>Executed expression</dt><dd><code>{result.method.expression}</code></dd></div>
+        <div><dt>Weights</dt><dd>{result.convention.weight_definition}</dd></div>
+        <div><dt>Sample families</dt><dd>{result.sample_definitions.map((sample) => `${sample.id} (${sample.kind})`).join(', ')}</dd></div>
+        <div><dt>Boundary</dt><dd>{result.convention.source_boundary}</dd></div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="counts-title">
+      <h2 id="counts-title">Catalan verification</h2>
+      <div class="table-wrap"><table><thead><tr><th>n</th><th>Expected</th><th>Observed</th><th>Verified</th></tr></thead><tbody>{result.catalan_counts.map((item) => <tr><th scope="row">{item.n}</th><td>{item.expected}</td><td>{item.observed}</td><td>{item.verified ? 'yes' : 'no'}</td></tr>)}</tbody></table></div>
+    </section>
+
+    <section aria-labelledby="metrics-title">
+      <h2 id="metrics-title">Exact oracle / reducer metrics</h2>
+      <p>Counts below are explicit finite-run observations. Cancellation order is computed from the first raw exponent level to the first surviving global coefficient; it is not an asymptotic scaling claim.</p>
+      <div class="table-wrap"><table><thead><tr><th>n</th><th>Triangulations</th><th>Exact support</th><th>First surviving order</th><th>Explicit nodes</th><th>Shared nodes</th><th>Final nodes</th><th>Reducer equal</th><th>Cancellation</th></tr></thead><tbody>{result.cases.map((item) => <tr><th scope="row">{item.n}</th><td>{item.triangulation_count}</td><td>{item.oracle.sparse_support_count}</td><td>{item.first_surviving_order}</td><td>{item.reducer.explicit_node_count}</td><td>{item.reducer.shared_node_count}</td><td>{item.reducer.final_node_count}</td><td>{item.reducer.oracle_matches_reducer ? 'yes' : 'no'}</td><td>{item.cancellation.locality} (order {item.cancellation.cancellation_order})</td></tr>)}</tbody></table></div>
+    </section>
+
+    <section aria-labelledby="numeric-title">
+      <h2 id="numeric-title">Independent exact finite-z check</h2>
+      <p>{result.method.finite_check_rule}</p>
+      <ul>{result.cases.map((item) => <li>n={item.n}: {item.finite_z_cross_check.values.map((check) => `z=${check.z} error ${check.absolute_error.text} <= bound ${check.rigorous_tail_bound.text}`).join('; ')}; all passed.</li>)}</ul>
+    </section>
+
+    <section aria-labelledby="coefficients-title">
+      <h2 id="coefficients-title">Exact leading coefficients</h2>
+      <p>Coefficients are emitted as exact numerator/denominator pairs. The displayed first coefficient is the first nonzero global term found in the requested truncated window.</p>
+      <ul>{result.cases.map((item) => <li>n={item.n}: order {item.first_surviving_order}, exponent {item.first_surviving_exponent}, coefficient <code>{item.first_surviving_coefficient.text}</code>; window support {item.exact_coefficients.length}.</li>)}</ul>
+    </section>
+
+    <section aria-labelledby="fixtures-title">
+      <h2 id="fixtures-title">Unavailable validation fixtures</h2>
+      <p>Published n=5/6/7 geometry was not reproduced, and no source-supplied formula or convention was available in the task context, so these comparisons remain explicitly unavailable.</p>
+      <ul>{result.validation_fixtures.map((fixture) => <li><strong>n={fixture.n}:</strong> {fixture.status} — {fixture.reason}</li>)}</ul>
+    </section>
+
+    <section aria-labelledby="hvm-title">
+      <h2 id="hvm-title">HVM/Bend boundary</h2>
+      <p>Checked commands: {result.hvm.checked_commands.join(', ')}. Status: <strong>{result.hvm.status}</strong>.</p>
+      <p>{result.hvm.comparison_status}</p>
+      <p><code>{result.hvm.design_path}</code> is the concrete design export for a future compatible runtime.</p>
+    </section>
+
+    <section aria-labelledby="special-title">
+      <h2 id="special-title">Special signed control</h2>
+      <p>The alternating-sign sample is deliberately labelled nongeneric. It is included to test whether exact signed coefficients can cancel; it is not evidence for a generic direction.</p>
+      <ul>{result.sample_runs.filter((run) => run.sample.kind === 'special-cancellation-control').map((run) => run.cases.filter((item) => item.cancellation.cancelled_groups.length > 0).map((item) => <li>n={item.n}: cancellation order {item.cancellation.cancellation_order}; first surviving order {item.first_surviving_order}.</li>))}</ul>
+    </section>
+
+    <section aria-labelledby="artifacts-title">
+      <h2 id="artifacts-title">Machine-readable artifacts</h2>
+      <ul>{result.artifacts.map((artifact) => <li><code>{artifact.path}</code> · {artifact.role} · SHA-256 <code>{artifact.sha256}</code></li>)}</ul>
+    </section>
+
+    <section aria-labelledby="nonclaims-title">
+      <h2 id="nonclaims-title">Nonclaims</h2>
+      <ul>{result.nonclaims.map((nonclaim) => <li>{nonclaim}</li>)}</ul>
+    </section>
+
+    <p class="actions"><a href="/research-memory/">Public research memory</a> · <a href={result.linked_fixture.public_path}>Linked Rust/HVM experiment fixture</a> · <a href="/experiment-results/">All experiment results</a></p>
+  </main>
+</SiteLayout>
+
+<style>
+  .detail { max-width: 1080px; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  .eyebrow { color: #7d341f; letter-spacing: .08em; font-size: .8rem; text-transform: uppercase; }
+  h1 { font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1; max-width: 18ch; }
+  h2 { margin-top: 2.2rem; border-bottom: 1px solid #d7dce3; padding-bottom: .35rem; }
+  p, li, td, th, dd { line-height: 1.55; }
+  .boundary { border: 2px solid #a4572b; background: #fff4e9; padding: 1rem; font-weight: 600; }
+  .facts { display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.5rem 0; }
+  .facts div { background: #f2f5f7; padding: .75rem 1rem; min-width: 190px; }
+  dt { color: #5d6675; font-size: .78rem; text-transform: uppercase; }
+  dd { margin: .25rem 0 0; }
+  .definition-list { display: grid; gap: .75rem; }
+  .definition-list div { border-left: 3px solid #0a5275; padding: .2rem 1rem; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #d7dce3; padding: .6rem; text-align: left; vertical-align: top; }
+  th { background: #f2f5f7; }
+  .actions { margin-top: 2.5rem; }
+  a { color: #0a5275; }
+</style>

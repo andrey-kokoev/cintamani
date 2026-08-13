@@ -1,0 +1,51 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { experimentResultCatalog, validateExperimentResultCatalog } from '../../lib/experiment-results.mjs'
+
+validateExperimentResultCatalog()
+const results = experimentResultCatalog.items
+---
+
+<SiteLayout
+  title="Experiment results | Cintamani"
+  description="Experimental and unreviewed computational result memory linked to bounded experiment fixtures."
+>
+  <main class="catalog" aria-labelledby="page-title">
+    <p class="eyebrow">Research memory · experimental boundary</p>
+    <h1 id="page-title">Experiment results</h1>
+    <p class="boundary">These entries are experimental and unreviewed. They preserve what was run, what matched, and what remains unavailable; they are not canonical admissions, rankings, evidence promotion, or scientific endorsement.</p>
+    <nav class="links" aria-label="Research memory links"><a href="/research-memory/">Public research memory</a><a href="/experiments/">Experiment fixtures</a><a href="/computing-paradigms/interaction-nets/">Interaction-net context</a></nav>
+    <section class="grid" aria-label="Experiment result records">
+      {results.map((result) => (
+        <article class="card">
+          <p class="meta"><span class="badge">{result.status}</span> · {result.review_status}</p>
+          <h2><a href={`/experiment-results/${result.result_id}/`}>{result.title}</a></h2>
+          <p>{result.summary}</p>
+          <dl>
+            <div><dt>Fixture</dt><dd><a href={result.linked_fixture.public_path}>{result.experiment_id}</a></dd></div>
+            <div><dt>Full cases</dt><dd>n={result.run_scope.full_expression_cases[0]}..{result.run_scope.full_expression_cases[1]}</dd></div>
+            <div><dt>Catalan verification</dt><dd>n={result.run_scope.catalan_count_verification[0]}..{result.run_scope.catalan_count_verification[1]}</dd></div>
+          </dl>
+          <p><a href={`/experiment-results/${result.result_id}/`}>Read the bounded run record</a></p>
+        </article>
+      ))}
+    </section>
+  </main>
+</SiteLayout>
+
+<style>
+  .catalog { max-width: 1120px; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  .eyebrow, .meta { color: #5d6675; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+  h1 { max-width: 14ch; font-size: clamp(2.5rem, 7vw, 5.6rem); line-height: .95; margin: .35rem 0 1.25rem; }
+  .boundary { border-left: 4px solid #a4572b; background: #fff4e9; padding: 1rem 1.1rem; max-width: 82ch; line-height: 1.55; }
+  .links { display: flex; flex-wrap: wrap; gap: .75rem 1.2rem; margin: 1.6rem 0 2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+  .card { border: 1px solid #d7dce3; border-radius: .65rem; padding: 1.2rem; background: #fff; box-shadow: 0 6px 18px #17212b0d; }
+  .card h2 { font-size: 1.35rem; line-height: 1.15; }
+  .card p, .card dd { line-height: 1.55; }
+  .card dl { display: grid; gap: .65rem; }
+  .card dt { color: #5d6675; font-size: .76rem; text-transform: uppercase; }
+  .card dd { margin: .1rem 0 0; }
+  .badge { color: #7d341f; font-weight: 700; }
+  a { color: #0a5275; }
+</style>

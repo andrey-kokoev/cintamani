@@ -1,0 +1,50 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro'
+import { researchMemoryCatalog, resultForId, validateResearchMemoryCatalog } from '../../lib/experiment-results.mjs'
+
+validateResearchMemoryCatalog()
+---
+
+<SiteLayout
+  title="Research memory | Cintamani"
+  description="Public bounded research memory with explicit experimental and unreviewed boundaries."
+>
+  <main class="memory" aria-labelledby="page-title">
+    <p class="eyebrow">Public research memory · uncertainty preserved</p>
+    <h1 id="page-title">Research memory</h1>
+    <p class="boundary">This surface preserves bounded observations, run metadata, artifact links, and open limitations. Experimental/unreviewed entries are not canonical admissions, evidence promotion, rankings, or scientific endorsement.</p>
+    <nav class="links" aria-label="Research memory links"><a href="/experiment-results/">Experiment results</a><a href="/experiments/">Experiment fixtures</a><a href="/">Canonical search registry</a></nav>
+    {researchMemoryCatalog.items.map((item) => {
+      const result = resultForId(item.result_id)
+      return (
+        <article class="entry">
+          <p class="meta"><span class="badge">{item.status}</span> · {item.review_status} · {item.memory_kind}</p>
+          <h2>{item.title}</h2>
+          <p class="lede">{item.summary}</p>
+          <h3>Observed in this bounded run</h3>
+          <ul>{item.observations.map((observation) => <li>{observation}</li>)}</ul>
+          <h3>Uncertainties and limits</h3>
+          <ul>{item.uncertainties_and_limits.map((limit) => <li>{limit}</li>)}</ul>
+          {result && <p><a class="primary" href={`/experiment-results/${result.result_id}/`}>Open result record</a> · <a href={result.linked_fixture.public_path}>Open linked experiment fixture</a></p>}
+          <h3>Artifact links</h3>
+          <ul>{item.links.map((link) => <li>{link.href ? <a href={link.href}>{link.label}</a> : <><span>{link.label}: </span><code>{link.path}</code></>}</li>)}</ul>
+        </article>
+      )
+    })}
+  </main>
+</SiteLayout>
+
+<style>
+  .memory { max-width: 980px; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  .eyebrow, .meta { color: #5d6675; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; }
+  h1 { font-size: clamp(2.5rem, 7vw, 5.6rem); line-height: .95; margin: .35rem 0 1.25rem; }
+  h2 { font-size: clamp(1.7rem, 4vw, 2.8rem); line-height: 1.05; }
+  h3 { margin-top: 1.7rem; }
+  .boundary { border-left: 4px solid #a4572b; background: #fff4e9; padding: 1rem 1.1rem; max-width: 82ch; line-height: 1.55; }
+  .links { display: flex; flex-wrap: wrap; gap: .75rem 1.2rem; margin: 1.6rem 0 2rem; }
+  .entry { border-top: 1px solid #d7dce3; padding: 2rem 0; }
+  .lede, li { line-height: 1.65; }
+  .badge { color: #7d341f; font-weight: 700; }
+  .primary { font-weight: 700; }
+  a { color: #0a5275; }
+</style>
