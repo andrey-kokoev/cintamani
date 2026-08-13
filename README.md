@@ -59,8 +59,12 @@ framing is conjectural organization—not evidence, a physical possibility claim
 admission. Selected exports can be validated and previewed as candidate canonical problems and
 open conjectures without creating a search cell or advancing governed HEAD.
 
+Task #9 also adds versioned proposed experiments and capability-based equipment types to the
+public proposal envelope. The operator-supplied experiment families are separate illustrative
+fixtures, explicitly `illustrative-unadmitted`, and never seed public D1 or claim evidence.
+
 The public and CLI vocabulary is **search space**, **search coordinate**, **search cell**, and
-**search overlay**. Durable v1–v4 compatibility identifiers retain their original `siege_*` names:
+**search overlay**. Durable v1–v5 compatibility identifiers retain their original `siege_*` names:
 SQLite tables/views (including `siege_cells` and `siege_space_dimensions`), serialized admission
 fields/variants, and registry count keys. Those internal names are not product terminology and are
 not rewritten because doing so would invalidate historical admissions, hashes, and consumers.

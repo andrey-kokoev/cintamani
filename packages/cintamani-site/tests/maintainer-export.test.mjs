@@ -310,6 +310,112 @@ test('bridge maps a canonically grounded topic deterministically and refuses inv
   assert.throws(() => prepareAdmission(publicOnly, options), /must first be admitted/u)
 })
 
+test('bridge maps experiment and equipment definitions, while refusing public-only experiment targets', () => {
+  const experiment = wrapper('proposed-experiment', {
+    experiment_id: 'public-experiment',
+    experiment_version: 1,
+    experiment_kind: 'hybrid',
+    intent: 'falsification',
+    targets: [{
+      target_id: 'problem-public-version',
+      target_kind: 'problem-version',
+      target_revision: 1,
+      target_label: 'Governed problem version used only as the test target',
+    }],
+    protocols: [{
+      protocol_id: 'public-protocol',
+      protocol_name: 'Matched bounded protocol',
+      minimal_decisive_test: 'Hold the declared input fixed and vary the named context.',
+      steps: ['Prepare the input.', 'Apply the control.', 'Retain the raw observation.'],
+      decision_rule: 'Compare the declared observable with the predeclared falsifier.',
+      boundary: 'This definition covers only the named setup and finite input family.',
+    }],
+    controls: [],
+    observables: [{
+      observable_id: 'public-observable',
+      name: 'bounded output difference',
+      units: 'dimensionless',
+      measurement: 'matched comparison',
+      aggregation: 'per trial',
+      uncertainty_reporting: 'report calibration and sampling uncertainty',
+    }],
+    calibration: [],
+    repetitions: {
+      repetition_id: 'public-repetition',
+      replicate_unit: 'independent input',
+      minimum_repetitions: 2,
+      independent_repetitions: 2,
+      randomization: 'input order randomized',
+      stopping_rule: 'complete the declared block',
+    },
+    uncertainty: {
+      uncertainty_id: 'public-uncertainty',
+      sources: 'instrument and input variation',
+      propagation: 'carry declared calibration bounds through the comparison',
+      reporting: 'report the bounds with every comparison',
+    },
+    criteria: [
+      { criterion_id: 'public-success', criterion_kind: 'success', statement: 'The control relation is reproduced.', metric: 'difference', comparator: '<=', threshold_text: 'declared bound', units: 'dimensionless' },
+      { criterion_id: 'public-falsifier', criterion_kind: 'falsifier', statement: 'The matched context changes the output beyond the bound.', metric: 'context effect', comparator: '>', threshold_text: 'declared bound', units: 'dimensionless' },
+    ],
+    confounds: [],
+    raw_artifacts: [{ raw_artifact_id: 'public-raw', artifact_kind: 'trace', format: 'JSON', retention: 'retain the original trace hash' }],
+    nonclaims: ['This definition is not a run, result, or evidence claim.'],
+    dependencies: [],
+    relations: [],
+    equipment_requirements: [{
+      requirement_id: 'public-equipment',
+      group_id: 'public-readout',
+      group_order: 1,
+      group_kind: 'required',
+      selection_rule: 'any-one',
+      quantity: 1,
+      capability: 'calibrated readout',
+      units: 'system',
+      specification: 'retain raw observations and calibration metadata',
+    }],
+    topic_links: [],
+  })
+  const options = { recordId: 'admission-public-experiment', admittedAt: '2026-08-12' }
+  const admission = prepareAdmission(experiment, options)
+  assert.deepEqual(admission.changes.slice(0, 2).map((change) => change.kind), ['experiment', 'experiment-version'])
+  assert.equal(admission.changes.length, 5)
+  assert.equal(admission.changes[1].targets[0].target_id_value, 'problem-public-version')
+  assert.ok(admission.changes.some((change) => change.kind === 'provenance-claim' && change.claim_text.includes('no run or result')))
+  assert.deepEqual(prepareAdmission(experiment, options), admission)
+
+  const publicOnly = structuredClone(experiment)
+  publicOnly.canonical.selected_revision.detail.targets[0] = {
+    target_id: 'operator-only-target',
+    target_kind: 'external-reference',
+    target_revision: null,
+    target_label: 'Public-only target',
+  }
+  const publicOnlyCanonicalJson = canonicalize(publicOnly.canonical)
+  publicOnly.content_sha256 = createHash('sha256').update(publicOnlyCanonicalJson).digest('hex')
+  publicOnly.export_id = `sha256-${publicOnly.content_sha256}`
+  assert.throws(() => prepareAdmission(publicOnly, options), /unresolved public-only or prospective target kinds/u)
+
+  const equipment = wrapper('equipment-type-proposal', {
+    equipment_type_id: 'public-readout-type',
+    equipment_type_version: 1,
+    title: 'Capability-only readout type',
+    description: 'A type-level interface definition.',
+    capabilities: [{ capability_id: 'public-capability', capability: 'calibrated readout', units: 'system', specification: 'Retains raw traces.' }],
+    operating_limits: [],
+    calibrations: [],
+    safety_requirements: [{ safety_requirement_id: 'public-safety', hazard: 'electrical input', requirement: 'Use declared input limits.', mitigation: 'Interlock the input.' }],
+    interface_requirements: [],
+    nonclaims: ['This is not an equipment instance, vendor, availability, procurement, run, or result.'],
+  })
+  const equipmentAdmission = prepareAdmission(equipment, options)
+  assert.deepEqual(equipmentAdmission.changes.map((change) => change.kind), [
+    'equipment-type', 'equipment-type-version', 'provenance-claim', 'provenance-claim',
+  ])
+  assert.ok(equipmentAdmission.changes[2].claim_text.includes('not inventory or procurement'))
+  assert.deepEqual(prepareAdmission(equipment, options), equipmentAdmission)
+})
+
 test('tampered export fails before draft creation and generated draft passes the Rust admission validator', () => {
   const document = wrapper('theoretical-model-member', {
     member_id: 'public-model-validation-fixture',

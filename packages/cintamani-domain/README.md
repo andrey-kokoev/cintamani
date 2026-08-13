@@ -1,6 +1,6 @@
 # Cintamani domain search registry
 
-This Rust package governs and queries Cintamani's categorical search memory. Schema version 4 is a
+This Rust package governs and queries Cintamani's categorical search memory. Schema version 5 is a
 rebuildable SQLite projection, not a scientific database and not experimental evidence. It keeps
 stable domain identities separate from append-only epistemic history, exact provenance, and
 derived runtime observations.
@@ -17,7 +17,7 @@ Five surfaces remain deliberately distinct:
   migration of the four existing records into the chain. It is not their original scientific
   admission authority and supplies no new scientific evidence.
 - `.narada/db/cintamani-domain.sqlite` is an ignored, disposable Site projection. Rebuild creates
-  and fully validates a sibling database before atomically replacing an owned v1/v2/v3/v4 projection.
+  and fully validates a sibling database before atomically replacing an owned v1/v2/v3/v4/v5 projection.
   Chain, parse, schema, history, path, provenance, tracked-source, and present-artifact failures
   preserve the existing database bytes. A nonempty foreign database is never adopted or cleared.
 - `packages/kerr-capacity/output/*/results.sqlite` files are ignored per-run evidence stores. The
@@ -36,9 +36,9 @@ The primary schema uses explicit tables rather than a generic EAV or untyped cat
 
 | Classification | Examples | Evolution rule |
 | --- | --- | --- |
-| Stable identity/definition | model, material, mechanism, interface, port, morphism, path, cell, parameter, region, conjecture, protocol, run, artifact IDs; names; axes; units; morphism endpoints | Insert once through a governed admission; do not overwrite. |
+| Stable identity/definition | model, material, mechanism, interface, port, morphism, path, cell, parameter, region, conjecture, protocol, experiment, equipment type, run, artifact IDs; names; axes; units; morphism endpoints | Insert once through a governed admission; do not overwrite. |
 | Append-only assessment/status | model epistemic status; material classification and epistemic status; mechanism/interface status; morphism validation; cell epistemic assessment and decision; protocol provenance; run operational and epistemic status | Family-specific contiguous revisions with event kind, time, rationale, scope, and source admission. Illegal transitions require explicit correction/supersession. |
-| Append-only definition version | parameter-region definition, conjecture statement, protocol definition | Contiguous typed versions; deterministic current views select the highest revision. |
+| Append-only definition version | parameter-region definition, conjecture statement, protocol definition, experiment protocol, equipment capability type | Contiguous typed versions; deterministic current views select the highest revision. |
 | Immutable evidence result | gate result and matched comparison, including polarity, metrics, limits, and decision scope | Never update in place. A typed same-identity supersession edge selects a replacement and preserves the chain. |
 | Derived observation | current artifact presence/hash posture | Recomputed by `check`; never admitted as mutable epistemic state. |
 
@@ -116,6 +116,11 @@ conjecture/version identities, an explicitly open non-evidentiary disposition, z
 generation-pinned framings, and exact definition/limitation provenance. A conjecture can remain
 unclassified or frame a gap: neither case creates a search cell, morphism, path, assessment, or
 scientific status. The bridge still only validates and previews; it never advances HEAD.
+Selected proposed-experiment exports produce only canonical experiment/version definitions,
+requirements, relations, and definition/limitation provenance. Exact targets must already be
+governed problem, conjecture, or research-topic versions; public-only or prospective targets are
+refused. Equipment-type exports are capability/limit/calibration/safety/interface definitions only:
+they do not create equipment instances, availability, procurement, laboratories, runs, or results.
 Public exact-version relation labels—including rivalry, equivalence, reclassification,
 incompatibility, supersession, and shared-problem claims—remain criticizable public content. The
 bridge does not translate them into canonical identity merges, dispositions, or state changes.
@@ -140,8 +145,10 @@ pnpm domain:mcp
 The Rust CLI accepts `--workspace-root`, `--database`, `--chain`, and `--format human|json`.
 
 `list` covers models, materials, mechanisms, interfaces, morphisms, paths, cells, problems, problem
-versions, conjectures, conjecture versions, conjecture framings, criteria, parameters, regions, region versions, protocols, runs, artifacts,
-gates, comparisons, admissions, and provenance. Filters include the four axes, current status,
+versions, conjectures, conjecture versions, conjecture framings, criteria, parameters, regions,
+region versions, protocols, experiments, experiment versions, experiment requirements, equipment
+types, equipment type versions, runs, artifacts, gates, comparisons, admissions, and provenance.
+Filters include the four axes, current status,
 source admission, Ledger number, and text. Results use stable keyset cursors and a limit from 1 to
 100. A cursor is bound to its collection and exact filter digest; malformed, stale, wrong-family,
 and wrong-filter cursors are rejected. Following `next_cursor` reaches every matching row.
@@ -198,8 +205,10 @@ schema. `003_v3.sql` adds stable problem identities/versions and exact, generati
 one-to-many conjecture framings while removing the requirement that every conjecture own a search
 cell. `004_v4.sql` adds typed research-topic identities, append-only versions and administrative
 workflow, multi-locus classification, exact origins, criticizable links, and deterministic current
-views. Rebuild reads the governed chain directly, semantically maps the four v1 records without
-editing them, applies later typed changes, and records the exact clean/upgrade/rebuild lineage.
+views. `005_v5.sql` adds versioned experiments, protocol/requirement histories, capability-based
+equipment types, and exact definition/limitation provenance without runs or evidence. Rebuild reads
+the governed chain directly, semantically maps the four v1 records without editing them, applies
+later typed changes, and records the exact clean/upgrade/rebuild lineage.
 
 `check` reports and enforces projection identity, migration lineage, SQLite integrity, foreign
 keys, chain agreement, family history and transition invariants, path composition, exact

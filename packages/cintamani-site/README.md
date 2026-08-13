@@ -37,6 +37,8 @@ The tracked snapshots remain:
 - `dimensions.json` — four ordered axes, current assessment revisions, and source admissions;
 - `frontier.json` — admitted cells and explicit bounded gaps;
 - `research-topics.json` — bounded current governed topics with exact history and provenance;
+- `experiments.json` — canonical admitted experiment/version snapshot (empty until a governed admission);
+- `equipment-types.json` — canonical admitted capability-type snapshot (empty until a governed admission);
 - `registry-summary.json` — stable registry identity and clean invariant summary.
 
 The D1 proposal plane does not alter these files. A successful public submission therefore never
@@ -44,7 +46,7 @@ appears as a canonical member or cell merely because it is visible in the browse
 
 ## Public schema and behavior
 
-The ten ordered `migrations/*.sql` files define public schema version 6 in strict SQLite/D1. The
+The eleven ordered `migrations/*.sql` files define public schema version 7 in strict SQLite/D1. The
 initial invariant migration is split because the
 local D1 engine rejects a seven-branch compound `UNION`; the cardinality invariant uses explicit
 `EXISTS` terms and a typed `CASE` instead. `scripts/check-public-d1.mjs` applies all migrations from
@@ -63,6 +65,13 @@ Migration 0010 losslessly rebuilds the same CHECK-constrained core to add resear
 typed topic detail/loci/origins/relations, topic coordinate framings, and exact focused criticism.
 It preserves every prior row and history, rejects incompatible typed unions, and is tested under
 Wrangler's SQL splitter, partial-prefix replay, and late-failure rollback.
+Migration 0011 losslessly rebuilds the same CHECK-constrained core to add proposed-experiment and
+equipment-type proposal envelopes, typed protocol/target/requirement/capability detail, and exact
+focused criticism. It preserves populated history and bytes, restores child rows around the
+constraint-changing cutover, rejects evidence/run/inventory fields, and is tested with an actual
+seeded Wrangler-local-D1 database, persisted-prefix retry, late-failure rollback, foreign-key
+checks, and a compound-SELECT term budget. `scripts/check-public-d1-populated.mjs` is the standalone
+local gate for that populated migration path.
 
 The schema has one stable proposal identity, immutable contiguous revisions, and a dedicated detail
 table for each of these kinds:
@@ -74,8 +83,10 @@ table for each of these kinds:
 - existing-member assessment;
 - explicit existing-member correction;
 - ontology change;
-- explanatory conjecture.
-- research topic.
+- explanatory conjecture;
+- research topic;
+- proposed experiment;
+- equipment type.
 
 Every new axis member declares a canonical-vocabulary, non-evidentiary initial status. Interface
 proposals also declare canonical observation kind and units; the maintainer bridge never invents
@@ -101,6 +112,17 @@ conjectural organization. Topic relations are exact-version claims using only `d
 `rival-to`, `complements`, `refines`, `reclassifies`, and `addresses-same-problem`; they never
 merge identities or change workflow. `active|paused|retired` is administrative visibility only,
 never answered, true, important, prioritized, ranked, or supported.
+
+Proposed experiments are versioned definitions, never runs or results. They require an explicit
+physical/simulation/analytical/hybrid kind, falsification/discrimination/characterization/
+calibration/replication intent, exact targets, decisive protocols, controls, observables,
+calibration, repetitions, uncertainty, success criteria, falsifiers, confounds, raw-artifact
+retention, non-claims, dependencies, relations, topic links, citations, and capability-based
+equipment requirement groups. Equipment-type proposals describe capabilities, operating limits,
+calibration, safety, interfaces, and non-claims only; they do not assert an instance, vendor,
+availability, procurement, laboratory, budget, schedule, run, or result. Operator-supplied
+illustrative experiment families are served from a separate fixture catalog with explicit
+`illustrative-unadmitted` status and no D1 seed or evidence claim.
 
 `/research-topics/`, stable detail URLs, and `/api/research-topics` publish the bounded collection
 with locus/status/origin/coordinate/text filtering, filter-bound cursors, exact history, and
@@ -266,6 +288,11 @@ For a research topic with already governed exact origins, the bridge emits a can
 revision 1, its multi-locus and origin links, an `active` non-epistemic workflow event, and exact
 export-digest provenance. It refuses public-only origins, prospective coordinate links, and public
 topic relations until the referenced identities are governed; it never invents those links.
+For a proposed experiment, the bridge emits only a canonical definition/version, its typed
+requirements and relations, and exact provenance. It refuses public-only or prospective targets
+until the referenced problem, conjecture, or research-topic version is governed. Equipment-type
+exports remain capability definitions and explicitly exclude instances, procurement, availability,
+and runs; neither export path promotes or mutates the canonical registry.
 
 The Worker cannot promote an export. A maintainer downloads the public export wrapper and runs:
 
@@ -316,7 +343,8 @@ renaming those identifiers would break historical hashes and consumers.
 ```text
 pnpm generate:data       # write canonical static snapshots
 pnpm check:data          # prove snapshot byte determinism
-pnpm db:check            # fresh local-D1 migration/invariant/FK proof
+pnpm db:check            # fresh empty local-D1 migration/invariant/FK proof
+pnpm db:check:populated  # seeded local-D1 preservation/retry/rollback/compound-SELECT proof
 pnpm db:migrate:local    # migrate the persistent Wrangler local D1
 pnpm operator:bootstrap  # one-time initial D1 operator grant; pass local/remote, login, authority ref
 pnpm dev:astro           # static UI only, with Astro HMR
