@@ -14,10 +14,10 @@
     "operator:bootstrap": "node scripts/bootstrap-operator.mjs",
     "x402:agent": "node scripts/x402-agent-fixture.mjs",
     "prepare:admission": "node scripts/prepare-domain-admission.mjs",
-    "dev:astro": "pnpm run generate:data && astro dev",
+    "dev:astro": "pnpm --filter @narada-core/ui build && pnpm run generate:data && astro dev",
     "dev": "pnpm run build && pnpm run db:migrate:local && wrangler dev --local",
     "preview:audit": "pnpm run build && astro preview --host 127.0.0.1 --port 8787",
-    "build": "pnpm run generate:data && astro build",
+    "build": "pnpm --filter @narada-core/ui build && pnpm run generate:data && astro build",
     "check": "pnpm run check:data && pnpm run db:check && astro check",
     "test": "node --test tests/*.test.mjs",
     "test:visual": "playwright test --config playwright.config.mjs",
@@ -27,6 +27,7 @@
     "ship": "pnpm run build && pnpm run db:migrate:remote && wrangler deploy"
   },
   "dependencies": {
+    "@narada-core/ui": "workspace:*",
     "@base-org/account": "2.5.9",
     "@coinbase/x402": "2.1.0",
     "@x402/core": "2.22.0",

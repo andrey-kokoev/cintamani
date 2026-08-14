@@ -1,26 +1,28 @@
+@import '@narada-core/ui/design-system.css';
+
 :root {
   color-scheme: dark;
-  --ink: #edf7f5;
-  --muted: #9db2b3;
-  --dim: #718789;
-  --placeholder: #6f8387;
-  --ground: #071117;
-  --panel: #0c1a21;
-  --panel-raised: #10232a;
-  --line: #244048;
-  --line-soft: #172e35;
-  --ochre: #ffae62;
-  --ochre-hover: #ffc07f;
-  --ochre-soft: #3b2a1d;
-  --status-good: #72d6aa;
-  --status-neutral: #b4c4c6;
-  --status-neutral-soft: #1c3034;
-  --status-gap: #dda5c2;
-  --status-gap-soft: #3d2734;
-  --later: #a9bfe4;
-  --radius: 18px;
-  --shadow: 0 24px 80px rgb(0 0 0 / 28%);
-  font-family: Inter, "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --ink: var(--color-text);
+  --muted: var(--color-text-muted);
+  --dim: var(--neutral-400);
+  --placeholder: var(--neutral-400);
+  --ground: var(--color-canvas);
+  --panel: var(--color-surface);
+  --panel-raised: var(--color-surface-raised);
+  --line: var(--color-border);
+  --line-soft: color-mix(in srgb, var(--color-border) 55%, transparent);
+  --ochre: var(--color-primary);
+  --ochre-hover: var(--color-primary-hover);
+  --ochre-soft: var(--color-primary-soft);
+  --status-good: var(--status-positive);
+  --status-neutral: var(--neutral-300);
+  --status-neutral-soft: var(--color-surface);
+  --status-gap: var(--evidence-synthetic);
+  --status-gap-soft: color-mix(in srgb, var(--evidence-synthetic) 18%, transparent);
+  --later: var(--status-info);
+  --radius: var(--radius-lg);
+  --shadow: var(--shadow-overlay);
+  font-family: var(--font-sans);
 }
 
 * {

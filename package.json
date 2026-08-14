@@ -11,8 +11,11 @@
     ]
   },
   "scripts": {
-    "build": "pnpm --recursive run build",
-    "check": "pnpm --recursive run check",
+    "source:assemble": "node scripts/assemble-narada-source.mjs",
+    "source:check": "node scripts/assemble-narada-source.mjs --check",
+    "bootstrap": "node scripts/assemble-narada-source.mjs && pnpm install",
+    "build": "pnpm --filter @narada-core/ui build && pnpm --recursive run build",
+    "check": "pnpm --filter @narada-core/ui build && pnpm --recursive run check",
     "test": "pnpm --recursive run test",
     "domain:init": "pnpm --filter @cintamani/domain domain:init",
     "domain:rebuild": "pnpm --filter @cintamani/domain domain:rebuild",
@@ -28,9 +31,9 @@
     "site:check": "pnpm --filter @cintamani/site check",
     "site:test": "pnpm --filter @cintamani/site test",
     "site:test:visual": "pnpm --filter @cintamani/site test:visual",
-    "site:build": "pnpm --filter @cintamani/site build",
+    "site:build": "pnpm --filter @narada-core/ui build && pnpm --filter @cintamani/site build",
     "site:worker-check": "pnpm --filter @cintamani/site worker:dry-run",
     "site:preview": "pnpm --filter @cintamani/site preview",
-    "site:ship": "pnpm --filter @cintamani/site ship"
+    "site:ship": "pnpm --filter @narada-core/ui build && pnpm --filter @cintamani/site ship"
   }
 }
