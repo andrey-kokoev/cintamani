@@ -21,13 +21,31 @@ steps:
          recent claims) via the epistemic-graph MCP surface to establish what
          "material" means today.
       2. Run fresh web searches (last ~7 days, prefer primary sources) across
-         the four tracked fronts:
-         - TFLT (thin-film lithium tantalate) Kerr and Raman frequency combs
-         - information-processing capacity (IPC) bounds for photonic
-           reservoir computers
-         - microring-resonator reservoir computing (new architectures,
-           benchmarks, training schemes)
-         - CsPbBr3 persistent photoconductivity / optical memory
+         the tracked fronts (one focused query per front, more only if a
+         front turns up candidates):
+         - TFLT platform: Kerr/Raman frequency combs, periodically-poled
+           SHG and chi(2) nonlinear mixing, electro-optic combs/modulators,
+           wafer-scale fabrication, photorefractive effect and DC stability
+         - information-processing capacity (IPC) and capacity theory:
+           bounds, data-efficient estimation, noise effects, eigenspectral
+           or modal organization of capacity in physical reservoirs
+         - photonic reservoir computing: microring architectures, MZI or
+           cascaded structures, frequency-multiplexed comb reservoirs,
+           deep/chained reservoirs, electro-optic analog memory, new
+           benchmarks and training schemes
+         - volumetric optical state and memory materials: CsPbBr3 and other
+           halide perovskites (persistent photoconductivity, perovskite-in-
+           glass), photorefractives, spectral hole burning, photochromics,
+           holographic/volumetric storage with persistence and rewritability
+         - recurrence versus depth in machine learning: recurrent-depth or
+           looped architectures, recurrence substituting for depth, scaling
+           of test-time compute with recurrence count
+         - physical and analog computation theory: thermodynamics and
+           entropy of computation, noise survival of analog dynamics,
+           trainability of physical systems as computers
+         - compositional and categorical models of computation: process
+           theories, resource theories, functorial bounds between logical
+           and physical process categories
       3. For each candidate source, judge materiality: does it add a claim,
          strengthen/weaken an existing claim, or open a question relevant to
          the graph? Record negative results too.
@@ -55,7 +73,7 @@ steps:
       questions opened. Return the record reference as the step result.
 
 acceptance_criteria:
-  - All four tracked fronts were searched with fresh queries
+  - All tracked fronts were searched with fresh queries
   - Every material source has a concrete locator and declared graph linkage
   - A capture_sources proposal was admitted, or "no material sources" was declared explicitly
   - A sweep.record for this occurrence key exists on the graph

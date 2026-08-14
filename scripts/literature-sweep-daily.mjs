@@ -49,6 +49,7 @@ const loader = await McpProcessClient.start({
 try {
   const attached = unwrap(await loader.callTool('mcp_loader_attach_surface', {
     site_root: SITE_ROOT,
+    binding_id: 'cintamani-sop',
     surface_id: 'sop',
   }));
   const connectionId = attached.connection_id;
