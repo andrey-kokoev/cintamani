@@ -1,0 +1,124 @@
+{
+  "schema": "narada.epistemic.proposal.v1",
+  "proposal_id": "ep_7f903db1-953f-4e15-91c3-d3e8252acf35",
+  "status": "submitted",
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260814-manual-5-new-fronts (run sop_run_20260814T204635_f5d0ba0e), run_sweep step: first sweep of the three newly added fronts."
+  },
+  "idempotency_key": "cintamani-sop-sweep-20260814-manual-5-v1",
+  "expected_ledger_head": "048aa4ae622482a7e0363b6c93b84e8543e0574423173b3cc5e66fb7dd505519",
+  "created_at": "2026-08-14T20:49:06.7391605Z",
+  "content_fingerprint": "8e7ae3eb097aa2c7a8ccd82fb1a22a45677860277fe19c28f1852c3982046daf",
+  "operations": [
+    {
+      "op": "entity.declare",
+      "local_ref": "src_mamba",
+      "kind": "source",
+      "title": "Looped State-Space Language Models with Adaptive Exit-State Selection (Looped Mamba)",
+      "version": "arXiv:2607.10110v1 (2026-07-11)",
+      "locator": "arxiv:2607.10110",
+      "entity_id": "source:6fa23ee2d3dff303aaa9"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_mamba",
+      "kind": "claim",
+      "title": "Depth-recurrence over a shared block substitutes for architectural depth on reasoning tasks under iso-parameter and iso-FLOPs protocols (Looped Mamba matches parameter-matched and sometimes depth-matched non-looped baselines), though deeper non-looped models retain an edge",
+      "entity_id": "claim:4d9a8f2d899fb0f3051c"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_mamba",
+      "target_ref": "src_mamba",
+      "source_id": "claim:4d9a8f2d899fb0f3051c",
+      "target_id": "source:6fa23ee2d3dff303aaa9",
+      "relation_id": "rel:derived_from-f9dd002762442d27"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_mamba",
+      "target_id": "prob:recurrence-vs-depth-substitution",
+      "source_id": "claim:4d9a8f2d899fb0f3051c",
+      "relation_id": "rel:addresses-91e8ffc5e41fad61"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_membudget",
+      "kind": "source",
+      "title": "Chain-of-Thought and Compressed Looped Transformers: A Memory-Budget Separation (Zhang 2026)",
+      "version": "arXiv:2605.30757v1 (2026-05-29)",
+      "locator": "arxiv:2605.30757",
+      "entity_id": "source:2677b2326c13bd8ed282"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_membudget",
+      "kind": "claim",
+      "title": "Compressed recurrent loops are bounded by recurrent-state size: looping longer adds computation but not working memory, so small-state loops remain small-space reasoners (cannot decide P-complete problems under logspace reductions, unlike polynomial chain-of-thought); persistent mutable memory is the central test-time reasoning resource",
+      "entity_id": "claim:83665615f70c434d7e43"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_membudget",
+      "target_ref": "src_membudget",
+      "source_id": "claim:83665615f70c434d7e43",
+      "target_id": "source:2677b2326c13bd8ed282",
+      "relation_id": "rel:derived_from-cc92314d4be6a59f"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_membudget",
+      "target_id": "prob:recurrence-depth-scaling",
+      "source_id": "claim:83665615f70c434d7e43",
+      "relation_id": "rel:addresses-e4884ff6f7cd83f0"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_membudget",
+      "target_id": "prob:persistent-volumetric-state-material",
+      "source_id": "claim:83665615f70c434d7e43",
+      "relation_id": "rel:addresses-10acd440cc9b5085"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_whitelam",
+      "kind": "source",
+      "title": "Training thermodynamic computers by gradient descent (Whitelam 2026)",
+      "version": "PNAS 2026 (PMC13056118)",
+      "locator": "https://pmc.ncbi.nlm.nih.gov/articles/PMC13056118/",
+      "entity_id": "source:ebd40677b775ae314919"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_whitelam",
+      "kind": "claim",
+      "title": "Noise-driven nonlinear thermodynamic computers (overdamped Langevin dynamics) can be trained by gradient descent via an Onsager-Machlup teacher-student scheme to enact neural-network computations on a clock (MNIST 92.0% top-1, ~95% of digital teacher; estimated thermodynamic energy advantage exceeding seven orders of magnitude)",
+      "entity_id": "claim:c2a97a5b5ebb4f665fb3"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_whitelam",
+      "target_ref": "src_whitelam",
+      "source_id": "claim:c2a97a5b5ebb4f665fb3",
+      "target_id": "source:ebd40677b775ae314919",
+      "relation_id": "rel:derived_from-a9f80df84a83def4"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_whitelam",
+      "target_id": "prob:entropy-qualified-not-trainable",
+      "source_id": "claim:c2a97a5b5ebb4f665fb3",
+      "relation_id": "rel:addresses-effbaaaf31b7f2d4"
+    }
+  ],
+  "digest": "ce0b0033cf8f4c69c4b1810b3b44c62a9de6af098b68627a183b1f9a49564ba8"
+}

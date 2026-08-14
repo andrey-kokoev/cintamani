@@ -1,0 +1,25 @@
+{
+  "schema": "narada.epistemic.proposal.v1",
+  "proposal_id": "ep_a1f57a6c-a5a6-45f8-9603-347cd54b4542",
+  "status": "submitted",
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260814-manual-5-new-fronts (run sop_run_20260814T204635_f5d0ba0e), step record_run."
+  },
+  "idempotency_key": "cintamani-sop-sweep-record-20260814-manual-5-v1",
+  "expected_ledger_head": "a1ae30c7f7fd6ccccb28c720466a2420f26be85dd96fbc5159a107d906f6f55c",
+  "created_at": "2026-08-14T20:50:32.4083513Z",
+  "content_fingerprint": "b7efb3d24cf0c998cf0b7cdcfb4d51e04dfd84191248317a0b5c56fbf7f893f9",
+  "operations": [
+    {
+      "op": "sweep.record",
+      "sweep_id": "sweep:literature-sweep:20260814-manual-5-new-fronts",
+      "interval_start": "2026-08-14",
+      "interval_end": "2026-08-14",
+      "method": "First sweep of the three fronts added in SOP v2 (recurrence-vs-depth, physical/analog computation theory, compositional/categorical models). 3 scoped web queries; material candidates verified by fetching primary-source abstracts (arXiv abstract pages, PMC full text).",
+      "result": "MATERIAL (3 sources, admitted as ev-000000000012, proposal ep_7f903db1): arXiv:2607.10110 Looped Mamba (depth-recurrence substitutes for depth iso-param/iso-FLOPs; addresses prob:recurrence-vs-depth-substitution); arXiv:2605.30757 memory-budget separation (compressed loops bounded by recurrent-state size, cannot decide P-complete under logspace; persistent mutable memory as central test-time resource; addresses prob:recurrence-depth-scaling and prob:persistent-volumetric-state-material); Whitelam 2026 PNAS PMC13056118 (gradient-descent training of noise-driven thermodynamic computers, MNIST 92% top-1 at ~95% of teacher, >7 orders energy advantage; addresses prob:entropy-qualified-not-trainable). NEGATIVE: compositional/categorical front — only ACT 2026 conference announcements. Follow-up: the memory-budget separation directly supports the VRC persistent-state thesis and suggests the kerr-capacity instrument should treat persistent mutable state size as the binding resource, not iteration count."
+    }
+  ],
+  "digest": "235d5da84e9dc216d30b5a564e9626b2a688d0f2d19ff671b6890c9fb544cc8e"
+}
