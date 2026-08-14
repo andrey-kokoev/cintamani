@@ -10,6 +10,8 @@ pnpm monorepo for experiments derived from the VRC ledger in `src/ledger`.
   admission chain, typed histories/provenance, bounded search queries, and a local stdio MCP.
 - `packages/cintamani-site` — static Astro registry presentation plus a separate public D1 proposal,
   criticism, and administrative-history plane served by a Cloudflare Worker.
+- `packages/amplitudes-at-infinity` — Rust Task #11 exact rational planar propagator slice
+  (experimental, unreviewed).
 
 Run workspace checks with:
 

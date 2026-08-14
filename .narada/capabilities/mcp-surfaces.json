@@ -3,7 +3,7 @@
   "artifact_role": "site_capability_surface_registry_not_mcp_client_config",
   "site_id": "cintamani",
   "generated_by": "mcp-registrar",
-  "generated_at": "2026-08-13T18:53:10.7451113Z",
+  "generated_at": "2026-08-14T05:59:49.8604134Z",
   "generation_policy": {
     "source": ".ai/mcp + registrar surface catalog",
     "mode": "enabled_surface_tool_authority",
@@ -3030,23 +3030,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/46f081022afd5cf4912ef3d00bb7ed2484d61452b0f4910ebedbe080afad53af/narada-agent-context-mcp.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/17d2a15021c60e8f27135cd2a028ff226bb67bf742b95d5fa1706dcada42ff31/narada-agent-context-mcp.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "agent-context",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/46f081022afd5cf4912ef3d00bb7ed2484d61452b0f4910ebedbe080afad53af/narada-agent-context-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/17d2a15021c60e8f27135cd2a028ff226bb67bf742b95d5fa1706dcada42ff31/narada-agent-context-mcp.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/46f081022afd5cf4912ef3d00bb7ed2484d61452b0f4910ebedbe080afad53af/narada-agent-context-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/agent-context-mcp/dist/native/versions/17d2a15021c60e8f27135cd2a028ff226bb67bf742b95d5fa1706dcada42ff31/narada-agent-context-mcp.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
@@ -3484,30 +3484,28 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "artifacts",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
             "--surface-id",
-            "artifacts",
-            "--site-root",
-            "C:\\Users\\andrey\\src\\cintamani"
+            "artifacts"
           ]
         }
       },
@@ -3559,6 +3557,2464 @@
       "evidence": {
         "source": "site_mcp_fabric",
         "path": ".ai/mcp/narada-cintamani-artifacts-mcp.json",
+        "projection_kind": "site_fabric"
+      }
+    },
+    {
+      "surface_id": "narada-cintamani-epistemic-graph.local",
+      "surface_projection": {
+        "surface_id": "epistemic-graph",
+        "projection_id": "default",
+        "injection_scope": "local_site",
+        "runtime_requirements": [],
+        "exposed_tools": [
+          "epistemic_graph_guidance",
+          "epistemic_graph_status",
+          "epistemic_graph_query",
+          "epistemic_graph_query_batch",
+          "epistemic_graph_source_inspect",
+          "epistemic_graph_neighborhood",
+          "epistemic_graph_proposal_submit",
+          "epistemic_graph_submit_review_admit",
+          "epistemic_graph_capture_sources",
+          "epistemic_graph_proposal_read",
+          "epistemic_graph_proposal_resubmit",
+          "epistemic_graph_proposal_review",
+          "epistemic_graph_proposal_admit",
+          "epistemic_graph_proposal_reject",
+          "epistemic_graph_export"
+        ],
+        "execution": {
+          "adapter": "stdio",
+          "tenancy": "session_isolated",
+          "replacement": "manual"
+        },
+        "descriptor_digest": "ec1cd6069cf1e20a548ac8077d343b1749a247303b4b8e466d8940dbfbeaeb17",
+        "tool_contract_digest": "5bfd012ceec252f629b2b7e6b3484bbbf981972159b2b1e63648d411dbe8959d",
+        "surface_descriptor": {
+          "schema_version": "2.0",
+          "source": "native",
+          "surface_id": "epistemic-graph",
+          "surface_version": "0.1.0",
+          "package": "@narada-core/mcp-surfaces-native",
+          "guidance_tool": "epistemic_graph_guidance",
+          "tools": [
+            {
+              "name": "epistemic_graph_guidance",
+              "description": "Native epistemic graph operation: epistemic_graph_guidance.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_guidance",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_status",
+              "description": "Native epistemic graph operation: epistemic_graph_status.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_status",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_query",
+              "description": "Native epistemic graph operation: epistemic_graph_query.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_query",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_query_batch",
+              "description": "Native epistemic graph operation: epistemic_graph_query_batch.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_query_batch",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_source_inspect",
+              "description": "Native epistemic graph operation: epistemic_graph_source_inspect.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_source_inspect",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_neighborhood",
+              "description": "Native epistemic graph operation: epistemic_graph_neighborhood.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_neighborhood",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_proposal_submit",
+              "description": "Native epistemic graph operation: epistemic_graph_proposal_submit.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_proposal_submit",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "idempotent_with_key",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_submit_review_admit",
+              "description": "Native epistemic graph operation: epistemic_graph_submit_review_admit.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_submit_review_admit",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "idempotent_with_key",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_capture_sources",
+              "description": "Native epistemic graph operation: epistemic_graph_capture_sources.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_capture_sources",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "idempotent_with_key",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_proposal_read",
+              "description": "Native epistemic graph operation: epistemic_graph_proposal_read.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_proposal_read",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_proposal_resubmit",
+              "description": "Native epistemic graph operation: epistemic_graph_proposal_resubmit.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_proposal_resubmit",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "idempotent_with_key",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_proposal_review",
+              "description": "Native epistemic graph operation: epistemic_graph_proposal_review.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_proposal_review",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "idempotent_with_key",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_proposal_admit",
+              "description": "Native epistemic graph operation: epistemic_graph_proposal_admit.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_proposal_admit",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "idempotent_with_key",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_proposal_reject",
+              "description": "Native epistemic graph operation: epistemic_graph_proposal_reject.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_proposal_reject",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "idempotent_with_key",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "epistemic_graph_export",
+              "description": "Native epistemic graph operation: epistemic_graph_export.",
+              "input_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "epistemic_graph_export",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "policy"
+              }
+            }
+          ],
+          "projections": [
+            {
+              "id": "default",
+              "transport": {
+                "kind": "stdio",
+                "command": "narada-mcp-surfaces",
+                "args": [
+                  "--surface-id",
+                  "epistemic-graph",
+                  "--site-root",
+                  "{site_root}"
+                ],
+                "env": []
+              },
+              "injection_scope": "local_site",
+              "default_injection": "enabled",
+              "runtime_requirements": [],
+              "authority_requirements": [
+                "scope.local_site"
+              ],
+              "lifecycle": {
+                "mode": "replayable",
+                "reason": "Canonical events are immutable and the query projection is rebuildable."
+              }
+            }
+          ],
+          "metadata": {
+            "authority": "tracked_event_ledger",
+            "truth_certification": false
+          }
+        },
+        "lifecycle": {
+          "mode": "replayable",
+          "reason": "Canonical events are immutable and the query projection is rebuildable."
+        }
+      },
+      "surface_type": "mcp_surface",
+      "display_name": "narada-cintamani-epistemic-graph",
+      "server_name": "narada-cintamani-epistemic-graph",
+      "runtime_binding": {
+        "runtime_kind": "rust-stdio",
+        "proxy_implementation": "native",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
+        "owner_site_id": "cintamani",
+        "transport": {
+          "type": "stdio",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
+          "args": [
+            "proxy",
+            "--surface-id",
+            "epistemic-graph",
+            "--child-command",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
+            "--artifact-manifest",
+            "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
+            "--runtime-contract-version",
+            "8",
+            "--entrypoint",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
+            "--child-invocation-kind",
+            "native_entrypoint",
+            "--",
+            "--surface-id",
+            "epistemic-graph",
+            "--site-root",
+            "C:\\Users\\andrey\\src\\cintamani"
+          ]
+        }
+      },
+      "authority_boundary": {
+        "posture": "registrar_generated_runtime_surface_registry",
+        "grants_tool_authority": true,
+        "granted_tool_authority_kind": "declared_enabled_mcp_surface_tools",
+        "source": "site_mcp_fabric_and_registrar_catalog"
+      },
+      "client_config": {
+        "generated_path": ".ai/mcp/narada-cintamani-epistemic-graph-mcp.json",
+        "generated_file": "narada-cintamani-epistemic-graph-mcp.json"
+      },
+      "tool_contract": {
+        "exposed_tools": [
+          "epistemic_graph_guidance",
+          "epistemic_graph_status",
+          "epistemic_graph_query",
+          "epistemic_graph_query_batch",
+          "epistemic_graph_source_inspect",
+          "epistemic_graph_neighborhood",
+          "epistemic_graph_proposal_submit",
+          "epistemic_graph_submit_review_admit",
+          "epistemic_graph_capture_sources",
+          "epistemic_graph_proposal_read",
+          "epistemic_graph_proposal_resubmit",
+          "epistemic_graph_proposal_review",
+          "epistemic_graph_proposal_admit",
+          "epistemic_graph_proposal_reject",
+          "epistemic_graph_export"
+        ],
+        "semantic_operations": [],
+        "deprecated_aliases": {},
+        "read_only_tools": [
+          "epistemic_graph_guidance",
+          "epistemic_graph_status",
+          "epistemic_graph_query",
+          "epistemic_graph_query_batch",
+          "epistemic_graph_source_inspect",
+          "epistemic_graph_neighborhood",
+          "epistemic_graph_proposal_read",
+          "epistemic_graph_export"
+        ],
+        "mutating_tools": [
+          "epistemic_graph_proposal_submit",
+          "epistemic_graph_submit_review_admit",
+          "epistemic_graph_capture_sources",
+          "epistemic_graph_proposal_resubmit",
+          "epistemic_graph_proposal_review",
+          "epistemic_graph_proposal_admit",
+          "epistemic_graph_proposal_reject"
+        ],
+        "refused_tools": []
+      },
+      "registered_live_tools": [
+        "epistemic_graph_guidance",
+        "epistemic_graph_status",
+        "epistemic_graph_query",
+        "epistemic_graph_query_batch",
+        "epistemic_graph_source_inspect",
+        "epistemic_graph_neighborhood",
+        "epistemic_graph_proposal_submit",
+        "epistemic_graph_submit_review_admit",
+        "epistemic_graph_capture_sources",
+        "epistemic_graph_proposal_read",
+        "epistemic_graph_proposal_resubmit",
+        "epistemic_graph_proposal_review",
+        "epistemic_graph_proposal_admit",
+        "epistemic_graph_proposal_reject",
+        "epistemic_graph_export"
+      ],
+      "catalog_surface_id": "epistemic-graph",
+      "evidence": {
+        "source": "site_mcp_fabric",
+        "path": ".ai/mcp/narada-cintamani-epistemic-graph-mcp.json",
+        "projection_kind": "site_fabric"
+      }
+    },
+    {
+      "surface_id": "narada-cintamani-git.local",
+      "surface_projection": {
+        "surface_id": "git",
+        "projection_id": "default",
+        "injection_scope": "local_site",
+        "runtime_requirements": [],
+        "exposed_tools": [
+          "git_guidance",
+          "git_policy_inspect",
+          "git_status",
+          "git_fetch",
+          "git_rebase",
+          "git_rebase_continue",
+          "git_rebase_abort",
+          "git_merge",
+          "git_merge_continue",
+          "git_merge_abort",
+          "git_sync_status",
+          "git_branch_list",
+          "git_output_show",
+          "git_changed_summary",
+          "git_repositories_summary",
+          "git_workflow_record",
+          "git_diff",
+          "git_log",
+          "git_show",
+          "git_begin_work_scope",
+          "git_end_work_scope",
+          "git_add",
+          "git_unstage",
+          "git_commit_paths",
+          "git_reconcile_index",
+          "git_commit",
+          "git_push",
+          "git_branch_create",
+          "git_branch_switch",
+          "git_branch_rename",
+          "git_branch_delete",
+          "git_branch_delete_remote",
+          "git_branch_set_upstream",
+          "git_branch_unset_upstream"
+        ],
+        "execution": {
+          "adapter": "stdio",
+          "tenancy": "session_isolated",
+          "replacement": "manual"
+        },
+        "descriptor_digest": "616349d29ef6068fd0fe417916894486feca74359209f3c1379bb1c276d5b8c9",
+        "tool_contract_digest": "03451be68f5d64c12476a52a57d4c11fc22410d3e92a3f07c3fada5971bfe600",
+        "surface_descriptor": {
+          "schema_version": "2.0",
+          "source": "native",
+          "surface_id": "git",
+          "surface_version": "0.1.0",
+          "package": "@narada-core/git-mcp",
+          "guidance_tool": "git_guidance",
+          "tools": [
+            {
+              "name": "git_guidance",
+              "description": "Show model-facing operating guidance for git MCP workflows.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "workflow": {
+                    "type": "string",
+                    "description": "Optional workflow name or area to focus guidance on."
+                  },
+                  "tool": {
+                    "type": "string",
+                    "description": "Optional tool name for tool-specific guidance."
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_guidance",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_policy_inspect",
+              "description": "Inspect the policy governing Git MCP operations.",
+              "input_schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_policy_inspect",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_status",
+              "description": "Inspect branch, upstream, remotes, and bounded dirty-state summaries. Supports explicit work-scope, path-scoped, staged-only, and summary queries.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Optional short-lived work-scope reference issued by git_begin_work_scope."
+                  },
+                  "pathspec": {
+                    "type": "string",
+                    "description": "Optional single path prefix or Git pathspec to inspect."
+                  },
+                  "pathspecs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional path prefixes or Git pathspecs to inspect."
+                  },
+                  "staged_only": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Return only paths with staged index changes."
+                  },
+                  "include_untracked": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Include untracked paths in the result; defaults to true for compatibility."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "paths",
+                      "summary"
+                    ],
+                    "default": "full",
+                    "description": "full returns entries, paths returns bounded matching paths, summary returns counts and branch state."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_status",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_fetch",
+              "description": "Fetch one explicit branch from one configured remote without tags or arbitrary refspecs.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "remote": {
+                    "type": "string",
+                    "description": "Configured remote name."
+                  },
+                  "branch": {
+                    "type": "string",
+                    "description": "Explicit remote branch name."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "remote",
+                  "branch"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_fetch",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_rebase",
+              "description": "Rebase onto one explicit commit-ish with governed dirty-worktree checks and structured conflict recovery.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "onto": {
+                    "type": "string",
+                    "description": "Explicit branch, tag, or commit to rebase onto."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "autostash": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Required for tracked dirty worktrees; untracked files are always refused."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "onto",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_rebase",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_rebase_continue",
+              "description": "Continue an in-progress rebase after all conflict paths have been resolved and staged.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_rebase_continue",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_rebase_abort",
+              "description": "Abort an in-progress rebase and read back the restored repository state.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_rebase_abort",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_merge",
+              "description": "Merge one explicit commit-ish with governed dirty-worktree checks and structured conflict recovery.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "target": {
+                    "type": "string",
+                    "description": "Explicit branch, tag, or commit to merge."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "autostash": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Required for tracked dirty worktrees; untracked files are always refused."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "target",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_merge",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_merge_continue",
+              "description": "Complete an in-progress merge after all conflict paths have been resolved and staged.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_merge_continue",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_merge_abort",
+              "description": "Abort an in-progress merge and read back the restored repository state.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_merge_abort",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_sync_status",
+              "description": "Inspect whether a rebase or merge is in progress, including conflict paths and governed recovery actions.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_sync_status",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_branch_list",
+              "description": "List local and/or remote branches with object ids, current-branch state, and upstream metadata.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "local",
+                      "remote",
+                      "all"
+                    ],
+                    "default": "all"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "default": 100,
+                    "minimum": 1,
+                    "maximum": 500
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_branch_list",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_output_show",
+              "description": "Read a materialized Git MCP output_ref produced when a large structured result exceeds inline transport limits. Use the original git_diff next_offset inside the materialized result for diff paging; output_show offset pages the materialized JSON wrapper.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string",
+                    "description": "Materialized output ref, e.g. mcp_output:<id>. Alias: output_ref."
+                  },
+                  "output_ref": {
+                    "type": "string",
+                    "description": "Alias for ref."
+                  },
+                  "offset": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Character offset into the materialized JSON output."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "default": 10000,
+                    "minimum": 1,
+                    "maximum": 20000,
+                    "description": "Maximum output characters to return; the transport hard-caps this value."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_output_show",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_changed_summary",
+              "description": "Return a compact dirty-state summary: tracked changed paths, untracked counts grouped by top-level directory, and optional pathspec/expected-path relevance matches. Does not include file diffs.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Defaults to the first allowed root."
+                  },
+                  "pathspec": {
+                    "type": "string",
+                    "description": "Optional single pathspec/prefix to highlight as relevant."
+                  },
+                  "pathspecs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional pathspec/prefix list to highlight as relevant."
+                  },
+                  "expected_paths": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional expected dirty paths or prefixes for ownership/task relevance."
+                  },
+                  "untracked_sample_limit": {
+                    "type": "integer",
+                    "default": 20,
+                    "description": "Maximum untracked path samples to include across groups."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_changed_summary",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_repositories_summary",
+              "description": "Summarize multiple repositories for multi-repo handoff and publication checks, including dirty paths, latest commit, remotes, and push readiness.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directories": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Repository directories under allowed roots. Omit a single working_directory to select the first allowed root; explicit relative directories use the MCP process current directory."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied label for the workflow being summarized."
+                  },
+                  "expected_paths_by_repository": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "description": "Optional map from working directory or repository root to paths expected to be dirty for this workflow."
+                  }
+                },
+                "required": [
+                  "working_directories"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_repositories_summary",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_workflow_record",
+              "description": "Record the final status of a multi-repository stage/commit/push workflow for handoff. Requires git-mcp mode=write.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "workflow_id": {
+                    "type": "string",
+                    "description": "Optional caller-supplied stable workflow id."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Required caller-supplied workflow label."
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Optional concise workflow summary."
+                  },
+                  "repositories": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "working_directory": {
+                          "type": "string",
+                          "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                        },
+                        "staged_paths": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "committed_sha": {
+                          "type": "string"
+                        },
+                        "pushed": {
+                          "type": "boolean"
+                        },
+                        "push_status": {
+                          "type": "string",
+                          "enum": [
+                            "pushed",
+                            "not_attempted",
+                            "failed",
+                            "not_pushable"
+                          ]
+                        },
+                        "push_reason": {
+                          "type": "string"
+                        },
+                        "unrelated_dirty_paths_left": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "working_directory"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "scope_label",
+                  "repositories"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_workflow_record",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_diff",
+              "description": "Show a paged Git diff for working tree, staged changes, or one commit; optionally include bounded untracked-file patches for working-tree review.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "working",
+                      "staged",
+                      "commit"
+                    ],
+                    "default": "working"
+                  },
+                  "pathspec": {
+                    "type": "string",
+                    "description": "Optional single Git pathspec. Use pathspecs for multiple paths."
+                  },
+                  "pathspecs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional Git pathspec list for multi-path diffs."
+                  },
+                  "commit": {
+                    "type": "string",
+                    "description": "Required when scope is commit."
+                  },
+                  "offset": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Character offset into the complete diff. Use next_offset from the prior result to continue."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "default": 4000,
+                    "description": "Maximum diff characters to return in this page."
+                  },
+                  "include_untracked": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "When scope=working, append bounded patches for untracked files matched by pathspec."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_diff",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_log",
+              "description": "List recent commits, optionally limited to one path.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "default": 20
+                  },
+                  "pathspec": {
+                    "type": "string",
+                    "description": "Optional Git pathspec."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_log",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_show",
+              "description": "Show one commit with metadata and optional patch.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "commit": {
+                    "type": "string"
+                  },
+                  "pathspec": {
+                    "type": "string",
+                    "description": "Optional Git pathspec."
+                  },
+                  "include_patch": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": [
+                  "commit"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_show",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "git_begin_work_scope",
+              "description": "Acquire a durable cooperative lease for explicit paths or exclusive repository topology. Topology leases conflict with every live lease and detect out-of-band repository drift before mutation.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "owner_id": {
+                    "type": "string",
+                    "description": "Stable caller or agent identity that owns and must release the lease."
+                  },
+                  "scope_kind": {
+                    "type": "string",
+                    "enum": [
+                      "paths",
+                      "repository_topology"
+                    ],
+                    "default": "paths",
+                    "description": "Lease explicit paths, or exclusively lease branch/ref topology."
+                  },
+                  "allowed_paths": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Required for paths scope; forbidden for repository_topology."
+                  },
+                  "base_state": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Optional caller-supplied base state; supplied fields must match."
+                  }
+                },
+                "required": [
+                  "owner_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_begin_work_scope",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_end_work_scope",
+              "description": "Release a durable cooperative work-scope lease. The owner identity must match the lease.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "owner_id": {
+                    "type": "string",
+                    "description": "Owner identity supplied when the lease was acquired."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Work-scope reference to release."
+                  }
+                },
+                "required": [
+                  "owner_id",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_end_work_scope",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_add",
+              "description": "Preflight ignored paths, then stage explicit files or directories under a required durable work-scope lease and return a narrower index-scope reference for commit.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "paths": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Explicit file paths to stage."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required durable work-scope reference issued by git_begin_work_scope."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "paths",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_add",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_unstage",
+              "description": "Unstage explicit file paths under a required durable work-scope lease without modifying the working tree.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "paths": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Explicit file paths to unstage."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required durable work-scope reference covering every path."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "paths",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_unstage",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_commit_paths",
+              "description": "Commit explicit leased paths through a dedicated temporary index. Concurrent HEAD movement is refused and shared-index reconciliation uses Git index.lock.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "paths": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Exact files or directories to commit without staging them in the shared index."
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required durable work-scope reference covering every committed path."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "paths",
+                  "message",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_commit_paths",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_reconcile_index",
+              "description": "Retry a durable post-commit shared-index reconciliation while holding Git index.lock.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "reconciliation_ref": {
+                    "type": "string",
+                    "description": "Durable reconciliation reference returned by git_commit_paths."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Original durable work-scope reference recorded with the pending reconciliation."
+                  }
+                },
+                "required": [
+                  "reconciliation_ref",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_reconcile_index",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_commit",
+              "description": "Create a commit from already staged changes under a required durable work-scope lease.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "message": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required durable work-scope reference covering every staged path."
+                  },
+                  "index_scope_ref": {
+                    "type": "string",
+                    "description": "Optional short-lived exact-index reference returned by git_add."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  },
+                  "expected_staged_paths": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Exact staged display paths required before mutation."
+                  }
+                },
+                "required": [
+                  "message",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_commit",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_push",
+              "description": "Push the current branch or an explicit remote and branch. An expected commit ref verifies HEAD before publication; force push is not supported.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "remote": {
+                    "type": "string"
+                  },
+                  "branch": {
+                    "type": "string"
+                  },
+                  "expected_commit": {
+                    "type": "string",
+                    "description": "Optional commit SHA or commit_ref returned by git_commit; push refuses if HEAD differs."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_push",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_branch_create",
+              "description": "Create a local branch from HEAD or an explicit start point under an exclusive topology scope.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "start_point": {
+                    "type": "string",
+                    "description": "Optional commit, branch, or tag; defaults to HEAD."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "name",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_branch_create",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_branch_switch",
+              "description": "Switch to an existing local branch under an exclusive topology scope without discarding changes.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "branch": {
+                    "type": "string"
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "branch",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_branch_switch",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_branch_rename",
+              "description": "Rename an existing local branch under an exclusive topology scope.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "old_name": {
+                    "type": "string"
+                  },
+                  "new_name": {
+                    "type": "string"
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "old_name",
+                  "new_name",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_branch_rename",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_branch_delete",
+              "description": "Delete a merged local branch under an exclusive topology scope; force deletion is not supported.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "branch": {
+                    "type": "string"
+                  },
+                  "base": {
+                    "type": "string",
+                    "description": "Commit, branch, or tag used for the merged-only safety check; defaults to the current branch."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "branch",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_branch_delete",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_branch_delete_remote",
+              "description": "Delete a merged remote branch under an exclusive topology scope; force deletion is not supported.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "remote": {
+                    "type": "string"
+                  },
+                  "branch": {
+                    "type": "string"
+                  },
+                  "base": {
+                    "type": "string",
+                    "description": "Local commit, branch, or tag used for the merged-only safety check."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "remote",
+                  "branch",
+                  "base",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_branch_delete_remote",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_branch_set_upstream",
+              "description": "Set a local branch upstream under an exclusive topology scope.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "local_branch": {
+                    "type": "string",
+                    "description": "Local branch; defaults to the current branch."
+                  },
+                  "remote": {
+                    "type": "string"
+                  },
+                  "remote_branch": {
+                    "type": "string",
+                    "description": "Remote branch; defaults to local_branch."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "remote",
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_branch_set_upstream",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "git_branch_unset_upstream",
+              "description": "Remove upstream configuration under an exclusive topology scope.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "working_directory": {
+                    "type": "string",
+                    "description": "Repository directory under an allowed root. Omitted selects the first allowed root; an explicit relative value resolves against the MCP process current directory; prefer an absolute path when the target matters."
+                  },
+                  "local_branch": {
+                    "type": "string",
+                    "description": "Local branch; defaults to the current branch."
+                  },
+                  "work_scope_ref": {
+                    "type": "string",
+                    "description": "Required exclusive repository-topology scope issued by git_begin_work_scope with scope_kind=repository_topology."
+                  },
+                  "scope_label": {
+                    "type": "string",
+                    "description": "Optional caller-supplied audit label for this mutation."
+                  }
+                },
+                "required": [
+                  "work_scope_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "git_branch_unset_upstream",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            }
+          ],
+          "projections": [
+            {
+              "id": "default",
+              "transport": {
+                "kind": "stdio",
+                "command": "node",
+                "args": [
+                  "{mcp_surfaces_root}/git-mcp/dist/src/main.js",
+                  "--allowed-root",
+                  "{workspace_root}",
+                  "--mode",
+                  "write"
+                ],
+                "env": []
+              },
+              "injection_scope": "local_site",
+              "default_injection": "disabled",
+              "runtime_requirements": [],
+              "authority_requirements": [
+                "scope.local_site"
+              ],
+              "lifecycle": {
+                "mode": "replayable",
+                "reason": "Git state is external to the process and every operation carries its own repository context."
+              }
+            }
+          ],
+          "metadata": {
+            "lifecycle_readback": {
+              "authority": "mcp-loader",
+              "availability": "loader-managed",
+              "discovery": {
+                "tool_name": "mcp_loader_connection_inventory",
+                "arguments": {},
+                "select": {
+                  "field": "surface_id",
+                  "equals": "git",
+                  "result_field": "connection_id"
+                }
+              },
+              "status": {
+                "tool_name": "mcp_loader_surface_status",
+                "arguments": {
+                  "connection_id": "{connection_id}"
+                },
+                "connection_id_from": "discovery.selected.connection_id"
+              }
+            }
+          }
+        },
+        "lifecycle": {
+          "mode": "replayable",
+          "reason": "Git state is external to the process and every operation carries its own repository context."
+        }
+      },
+      "surface_type": "mcp_surface",
+      "display_name": "narada-cintamani-git",
+      "server_name": "narada-cintamani-git",
+      "runtime_binding": {
+        "runtime_kind": "rust-stdio",
+        "proxy_implementation": "native",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
+        "owner_site_id": "cintamani",
+        "transport": {
+          "type": "stdio",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
+          "args": [
+            "proxy",
+            "--surface-id",
+            "git",
+            "--child-command",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
+            "--artifact-manifest",
+            "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
+            "--runtime-contract-version",
+            "8",
+            "--entrypoint",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
+            "--child-invocation-kind",
+            "native_applet",
+            "--child-applet",
+            "git",
+            "--",
+            "--allowed-root",
+            "C:\\Users\\andrey\\src\\cintamani",
+            "--mode",
+            "write"
+          ]
+        }
+      },
+      "authority_boundary": {
+        "posture": "registrar_generated_runtime_surface_registry",
+        "grants_tool_authority": true,
+        "granted_tool_authority_kind": "declared_enabled_mcp_surface_tools",
+        "source": "site_mcp_fabric_and_registrar_catalog"
+      },
+      "client_config": {
+        "generated_path": ".ai/mcp/narada-cintamani-git-mcp.json",
+        "generated_file": "narada-cintamani-git-mcp.json"
+      },
+      "tool_contract": {
+        "exposed_tools": [
+          "git_guidance",
+          "git_policy_inspect",
+          "git_status",
+          "git_fetch",
+          "git_rebase",
+          "git_rebase_continue",
+          "git_rebase_abort",
+          "git_merge",
+          "git_merge_continue",
+          "git_merge_abort",
+          "git_sync_status",
+          "git_branch_list",
+          "git_output_show",
+          "git_changed_summary",
+          "git_repositories_summary",
+          "git_workflow_record",
+          "git_diff",
+          "git_log",
+          "git_show",
+          "git_begin_work_scope",
+          "git_end_work_scope",
+          "git_add",
+          "git_unstage",
+          "git_commit_paths",
+          "git_reconcile_index",
+          "git_commit",
+          "git_push",
+          "git_branch_create",
+          "git_branch_switch",
+          "git_branch_rename",
+          "git_branch_delete",
+          "git_branch_delete_remote",
+          "git_branch_set_upstream",
+          "git_branch_unset_upstream"
+        ],
+        "semantic_operations": [],
+        "deprecated_aliases": {},
+        "read_only_tools": [
+          "git_guidance",
+          "git_policy_inspect",
+          "git_status",
+          "git_sync_status",
+          "git_branch_list",
+          "git_output_show",
+          "git_changed_summary",
+          "git_repositories_summary",
+          "git_diff",
+          "git_log",
+          "git_show",
+          "git_begin_work_scope",
+          "git_end_work_scope",
+          "git_reconcile_index"
+        ],
+        "mutating_tools": [
+          "git_fetch",
+          "git_rebase",
+          "git_rebase_continue",
+          "git_rebase_abort",
+          "git_merge",
+          "git_merge_continue",
+          "git_merge_abort",
+          "git_workflow_record",
+          "git_add",
+          "git_unstage",
+          "git_commit_paths",
+          "git_commit",
+          "git_push",
+          "git_branch_create",
+          "git_branch_switch",
+          "git_branch_rename",
+          "git_branch_delete",
+          "git_branch_delete_remote",
+          "git_branch_set_upstream",
+          "git_branch_unset_upstream"
+        ],
+        "refused_tools": []
+      },
+      "registered_live_tools": [
+        "git_guidance",
+        "git_policy_inspect",
+        "git_status",
+        "git_fetch",
+        "git_rebase",
+        "git_rebase_continue",
+        "git_rebase_abort",
+        "git_merge",
+        "git_merge_continue",
+        "git_merge_abort",
+        "git_sync_status",
+        "git_branch_list",
+        "git_output_show",
+        "git_changed_summary",
+        "git_repositories_summary",
+        "git_workflow_record",
+        "git_diff",
+        "git_log",
+        "git_show",
+        "git_begin_work_scope",
+        "git_end_work_scope",
+        "git_add",
+        "git_unstage",
+        "git_commit_paths",
+        "git_reconcile_index",
+        "git_commit",
+        "git_push",
+        "git_branch_create",
+        "git_branch_switch",
+        "git_branch_rename",
+        "git_branch_delete",
+        "git_branch_delete_remote",
+        "git_branch_set_upstream",
+        "git_branch_unset_upstream"
+      ],
+      "catalog_surface_id": "git",
+      "evidence": {
+        "source": "site_mcp_fabric",
+        "path": ".ai/mcp/narada-cintamani-git-mcp.json",
         "projection_kind": "site_fabric"
       }
     },
@@ -4475,23 +6931,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "mailbox",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
@@ -6003,23 +8459,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "scheduler",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/b63db1f49ed066cb5ba7e661eb4e885a90e7d7c499cc79d308d120255989c2ef/narada-mcp-surfaces.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
@@ -6141,6 +8597,2151 @@
       "evidence": {
         "source": "site_mcp_fabric",
         "path": ".ai/mcp/narada-cintamani-scheduler-mcp.json",
+        "projection_kind": "site_fabric"
+      }
+    },
+    {
+      "surface_id": "narada-cintamani-sop.local",
+      "surface_projection": {
+        "surface_id": "sop",
+        "projection_id": "default",
+        "injection_scope": "local_site",
+        "runtime_requirements": [],
+        "exposed_tools": [
+          "sop_guidance",
+          "sop_doctor",
+          "sop_template_create",
+          "sop_template_show",
+          "sop_template_export",
+          "sop_template_list",
+          "sop_template_search",
+          "sop_template_candidate_list",
+          "sop_template_candidate_show",
+          "sop_template_update",
+          "sop_template_deprecate",
+          "sop_template_unimport",
+          "sop_template_import_yaml",
+          "sop_run_start",
+          "sop_run_status",
+          "sop_run_refresh",
+          "sop_run_advance",
+          "sop_handoff_list",
+          "sop_handoff_show",
+          "sop_handoff_claim",
+          "sop_handoff_renew",
+          "sop_handoff_release",
+          "sop_handoff_retry",
+          "sop_action_list",
+          "sop_action_show",
+          "sop_action_resolve",
+          "sop_run_list",
+          "sop_run_coverage_since",
+          "sop_run_cancel",
+          "sop_run_events",
+          "sop_outbox_consumer_register",
+          "sop_outbox_list",
+          "sop_outbox_ack",
+          "sop_outbox_compact"
+        ],
+        "execution": {
+          "adapter": "stdio",
+          "tenancy": "session_isolated",
+          "replacement": "manual"
+        },
+        "descriptor_digest": "5f9fd916e18b4eddecda5b091658e7cd3fb3798a4f07e8b43e097202a4176afe",
+        "tool_contract_digest": "b44cf2d057bc598f5bf2b62540694b657a3de3ce1e5c3978d9f0d04c97e2ebfa",
+        "surface_descriptor": {
+          "schema_version": "2.0",
+          "source": "native",
+          "surface_id": "sop",
+          "surface_version": "0.2.0",
+          "package": "@narada-core/sop-mcp",
+          "guidance_tool": "sop_guidance",
+          "tools": [
+            {
+              "name": "sop_guidance",
+              "description": "Show model-facing operating guidance for sop MCP workflows.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "workflow": {
+                    "type": "string",
+                    "description": "Optional workflow name or area to focus guidance on."
+                  },
+                  "tool": {
+                    "type": "string",
+                    "description": "Optional tool name for tool-specific guidance."
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_guidance",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_doctor",
+              "description": "Inspect SOP MCP server posture, build/schema metadata, database path, and available recovery tools.",
+              "input_schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_doctor",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_template_create",
+              "description": "Create a new versioned SOP template with ordered steps.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string",
+                    "description": "Stable SOP identifier, e.g. site-onboarding."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Human-readable title."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Purpose and scope of this SOP."
+                  },
+                  "steps": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 128,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Stable step identifier."
+                        },
+                        "executor": {
+                          "type": "string",
+                          "enum": [
+                            "engine",
+                            "agent",
+                            "operator",
+                            "sop",
+                            "action"
+                          ],
+                          "description": "engine is a pure internal transition; agent/operator await governed completion; sop starts a pinned child occurrence; action emits a governed domain-MCP intent."
+                        },
+                        "blocking": {
+                          "type": "boolean",
+                          "description": "Only agent/operator steps may block for sop_run_advance; other executor kinds have fixed semantics."
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "depends_on": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Predecessor step IDs in this procedure DAG."
+                        },
+                        "instructions": {
+                          "type": "string",
+                          "description": "Bounded human/model-facing handoff instructions."
+                        },
+                        "when": {
+                          "type": "object",
+                          "description": "Deterministic predicate. Use a leaf {ref,op,value?}, or one of all/any/not containing predicates.",
+                          "properties": {
+                            "ref": {
+                              "type": "string",
+                              "description": "input.*, input_ref.*, steps.<dependency>.status/result/result_ref.*"
+                            },
+                            "op": {
+                              "type": "string",
+                              "enum": [
+                                "equals",
+                                "not_equals",
+                                "exists",
+                                "not_exists",
+                                "truthy",
+                                "falsy",
+                                "in",
+                                "contains"
+                              ]
+                            },
+                            "value": {},
+                            "all": {
+                              "type": "array",
+                              "minItems": 1,
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            "any": {
+                              "type": "array",
+                              "minItems": 1,
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            "not": {
+                              "type": "object"
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "input": {
+                          "description": "JSON mapping for a child SOP input; exact {$ref:\"...\"} objects preserve referenced value types."
+                        },
+                        "input_ref": {
+                          "description": "JSON mapping that resolves to an immutable value-ref for a child SOP."
+                        },
+                        "result_schema": {
+                          "type": "object",
+                          "description": "Optional JSON Schema applied to a successful step inline result."
+                        },
+                        "action": {
+                          "type": "object",
+                          "properties": {
+                            "surface_id": {
+                              "type": "string",
+                              "description": "Owning domain MCP surface."
+                            },
+                            "tool_name": {
+                              "type": "string",
+                              "description": "Owning domain MCP effect tool."
+                            },
+                            "arguments": {
+                              "type": "object",
+                              "description": "Mapped exact argument object persisted before handoff."
+                            },
+                            "idempotency_key_argument": {
+                              "type": "string",
+                              "description": "Target argument into which SOP injects the stable action occurrence key."
+                            }
+                          },
+                          "required": [
+                            "surface_id",
+                            "tool_name",
+                            "arguments",
+                            "idempotency_key_argument"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "sop_id": {
+                          "type": "string",
+                          "description": "For sop steps: child SOP identifier."
+                        },
+                        "sop_version": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "Optional child version; omitted versions are resolved and pinned at parent admission."
+                        },
+                        "wait_policy": {
+                          "type": "string",
+                          "enum": [
+                            "wait"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "executor",
+                        "title",
+                        "instructions"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "input_schema": {
+                    "type": "object",
+                    "description": "Optional JSON Schema for each admitted occurrence inline input."
+                  },
+                  "output": {
+                    "type": "object",
+                    "description": "Optional mapping used to derive the bounded procedure output from input and step results."
+                  },
+                  "output_ref": {
+                    "type": "object",
+                    "description": "Optional mapping that must resolve to an immutable value-ref for the procedure output."
+                  },
+                  "output_schema": {
+                    "type": "object",
+                    "description": "Optional JSON Schema for the derived inline procedure output."
+                  },
+                  "trigger_kind": {
+                    "type": "string",
+                    "enum": [
+                      "manual",
+                      "inbox_event",
+                      "schedule"
+                    ],
+                    "default": "manual"
+                  },
+                  "acceptance_criteria": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Acceptance criteria for validating SOP completion."
+                  },
+                  "evidence_requirements": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Evidence expected from each run."
+                  }
+                },
+                "required": [
+                  "sop_id",
+                  "title",
+                  "steps"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_create",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_template_show",
+              "description": "Show the latest version of an SOP template.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "number",
+                    "description": "Specific version; defaults to latest."
+                  }
+                },
+                "required": [
+                  "sop_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_show",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_template_export",
+              "description": "Export one SOP template version with raw persisted JSON and full parsed step definitions for recovery workflows.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "number",
+                    "description": "Specific version; defaults to latest."
+                  }
+                },
+                "required": [
+                  "sop_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_export",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_template_list",
+              "description": "List SOP templates with optional status filter.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "active",
+                      "deprecated"
+                    ]
+                  },
+                  "limit": {
+                    "type": "number",
+                    "default": 50
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_list",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_template_search",
+              "description": "Search SOP templates by title or description text.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Search text matched against title and description."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "active",
+                      "deprecated"
+                    ]
+                  },
+                  "limit": {
+                    "type": "number",
+                    "default": 20
+                  }
+                },
+                "required": [
+                  "query"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_search",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_template_candidate_list",
+              "description": "List SOP YAML template files found in configured sops directories and classify their import state against the registry.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "type": "number",
+                    "default": 50
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_candidate_list",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_template_candidate_show",
+              "description": "Show one SOP YAML template candidate from configured sops directories and classify its import state against the registry.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string",
+                    "description": "SOP identifier matching a .sop.yaml file in configured sops directories."
+                  }
+                },
+                "required": [
+                  "sop_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_candidate_show",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_template_update",
+              "description": "Update an SOP template, creating a new version.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "steps": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 128,
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Stable step identifier."
+                        },
+                        "executor": {
+                          "type": "string",
+                          "enum": [
+                            "engine",
+                            "agent",
+                            "operator",
+                            "sop",
+                            "action"
+                          ],
+                          "description": "engine is a pure internal transition; agent/operator await governed completion; sop starts a pinned child occurrence; action emits a governed domain-MCP intent."
+                        },
+                        "blocking": {
+                          "type": "boolean",
+                          "description": "Only agent/operator steps may block for sop_run_advance; other executor kinds have fixed semantics."
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "depends_on": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Predecessor step IDs in this procedure DAG."
+                        },
+                        "instructions": {
+                          "type": "string",
+                          "description": "Bounded human/model-facing handoff instructions."
+                        },
+                        "when": {
+                          "type": "object",
+                          "description": "Deterministic predicate. Use a leaf {ref,op,value?}, or one of all/any/not containing predicates.",
+                          "properties": {
+                            "ref": {
+                              "type": "string",
+                              "description": "input.*, input_ref.*, steps.<dependency>.status/result/result_ref.*"
+                            },
+                            "op": {
+                              "type": "string",
+                              "enum": [
+                                "equals",
+                                "not_equals",
+                                "exists",
+                                "not_exists",
+                                "truthy",
+                                "falsy",
+                                "in",
+                                "contains"
+                              ]
+                            },
+                            "value": {},
+                            "all": {
+                              "type": "array",
+                              "minItems": 1,
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            "any": {
+                              "type": "array",
+                              "minItems": 1,
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            "not": {
+                              "type": "object"
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "input": {
+                          "description": "JSON mapping for a child SOP input; exact {$ref:\"...\"} objects preserve referenced value types."
+                        },
+                        "input_ref": {
+                          "description": "JSON mapping that resolves to an immutable value-ref for a child SOP."
+                        },
+                        "result_schema": {
+                          "type": "object",
+                          "description": "Optional JSON Schema applied to a successful step inline result."
+                        },
+                        "action": {
+                          "type": "object",
+                          "properties": {
+                            "surface_id": {
+                              "type": "string",
+                              "description": "Owning domain MCP surface."
+                            },
+                            "tool_name": {
+                              "type": "string",
+                              "description": "Owning domain MCP effect tool."
+                            },
+                            "arguments": {
+                              "type": "object",
+                              "description": "Mapped exact argument object persisted before handoff."
+                            },
+                            "idempotency_key_argument": {
+                              "type": "string",
+                              "description": "Target argument into which SOP injects the stable action occurrence key."
+                            }
+                          },
+                          "required": [
+                            "surface_id",
+                            "tool_name",
+                            "arguments",
+                            "idempotency_key_argument"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "sop_id": {
+                          "type": "string",
+                          "description": "For sop steps: child SOP identifier."
+                        },
+                        "sop_version": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "description": "Optional child version; omitted versions are resolved and pinned at parent admission."
+                        },
+                        "wait_policy": {
+                          "type": "string",
+                          "enum": [
+                            "wait"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "executor",
+                        "title",
+                        "instructions"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "input_schema": {
+                    "type": "object"
+                  },
+                  "output": {
+                    "type": "object"
+                  },
+                  "output_ref": {
+                    "type": "object"
+                  },
+                  "output_schema": {
+                    "type": "object"
+                  },
+                  "trigger_kind": {
+                    "type": "string",
+                    "enum": [
+                      "manual",
+                      "inbox_event",
+                      "schedule"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "active",
+                      "deprecated"
+                    ],
+                    "description": "Template status. Defaults to draft."
+                  },
+                  "acceptance_criteria": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "evidence_requirements": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "sop_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_update",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_template_deprecate",
+              "description": "Deprecate an SOP template.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sop_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_deprecate",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_template_unimport",
+              "description": "Remove an accidentally imported SOP template version from the registry when no runs reference it. Does not delete YAML files.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "number",
+                    "description": "Specific imported version to remove. Defaults to latest version."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Why this registry import is being removed."
+                  },
+                  "principal": {
+                    "type": "string",
+                    "description": "Identity of the principal requesting cleanup."
+                  }
+                },
+                "required": [
+                  "sop_id",
+                  "reason",
+                  "principal"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_unimport",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_template_import_yaml",
+              "description": "Import an SOP template from a YAML file in the sops/ directory. Validates against the SOP JSON Schema before inserting.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string",
+                    "description": "SOP identifier matching a .sop.yaml file in the sops/ directory, e.g. site-onboarding."
+                  }
+                },
+                "required": [
+                  "sop_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_template_import_yaml",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_run_start",
+              "description": "Idempotently admit one parameterized SOP occurrence. Scheduler/event owners call this tool; SOP does not own activation policy.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string"
+                  },
+                  "sop_version": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Specific version; defaults to latest non-deprecated version and is pinned by the admitted occurrence."
+                  },
+                  "occurrence_key": {
+                    "type": "string",
+                    "description": "Stable caller-owned identity for this one procedure occurrence."
+                  },
+                  "input": {
+                    "type": "object",
+                    "description": "Bounded inline occurrence input (maximum 16384 UTF-8 JSON bytes)."
+                  },
+                  "input_ref": {
+                    "type": "object",
+                    "properties": {
+                      "ref": {
+                        "type": "string",
+                        "description": "Opaque immutable reference owned by another surface."
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-fA-F0-9]{64}$",
+                        "description": "Digest pin for the referenced bytes."
+                      },
+                      "byte_length": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "media_type": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "ref",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "trigger_source_kind": {
+                    "type": "string",
+                    "default": "manual"
+                  },
+                  "trigger_source_ref": {
+                    "type": "string"
+                  },
+                  "triggered_by": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sop_id",
+                  "occurrence_key",
+                  "triggered_by"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_run_start",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_run_status",
+              "description": "Get the durable status, pinned definition identity, inputs/outputs, and step states for one SOP occurrence.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "run_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "run_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_run_status",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_run_refresh",
+              "description": "Explicitly reconcile one run as a repair/readback operation. Normal child/action completion reconciles and advances ancestors automatically.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "run_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "run_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_run_refresh",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_run_advance",
+              "description": "Idempotently complete or fail one leased agent/operator handoff and automatically reconcile its occurrence and ancestors.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "handoff_id": {
+                    "type": "string",
+                    "description": "Durable handoff identity returned by sop_handoff_claim."
+                  },
+                  "run_id": {
+                    "type": "string"
+                  },
+                  "step_id": {
+                    "type": "string"
+                  },
+                  "consumer_id": {
+                    "type": "string",
+                    "description": "Stable consumer identity that owns the active lease."
+                  },
+                  "lease_token": {
+                    "type": "string",
+                    "description": "Opaque active lease token returned by sop_handoff_claim."
+                  },
+                  "completion_key": {
+                    "type": "string",
+                    "description": "Stable completion-attempt key. Exact retries return the already-recorded outcome."
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "completed",
+                      "failed"
+                    ]
+                  },
+                  "result": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Bounded successful inline result (maximum 16384 UTF-8 JSON bytes)."
+                  },
+                  "result_ref": {
+                    "type": "object",
+                    "properties": {
+                      "ref": {
+                        "type": "string",
+                        "description": "Opaque immutable reference owned by another surface."
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-fA-F0-9]{64}$",
+                        "description": "Digest pin for the referenced bytes."
+                      },
+                      "byte_length": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "media_type": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "ref",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "error_message": {
+                    "type": "string",
+                    "description": "Required for a failed outcome."
+                  },
+                  "principal": {
+                    "type": "string",
+                    "description": "Identity of the principal completing the handoff."
+                  }
+                },
+                "required": [
+                  "handoff_id",
+                  "run_id",
+                  "step_id",
+                  "consumer_id",
+                  "lease_token",
+                  "completion_key",
+                  "outcome",
+                  "principal"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_run_advance",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_handoff_list",
+              "description": "List durable agent/operator handoffs without exposing lease tokens.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "run_id": {
+                    "type": "string"
+                  },
+                  "executor": {
+                    "type": "string",
+                    "enum": [
+                      "agent",
+                      "operator"
+                    ]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "leased",
+                      "completed",
+                      "failed",
+                      "cancelled"
+                    ]
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 50
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_handoff_list",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_handoff_show",
+              "description": "Show one durable agent/operator handoff without exposing its lease token.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "handoff_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handoff_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_handoff_show",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_handoff_claim",
+              "description": "Atomically claim the oldest eligible agent/operator handoff, including recovery of an expired lease.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "consumer_id": {
+                    "type": "string",
+                    "description": "Stable handoff-consumer identity."
+                  },
+                  "handoff_id": {
+                    "type": "string",
+                    "description": "Optional exact handoff to claim; omitted claims the oldest eligible handoff."
+                  },
+                  "executor": {
+                    "type": "string",
+                    "enum": [
+                      "agent",
+                      "operator"
+                    ]
+                  },
+                  "lease_ms": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 300000,
+                    "default": 60000
+                  }
+                },
+                "required": [
+                  "consumer_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_handoff_claim",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_handoff_renew",
+              "description": "Renew an unexpired handoff lease owned by the supplied consumer and token.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "handoff_id": {
+                    "type": "string"
+                  },
+                  "consumer_id": {
+                    "type": "string"
+                  },
+                  "lease_token": {
+                    "type": "string"
+                  },
+                  "lease_ms": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 300000,
+                    "default": 60000
+                  }
+                },
+                "required": [
+                  "handoff_id",
+                  "consumer_id",
+                  "lease_token"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_handoff_renew",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_handoff_release",
+              "description": "Return an owned handoff lease to the durable pending queue without failing the SOP step.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "handoff_id": {
+                    "type": "string"
+                  },
+                  "consumer_id": {
+                    "type": "string"
+                  },
+                  "lease_token": {
+                    "type": "string"
+                  },
+                  "error_message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "handoff_id",
+                  "consumer_id",
+                  "lease_token"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_handoff_release",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_handoff_retry",
+              "description": "Reopen one failed agent handoff and its terminal SOP occurrence for a governed retry. Completed handoffs cannot be reopened.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "handoff_id": {
+                    "type": "string"
+                  },
+                  "principal": {
+                    "type": "string",
+                    "description": "Identity authorizing the retry."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Bounded reason the failed handoff is safe to retry."
+                  }
+                },
+                "required": [
+                  "handoff_id",
+                  "principal",
+                  "reason"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_handoff_retry",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_action_list",
+              "description": "List bounded summaries of durable domain-action handoffs. Use sop_action_show for exact persisted target arguments.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "run_id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "completed",
+                      "failed",
+                      "cancelled"
+                    ]
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 50
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_action_list",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_action_show",
+              "description": "Show one durable action intent, including the exact domain surface/tool, mapped arguments, and injected occurrence idempotency key.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "action_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "action_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_action_show",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_action_resolve",
+              "description": "Idempotently acknowledge a domain-owned MCP action outcome, bind its external operation reference, and automatically continue the SOP occurrence.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "action_id": {
+                    "type": "string"
+                  },
+                  "completion_key": {
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "completed",
+                      "failed"
+                    ]
+                  },
+                  "operation_ref": {
+                    "type": "string",
+                    "description": "Stable owning-surface operation/audit reference proving the external effect outcome."
+                  },
+                  "result": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Bounded successful inline result (maximum 16384 UTF-8 JSON bytes)."
+                  },
+                  "result_ref": {
+                    "type": "object",
+                    "properties": {
+                      "ref": {
+                        "type": "string",
+                        "description": "Opaque immutable reference owned by another surface."
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-fA-F0-9]{64}$",
+                        "description": "Digest pin for the referenced bytes."
+                      },
+                      "byte_length": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "media_type": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "ref",
+                      "sha256"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "error_message": {
+                    "type": "string",
+                    "description": "Required for a failed outcome."
+                  }
+                },
+                "required": [
+                  "action_id",
+                  "completion_key",
+                  "outcome",
+                  "operation_ref"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_action_resolve",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_run_list",
+              "description": "List SOP runs with optional filters.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "sop_id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "running",
+                      "completed",
+                      "failed",
+                      "cancelled",
+                      "awaiting_confirmation"
+                    ]
+                  },
+                  "include_terminal": {
+                    "type": "boolean"
+                  },
+                  "limit": {
+                    "type": "number",
+                    "default": 50
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_run_list",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_run_coverage_since",
+              "description": "List latest SOP run coverage for templates and classify active templates not run since a supplied timestamp.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "since": {
+                    "type": "string",
+                    "description": "ISO 8601 timestamp used as the freshness threshold."
+                  },
+                  "template_status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "active",
+                      "deprecated"
+                    ],
+                    "default": "active"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "running",
+                      "completed",
+                      "failed",
+                      "cancelled",
+                      "awaiting_confirmation"
+                    ],
+                    "description": "Optional latest-run status filter."
+                  },
+                  "include_terminal": {
+                    "type": "boolean",
+                    "default": true
+                  },
+                  "limit": {
+                    "type": "number",
+                    "default": 200
+                  }
+                },
+                "required": [
+                  "since"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_run_coverage_since",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_run_cancel",
+              "description": "Cancel a pending or running SOP run.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "run_id": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "run_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_run_cancel",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_run_events",
+              "description": "List events for an SOP run.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "run_id": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "number",
+                    "default": 50
+                  },
+                  "offset": {
+                    "type": "number",
+                    "default": 0
+                  }
+                },
+                "required": [
+                  "run_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_run_events",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_outbox_consumer_register",
+              "description": "Durably register a required terminal-event consumer from an explicit start boundary.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "const": "sop.run.terminal.v1",
+                    "default": "sop.run.terminal.v1"
+                  },
+                  "consumer_id": {
+                    "type": "string"
+                  },
+                  "start_at": {
+                    "type": "string",
+                    "description": "ISO timestamp; defaults to registration time. Backdated registration is refused if required history was compacted."
+                  }
+                },
+                "required": [
+                  "consumer_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_outbox_consumer_register",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_outbox_list",
+              "description": "List unacknowledged durable SOP events for one registered consumer.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "consumer_id": {
+                    "type": "string"
+                  },
+                  "topic": {
+                    "type": "string",
+                    "const": "sop.run.terminal.v1"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 500,
+                    "default": 100
+                  }
+                },
+                "required": [
+                  "consumer_id"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_outbox_list",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "read",
+                "idempotency": "replayable",
+                "confirmation": "never"
+              }
+            },
+            {
+              "name": "sop_outbox_ack",
+              "description": "Idempotently record one consumer receipt for a durable SOP event.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "event_id": {
+                    "type": "string"
+                  },
+                  "consumer_id": {
+                    "type": "string"
+                  },
+                  "receipt": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "event_id",
+                  "consumer_id",
+                  "receipt"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_outbox_ack",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            },
+            {
+              "name": "sop_outbox_compact",
+              "description": "Compact acknowledged outbox payloads before an ISO cutoff while retaining event and receipt identity.",
+              "input_schema": {
+                "type": "object",
+                "properties": {
+                  "before": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "before"
+                ],
+                "additionalProperties": false
+              },
+              "output_schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "annotations": {
+                "title": "sop_outbox_compact",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "effect": {
+                "class": "local_write",
+                "idempotency": "non_idempotent",
+                "confirmation": "policy"
+              }
+            }
+          ],
+          "projections": [
+            {
+              "id": "default",
+              "transport": {
+                "kind": "stdio",
+                "command": "node",
+                "args": [
+                  "{mcp_surfaces_root}/sop-mcp/dist/src/main.js",
+                  "--sop-root",
+                  "{site_root}",
+                  "--server-name",
+                  "{site_id}-sop",
+                  "--sops-dir",
+                  "{site_root}/.narada/sops"
+                ],
+                "env": []
+              },
+              "injection_scope": "local_site",
+              "default_injection": "disabled",
+              "runtime_requirements": [],
+              "authority_requirements": [
+                "scope.local_site"
+              ],
+              "lifecycle": {
+                "mode": "restart_required",
+                "restart_owner": "local_site",
+                "reason": "SOP run execution owns an in-process SQLite connection and must be restarted by the Site owner."
+              }
+            }
+          ],
+          "metadata": {
+            "lifecycle_readback": {
+              "authority": "mcp-loader",
+              "availability": "loader-managed",
+              "discovery": {
+                "tool_name": "mcp_loader_connection_inventory",
+                "arguments": {},
+                "select": {
+                  "field": "surface_id",
+                  "equals": "sop",
+                  "result_field": "connection_id"
+                }
+              },
+              "status": {
+                "tool_name": "mcp_loader_surface_status",
+                "arguments": {
+                  "connection_id": "{connection_id}"
+                },
+                "connection_id_from": "discovery.selected.connection_id"
+              }
+            }
+          }
+        },
+        "lifecycle": {
+          "mode": "restart_required",
+          "restart_owner": "local_site",
+          "reason": "SOP run execution owns an in-process SQLite connection and must be restarted by the Site owner."
+        }
+      },
+      "surface_type": "mcp_surface",
+      "display_name": "narada-cintamani-sop",
+      "server_name": "narada-cintamani-sop",
+      "runtime_binding": {
+        "runtime_kind": "rust-stdio",
+        "proxy_implementation": "native",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
+        "owner_site_id": "cintamani",
+        "transport": {
+          "type": "stdio",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
+          "args": [
+            "proxy",
+            "--surface-id",
+            "sop",
+            "--child-command",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
+            "--artifact-manifest",
+            "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
+            "--runtime-contract-version",
+            "8",
+            "--entrypoint",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-surfaces-native/dist/native/versions/fb357008285efd8ab1bbca8e0b71709ca0c05b732abb84195825a26e4e8de63a/narada-mcp-surfaces.exe",
+            "--child-invocation-kind",
+            "native_entrypoint",
+            "--",
+            "--surface-id",
+            "sop",
+            "--sop-root",
+            "C:\\Users\\andrey\\src\\cintamani",
+            "--server-name",
+            "cintamani-sop",
+            "--sops-dir",
+            "C:\\Users\\andrey\\src\\cintamani/.narada/sops"
+          ]
+        }
+      },
+      "authority_boundary": {
+        "posture": "registrar_generated_runtime_surface_registry",
+        "grants_tool_authority": true,
+        "granted_tool_authority_kind": "declared_enabled_mcp_surface_tools",
+        "source": "site_mcp_fabric_and_registrar_catalog"
+      },
+      "client_config": {
+        "generated_path": ".ai/mcp/narada-cintamani-sop-mcp.json",
+        "generated_file": "narada-cintamani-sop-mcp.json"
+      },
+      "tool_contract": {
+        "exposed_tools": [
+          "sop_guidance",
+          "sop_doctor",
+          "sop_template_create",
+          "sop_template_show",
+          "sop_template_export",
+          "sop_template_list",
+          "sop_template_search",
+          "sop_template_candidate_list",
+          "sop_template_candidate_show",
+          "sop_template_update",
+          "sop_template_deprecate",
+          "sop_template_unimport",
+          "sop_template_import_yaml",
+          "sop_run_start",
+          "sop_run_status",
+          "sop_run_refresh",
+          "sop_run_advance",
+          "sop_handoff_list",
+          "sop_handoff_show",
+          "sop_handoff_claim",
+          "sop_handoff_renew",
+          "sop_handoff_release",
+          "sop_handoff_retry",
+          "sop_action_list",
+          "sop_action_show",
+          "sop_action_resolve",
+          "sop_run_list",
+          "sop_run_coverage_since",
+          "sop_run_cancel",
+          "sop_run_events",
+          "sop_outbox_consumer_register",
+          "sop_outbox_list",
+          "sop_outbox_ack",
+          "sop_outbox_compact"
+        ],
+        "semantic_operations": [],
+        "deprecated_aliases": {},
+        "read_only_tools": [
+          "sop_guidance",
+          "sop_doctor",
+          "sop_template_show",
+          "sop_template_export",
+          "sop_template_list",
+          "sop_template_search",
+          "sop_template_candidate_list",
+          "sop_template_candidate_show",
+          "sop_run_status",
+          "sop_handoff_list",
+          "sop_handoff_show",
+          "sop_action_list",
+          "sop_action_show",
+          "sop_run_list",
+          "sop_run_coverage_since",
+          "sop_run_events",
+          "sop_outbox_list"
+        ],
+        "mutating_tools": [
+          "sop_template_create",
+          "sop_template_update",
+          "sop_template_deprecate",
+          "sop_template_unimport",
+          "sop_template_import_yaml",
+          "sop_run_start",
+          "sop_run_refresh",
+          "sop_run_advance",
+          "sop_handoff_claim",
+          "sop_handoff_renew",
+          "sop_handoff_release",
+          "sop_handoff_retry",
+          "sop_action_resolve",
+          "sop_run_cancel",
+          "sop_outbox_consumer_register",
+          "sop_outbox_ack",
+          "sop_outbox_compact"
+        ],
+        "refused_tools": []
+      },
+      "registered_live_tools": [
+        "sop_guidance",
+        "sop_doctor",
+        "sop_template_create",
+        "sop_template_show",
+        "sop_template_export",
+        "sop_template_list",
+        "sop_template_search",
+        "sop_template_candidate_list",
+        "sop_template_candidate_show",
+        "sop_template_update",
+        "sop_template_deprecate",
+        "sop_template_unimport",
+        "sop_template_import_yaml",
+        "sop_run_start",
+        "sop_run_status",
+        "sop_run_refresh",
+        "sop_run_advance",
+        "sop_handoff_list",
+        "sop_handoff_show",
+        "sop_handoff_claim",
+        "sop_handoff_renew",
+        "sop_handoff_release",
+        "sop_handoff_retry",
+        "sop_action_list",
+        "sop_action_show",
+        "sop_action_resolve",
+        "sop_run_list",
+        "sop_run_coverage_since",
+        "sop_run_cancel",
+        "sop_run_events",
+        "sop_outbox_consumer_register",
+        "sop_outbox_list",
+        "sop_outbox_ack",
+        "sop_outbox_compact"
+      ],
+      "catalog_surface_id": "sop",
+      "evidence": {
+        "source": "site_mcp_fabric",
+        "path": ".ai/mcp/narada-cintamani-sop-mcp.json",
         "projection_kind": "site_fabric"
       }
     },
@@ -9857,23 +14458,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-task-lifecycle-mcp.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/7e45d32af0de571fd5064bee09c96a24f344c7b3a2f1c6776cdeba7313db5cd5/narada-task-lifecycle-mcp.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "task-lifecycle",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-task-lifecycle-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/7e45d32af0de571fd5064bee09c96a24f344c7b3a2f1c6776cdeba7313db5cd5/narada-task-lifecycle-mcp.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-task-lifecycle-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/7e45d32af0de571fd5064bee09c96a24f344c7b3a2f1c6776cdeba7313db5cd5/narada-task-lifecycle-mcp.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
@@ -14609,23 +19210,23 @@
       "runtime_binding": {
         "runtime_kind": "rust-stdio",
         "proxy_implementation": "native",
-        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-work-lifecycle-mcp.exe",
+        "entrypoint": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/7e45d32af0de571fd5064bee09c96a24f344c7b3a2f1c6776cdeba7313db5cd5/narada-work-lifecycle-mcp.exe",
         "owner_site_id": "cintamani",
         "transport": {
           "type": "stdio",
-          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/a2c1195258c11a230bf15e62b319c621e8c2e8130bd0c739f153cdc36305baa1/narada-mcp-runtime.exe",
+          "command": "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-runtime-proxy/dist/native/versions/9666dc0ae798d6ad2075209058dac4cfb5f04ff1cdc6661d7089bca8d5398c7f/narada-mcp-runtime.exe",
           "args": [
             "proxy",
             "--surface-id",
             "work-lifecycle",
             "--child-command",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-work-lifecycle-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/7e45d32af0de571fd5064bee09c96a24f344c7b3a2f1c6776cdeba7313db5cd5/narada-work-lifecycle-mcp.exe",
             "--artifact-manifest",
             "C:/Users/andrey/src/mcp-surfaces/.ai/runtime/workspace-artifact-manifest.json",
             "--runtime-contract-version",
             "8",
             "--entrypoint",
-            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/cf0976d1afdbd1ac5cc634077a0495376beacc882cac5312510579c450968759/narada-work-lifecycle-mcp.exe",
+            "C:/Users/andrey/src/mcp-surfaces/packages/shared/mcp-lifecycle-native/dist/native/versions/7e45d32af0de571fd5064bee09c96a24f344c7b3a2f1c6776cdeba7313db5cd5/narada-work-lifecycle-mcp.exe",
             "--child-invocation-kind",
             "native_entrypoint",
             "--",
