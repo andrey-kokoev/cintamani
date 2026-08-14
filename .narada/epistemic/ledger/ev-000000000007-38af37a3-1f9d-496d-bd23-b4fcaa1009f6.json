@@ -1,0 +1,28 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 7,
+  "event_id": "ev-000000000007-38af37a3-1f9d-496d-bd23-b4fcaa1009f6",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "7d2243efd0e7a071c00087d160ee2b1439a30a2c78347bb5772c5812c807e993",
+  "proposal_id": "ep_c094b889-081f-4d89-bfeb-8465de3022b4",
+  "proposal_digest": "12dbea413d94caad8b6dd97095e543fd15bc023cb951897ef8e370b926556020",
+  "operations": [
+    {
+      "op": "sweep.record",
+      "sweep_id": "sweep:literature-sweep:20260814",
+      "interval_start": "2026-08-14",
+      "interval_end": "2026-08-14",
+      "method": "SOP cintamani.literature-sweep occurrence sop_run_20260814T055918_08466832 (first execution of the scheduler-wired daily SOP, driven manually without scheduler). 4 scoped web queries covering TFLT Kerr/Raman combs, IPC bounds for photonic reservoirs, microring reservoir computing, CsPbBr3 persistent optical memory. Material candidates verified by fetching primary-source pages where reachable.",
+      "result": "Second sweep of the day (morning sweep:2026-08-14-literature already admitted via proposal ep_34727c08). MATERIAL NEW: arXiv:2605.19152v2 (IPC framework for stationary physical systems: capacities in [0,1], total bounded by readout count, noise strictly reduces bound, finite-sample estimator bias; validated on Kerr nonlinear-fibre photonic system) admitted with claim:ipc-total-bounded-by-readouts addressing prob:controllable-computational-possibility and prob:kerr-redistribution-utility; Dong 2026 Optik deep MRR reservoir (NARMA-10 NMSE -84.4%) admitted as source following the Bazzanella 2022 line (abstract-level evidence, ScienceDirect 403). NEGATIVE: no new TFLT Kerr/Raman comb results beyond arXiv:2607.11186; no CsPbBr3 persistent-memory advance. Proposal ep_a30ccbe9 admitted as ev-000000000006, ledger head 7d2243ef. Follow-up opened: kerr-capacity estimator could adopt the Richardson/Sobol data-efficient IPC estimation and correct the naive positive bias."
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260814, step record_run."
+  },
+  "idempotency_key": "auto-admission-7cb4988592b1757629c5bca9",
+  "occurred_at": "2026-08-14T06:37:57.2206101Z",
+  "certifies_truth": false,
+  "event_hash": "e9d9e558595d48e7d906f2e4a7f6ae67d206615f680a07b2c028d3f13c94cc9b"
+}

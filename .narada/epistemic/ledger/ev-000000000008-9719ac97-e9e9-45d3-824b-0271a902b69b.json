@@ -1,0 +1,28 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 8,
+  "event_id": "ev-000000000008-9719ac97-e9e9-45d3-824b-0271a902b69b",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "e9d9e558595d48e7d906f2e4a7f6ae67d206615f680a07b2c028d3f13c94cc9b",
+  "proposal_id": "ep_46aac275-d6ef-4c28-b28e-414344c4578c",
+  "proposal_digest": "dc3376902dd1b6c801d50527632cda4800b83c08184c3700414b2b73e20d3bc0",
+  "operations": [
+    {
+      "op": "sweep.record",
+      "sweep_id": "sweep:literature-sweep:20260814-manual-2",
+      "interval_start": "2026-08-14",
+      "interval_end": "2026-08-14",
+      "method": "Same-day delta re-check ~7h after morning sweep (sop_run_20260814T055918_08466832, ev-000000000007). 4 fresh web queries covering TFLT Kerr/Raman combs, IPC bounds for photonic reservoirs, microring/microcomb reservoir computing, CsPbBr3 exciton-phonon/optical memory.",
+      "result": "NEGATIVE on all four fronts: TFLT silent (nothing beyond arXiv:2607.11186); IPC unchanged (arXiv:2605.19152v2 already admitted this morning as ev-000000000006); microcomb hits (arXiv:2601.15456, 2604.08767) and CsPbBr3 hits (arXiv:2602.16533, 2602.08301, 2601.21443) all predate the morning sweep or are already represented on the graph. No proposals submitted. No follow-up questions opened."
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260814-manual-2 (run sop_run_20260814T144453_88c94793), step record_run."
+  },
+  "idempotency_key": "auto-admission-45d52acd7f86cdc051ee38be",
+  "occurred_at": "2026-08-14T14:53:23.9420842Z",
+  "certifies_truth": false,
+  "event_hash": "575e3dc1d7728950aab32d44385cc31062bc57dffd7e5be4fbdfef76d39967b2"
+}

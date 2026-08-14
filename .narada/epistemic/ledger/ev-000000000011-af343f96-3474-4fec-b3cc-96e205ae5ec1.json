@@ -1,0 +1,28 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 11,
+  "event_id": "ev-000000000011-af343f96-3474-4fec-b3cc-96e205ae5ec1",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "2d3d2034d9c3eac6de94ccc97e9ec9c778d802c2ab41428d3c3a2f1b257fa2c6",
+  "proposal_id": "ep_7e3e64a9-4f1c-4a58-860e-a9b4174829dd",
+  "proposal_digest": "58adfc611e2a1518fc74ca8b8a797b820fc053412b4c05a78c6b47bea3f6d597",
+  "operations": [
+    {
+      "op": "sweep.record",
+      "sweep_id": "sweep:literature-sweep:20260814-manual-4",
+      "interval_start": "2026-08-14",
+      "interval_end": "2026-08-14",
+      "method": "Delta re-check ~2h after manual-3 (fourth occurrence of the day). 4 scoped web queries covering TFLT Kerr/Raman combs, IPC bounds for reservoir computers, microring reservoir computing, CsPbBr3 persistent optical memory.",
+      "result": "NEGATIVE on all four fronts: TFLT unchanged (arXiv:2607.11186 remains latest); IPC unchanged (arXiv:2607.17858 admitted as ev-000000000009 earlier this evening); microring hits (SCISSOR arXiv:2602.05918, SPIE EPE26 memory-capacity study) predate today's sweeps; CsPbBr3 persistent-memory front silent. No proposals submitted. No follow-up questions opened."
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260814-manual-4 (run sop_run_20260814T203150_a62f8b4f), step record_run."
+  },
+  "idempotency_key": "auto-admission-2c9749cc09b80ab73caccc57",
+  "occurred_at": "2026-08-14T20:33:43.3472101Z",
+  "certifies_truth": false,
+  "event_hash": "048aa4ae622482a7e0363b6c93b84e8543e0574423173b3cc5e66fb7dd505519"
+}

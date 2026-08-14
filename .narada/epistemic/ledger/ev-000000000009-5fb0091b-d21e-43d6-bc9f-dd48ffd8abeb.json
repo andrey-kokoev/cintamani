@@ -1,0 +1,53 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 9,
+  "event_id": "ev-000000000009-5fb0091b-d21e-43d6-bc9f-dd48ffd8abeb",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "575e3dc1d7728950aab32d44385cc31062bc57dffd7e5be4fbdfef76d39967b2",
+  "proposal_id": "ep_de84debb-f8f1-4018-b16b-b0b9e296da70",
+  "proposal_digest": "6f9e5bc529c6bee42867d281f251f400d70756395cd08bb0b06064fec5643622",
+  "operations": [
+    {
+      "kind": "source",
+      "local_ref": "src",
+      "locator": "arxiv:2607.17858",
+      "op": "entity.declare",
+      "title": "Organization of computation in reservoir computing (Rontani 2026)",
+      "version": "v1",
+      "entity_id": "source:731954b6666d863d9b25"
+    },
+    {
+      "kind": "claim",
+      "local_ref": "claim",
+      "op": "entity.declare",
+      "title": "Degree-wise information processing capacity decomposes eigenspectrally onto reservoir state-space modes; substantial IPC can reside in low-energy modes vulnerable to experimental noise",
+      "entity_id": "claim:b95c7f7099686333a37f"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim",
+      "target_ref": "src",
+      "source_id": "claim:b95c7f7099686333a37f",
+      "target_id": "source:731954b6666d863d9b25",
+      "relation_id": "rel:derived_from-05316858ff4ce684"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim",
+      "target_id": "prob:controllable-computational-possibility",
+      "source_id": "claim:b95c7f7099686333a37f",
+      "relation_id": "rel:addresses-dc18efc44f78b6ec"
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260814-manual-3 (run sop_run_20260814T182935_8b576117), run_sweep step: capture material IPC-front source arXiv:2607.17858"
+  },
+  "idempotency_key": "auto-admission-d6f0796d84ceadbe37e1be79",
+  "occurred_at": "2026-08-14T18:31:58.8148428Z",
+  "certifies_truth": false,
+  "event_hash": "ff9ad59e7364bdc7b381231ef7af063879e1ecee6fd835dc0d5e7a5b2f530d69"
+}

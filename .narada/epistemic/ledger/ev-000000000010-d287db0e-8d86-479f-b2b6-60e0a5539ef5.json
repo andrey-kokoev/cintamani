@@ -1,0 +1,28 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 10,
+  "event_id": "ev-000000000010-d287db0e-8d86-479f-b2b6-60e0a5539ef5",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "ff9ad59e7364bdc7b381231ef7af063879e1ecee6fd835dc0d5e7a5b2f530d69",
+  "proposal_id": "ep_e231d27d-8064-49b8-a34d-1405a3f606eb",
+  "proposal_digest": "f89354e5df844afd8905b203cc5fe16264642eb5ec3e7d1fd1f2557902fb09bb",
+  "operations": [
+    {
+      "op": "sweep.record",
+      "sweep_id": "sweep:literature-sweep:20260814-manual-3",
+      "interval_start": "2026-08-14",
+      "interval_end": "2026-08-14",
+      "method": "Evening sweep ~4h after manual-2 (third occurrence of the day). 4 scoped web queries covering TFLT Kerr/Raman combs, IPC bounds for reservoir computers, microring reservoir computing, CsPbBr3 persistent optical memory. Material candidate verified by fetching the primary-source abstract page.",
+      "result": "MATERIAL NEW: arXiv:2607.17858v1 (Rontani 2026, Organization of computation in reservoir computing: eigenspectral decomposition linking degree-wise IPC to state-space modes; substantial IPC may reside in low-energy modes vulnerable to experimental noise) admitted as ev-000000000009 (proposal ep_de84debb) with claim addressing prob:controllable-computational-possibility. NEGATIVE: TFLT unchanged (arXiv:2607.11186 remains latest); microring front hits (AIP SiN noise-robustness 2026-03, Dong 2026 Optik) predate this sweep or already admitted; CsPbBr3 persistent-memory front silent. Follow-up implication: kerr-capacity estimator should weight IPC by mode energy, since low-energy modes carrying IPC are noise-vulnerable (complements the ev-6 Richardson/Sobol bias follow-up)."
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260814-manual-3 (run sop_run_20260814T182935_8b576117), step record_run."
+  },
+  "idempotency_key": "auto-admission-158440737f4c04f0d6eebbd9",
+  "occurred_at": "2026-08-14T18:35:20.1913625Z",
+  "certifies_truth": false,
+  "event_hash": "2d3d2034d9c3eac6de94ccc97e9ec9c778d802c2ab41428d3c3a2f1b257fa2c6"
+}

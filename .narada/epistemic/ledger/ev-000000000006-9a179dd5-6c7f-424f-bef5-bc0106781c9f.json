@@ -1,0 +1,70 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 6,
+  "event_id": "ev-000000000006-9a179dd5-6c7f-424f-bef5-bc0106781c9f",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "119a0d509bc3485ae1e18f83f949514e19ab232885ffcac52c4739d6b8e5a376",
+  "proposal_id": "ep_a30ccbe9-c08d-4b66-bef1-da897190caab",
+  "proposal_digest": "2472bb6d77eff71dc1776ba4ee15863e3007e8cf25219692cf3a57fa666ad2cf",
+  "operations": [
+    {
+      "op": "entity.declare",
+      "entity_id": "src:arxiv-2605-19152-ipc-stationary-photonic",
+      "kind": "source",
+      "title": "Information Processing Capacity of Stationary Physical Systems: Theory, Data-efficient Estimation Methods, and Photonic Demonstration",
+      "version": "arXiv:2605.19152v2 (2026-05-21)",
+      "locator": "https://arxiv.org/abs/2605.19152"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "claim:ipc-total-bounded-by-readouts",
+      "kind": "claim",
+      "title": "For stationary physical computing systems, individual IPC capacities lie in [0,1], their total over a complete basis is bounded by the number of readouts, and noise strictly reduces this bound; finite-sample IPC estimators carry a positive systematic bias; validated experimentally on a Kerr nonlinear-fibre photonic system."
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_id": "claim:ipc-total-bounded-by-readouts",
+      "target_id": "src:arxiv-2605-19152-ipc-stationary-photonic",
+      "relation_id": "rel:derived_from-61ea4b2a93f8e309"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_id": "claim:ipc-total-bounded-by-readouts",
+      "target_id": "prob:controllable-computational-possibility",
+      "relation_id": "rel:addresses-440d8dee539eacde"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_id": "claim:ipc-total-bounded-by-readouts",
+      "target_id": "prob:kerr-redistribution-utility",
+      "relation_id": "rel:addresses-c388959ec10bd2e3"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:dong-2026-deep-mrr-drc",
+      "kind": "source",
+      "title": "Deep photonic reservoir computing based on microring resonators (MRR-based deep RC; NARMA-10 NMSE reduction 84.4%)",
+      "version": "Optik (Elsevier) 2026, article S0030399225022054",
+      "locator": "https://www.sciencedirect.com/science/article/abs/pii/S0030399225022054"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "cintamani:follows",
+      "source_id": "src:dong-2026-deep-mrr-drc",
+      "target_id": "src:bazzanella-2022-jlt-microring",
+      "relation_id": "rel:cintamanifollows-a3678e6951550fa1"
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "Operator directed manual execution of today's literature-sweep SOP occurrence sop_run_20260814T055918_08466832."
+  },
+  "idempotency_key": "auto-admission-272f3e7adc475d7700f5eb4f",
+  "occurred_at": "2026-08-14T06:32:41.7759639Z",
+  "certifies_truth": false,
+  "event_hash": "7d2243efd0e7a071c00087d160ee2b1439a30a2c78347bb5772c5812c807e993"
+}
