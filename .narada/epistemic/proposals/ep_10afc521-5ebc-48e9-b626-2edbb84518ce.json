@@ -1,0 +1,424 @@
+{
+  "schema": "narada.epistemic.proposal.v1",
+  "proposal_id": "ep_10afc521-5ebc-48e9-b626-2edbb84518ce",
+  "status": "submitted",
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "Operator-directed seeding: structural backbone of problems, conjectures, and proved/borrowed claims from the cintamani ledger."
+  },
+  "idempotency_key": "cintamani-seed-backbone-v1",
+  "expected_ledger_head": "8962849d86dacf740456f0116d95d9ee8474e8c1808b8d3c46db7803cbd25516",
+  "created_at": "2026-08-14T03:12:48.8092786Z",
+  "operations": [
+    {
+      "entity_id": "prob:vrc-architecture-inverse-design",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "Given programmable nonlinear three-dimensional physical matter, what computational architecture should be trained to inhabit it?"
+    },
+    {
+      "entity_id": "prob:recurrence-depth-scaling",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "At fixed operator and fixed state size, does increasing recurrence count T increase performance, and do harder inputs benefit more than easy ones?"
+    },
+    {
+      "entity_id": "prob:recurrence-vs-depth-substitution",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "Can additional recurrence substitute for additional architectural depth on compositional tasks?"
+    },
+    {
+      "entity_id": "prob:controllable-computational-possibility",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "How much controllable computational possibility does a candidate physical volume actually contain, and does it have a bounded, persistent, high-dimensional operating regime that is neither chaos nor collapse?"
+    },
+    {
+      "entity_id": "prob:controllable-directions-and-time-scaling",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "How many independently useful computational directions does the substrate provide, and how much additional computation can the same substrate obtain by evolving for longer?"
+    },
+    {
+      "entity_id": "prob:persistent-volumetric-state-material",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "Which material can provide the greatest density of independently programmable, persistent, optically coupled computational state; is CsPbBr3 in glass viable with the required persistence, selectivity, rewritability, and scale?"
+    },
+    {
+      "entity_id": "prob:entropy-qualified-not-trainable",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "Why did entropy-qualified dynamics fail to become trainable corrective computation in the first task-level test?"
+    },
+    {
+      "entity_id": "prob:compositional-property-material-category",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "What compositional property of a material's physical process category determines which logical process categories it can realize under bounded resources?"
+    },
+    {
+      "entity_id": "prob:functorial-depth-invariant",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "Identify an invariant or monotone mu that produces a nontrivial bound between the logical and physical process theories"
+    },
+    {
+      "entity_id": "prob:litao3-escape-resource",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "Does a fabricated thin-film LiTaO3 device stay inside the declared affine model, and which additional physical resource can escape it compositionally?"
+    },
+    {
+      "entity_id": "prob:kerr-redistribution-utility",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "Does driven LiTaO3 Kerr dynamics supply a stable, resource-efficient redistribution of capacity into the particular nonlinear delayed functions required by a predeclared task while retaining enough input memory to compose them?"
+    },
+    {
+      "entity_id": "prob:conjecture-5-gate",
+      "kind": "problem",
+      "op": "entity.declare",
+      "title": "Find a connected, perturbation-tolerant LiTaO3 regime satisfying the 7 gate conditions (replicated nonlinear delayed capacity with retained input memory under charged controls and resources) before Conjecture 5 may be formulated"
+    },
+    {
+      "entity_id": "conj:recurrence-difficulty-scaling",
+      "kind": "conjecture",
+      "op": "entity.declare",
+      "title": "For sufficiently difficult but solvable inputs, performance increases with recurrence count T, and the recurrence advantage grows with input difficulty"
+    },
+    {
+      "entity_id": "conj:ecd-capacity",
+      "kind": "conjecture",
+      "op": "entity.declare",
+      "title": "The useful computational capacity of a VRC substrate is determined primarily by its effective controllable dimension (singular directions of the configuration-response Jacobian above the noise floor), not by its raw number of physical sites"
+    },
+    {
+      "entity_id": "conj:on3-persistence",
+      "kind": "conjecture",
+      "op": "entity.declare",
+      "title": "N_ECD = O(N^3) for an N x N x N lattice only when every volumetric site supports an independently programmable, persistent, optically readable, reconfigurable local state"
+    },
+    {
+      "entity_id": "conj:functorial-depth-criterion",
+      "kind": "conjecture",
+      "op": "entity.declare",
+      "title": "Resource-honest functorial depth (Conjecture 4) demoted to a non-empirical audit criterion: presentation-relative depth with no-fast-forward, explicit resources, bounded interfaces, compositional error structure"
+    },
+    {
+      "entity_id": "conj:kerr-quadrature-linear-memory-lead",
+      "kind": "conjecture",
+      "op": "entity.declare",
+      "title": "At detector-observation-noise std 1e-8 at the frozen normalized point, the Kerr lag-three and lag-four linear targets remain family-wise significant across seeds 20260810-20260812 and every matched Kerr-minus-disabled corrected-capacity delta remains positive"
+    },
+    {
+      "entity_id": "claim:lt-aff-1-linear-degree-obstruction",
+      "kind": "claim",
+      "op": "entity.declare",
+      "title": "Proposition LT-AFF-1 (proved within the declared model): fixed affine LiTaO3 optics with linear amplitude encoding and terminal square-law detection yields detector outputs of algebraic degree at most 2 for every recurrence count, so it cannot realize g^t(z)=z^(2^t) for t >= 2"
+    },
+    {
+      "entity_id": "claim:lt-kerr-1-capacity-bound",
+      "kind": "claim",
+      "op": "entity.declare",
+      "title": "Proposition LT-KERR-1 (application of Dambre et al. 2012, not a new empirical conjecture): at fixed real observation count N with linear readout, total information-processing capacity C_total(t) <= N for all dwell times, recurrence counts, Kerr strengths, pump powers, and detunings"
+    },
+    {
+      "entity_id": "claim:lt-kerr-2-honest-readout",
+      "kind": "claim",
+      "op": "entity.declare",
+      "title": "Proposition LT-KERR-2: retaining T observation time samples gives dimension at most NT; capacity gained thereby is attributable to an enlarged readout interface, not recurrence-created capacity"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c01-derived-l01",
+      "relation_type": "derived_from",
+      "source_id": "conj:vrc-recurrence-depth",
+      "target_id": "src:ledger-01"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c01-addresses-p01",
+      "relation_type": "addresses",
+      "source_id": "conj:vrc-recurrence-depth",
+      "target_id": "prob:vrc-architecture-inverse-design"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p01-derived-l01",
+      "relation_type": "derived_from",
+      "source_id": "prob:vrc-architecture-inverse-design",
+      "target_id": "src:ledger-01"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p02-derived-l02",
+      "relation_type": "derived_from",
+      "source_id": "prob:recurrence-depth-scaling",
+      "target_id": "src:ledger-02"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c02-derived-l02",
+      "relation_type": "derived_from",
+      "source_id": "conj:recurrence-difficulty-scaling",
+      "target_id": "src:ledger-02"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c02-addresses-p02",
+      "relation_type": "addresses",
+      "source_id": "conj:recurrence-difficulty-scaling",
+      "target_id": "prob:recurrence-depth-scaling"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c02-tests-c01",
+      "note": "Ledger 02 operationalizes the central VRC conjecture into a decisive variable-T experiment",
+      "relation_type": "tests",
+      "source_id": "conj:recurrence-difficulty-scaling",
+      "target_id": "conj:vrc-recurrence-depth"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p02b-derived-l02",
+      "relation_type": "derived_from",
+      "source_id": "prob:recurrence-vs-depth-substitution",
+      "target_id": "src:ledger-02"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p02b-depends-p02",
+      "relation_type": "depends_on",
+      "source_id": "prob:recurrence-vs-depth-substitution",
+      "target_id": "prob:recurrence-depth-scaling"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p03-derived-l03",
+      "relation_type": "derived_from",
+      "source_id": "prob:controllable-computational-possibility",
+      "target_id": "src:ledger-03"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p03-gates-p02",
+      "note": "Ledger 03 pre-gates MNIST: do not train a task model until characterization distinguishes known dynamics and a viable regime exists",
+      "relation_type": "depends_on",
+      "source_id": "prob:recurrence-depth-scaling",
+      "target_id": "prob:controllable-computational-possibility"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c04-derived-l04",
+      "relation_type": "derived_from",
+      "source_id": "conj:ecd-capacity",
+      "target_id": "src:ledger-04"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c04-addresses-p04",
+      "relation_type": "addresses",
+      "source_id": "conj:ecd-capacity",
+      "target_id": "prob:controllable-directions-and-time-scaling"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c04-transforms-l03",
+      "note": "Transforms Ledger 03's configuration entropy H_Theta into noise-thresholded controllable rank N_ECD",
+      "relation_type": "transforms",
+      "source_id": "conj:ecd-capacity",
+      "target_id": "src:ledger-03"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c05-derived-l05",
+      "relation_type": "derived_from",
+      "source_id": "conj:on3-persistence",
+      "target_id": "src:ledger-05"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c05-addresses-p05",
+      "relation_type": "addresses",
+      "source_id": "conj:on3-persistence",
+      "target_id": "prob:persistent-volumetric-state-material"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c05-depends-c04",
+      "note": "Reuses J_Theta, noise thresholding, eta_ECD; generalizes to J_{Theta,T} and N_ECD(T)",
+      "relation_type": "depends_on",
+      "source_id": "conj:on3-persistence",
+      "target_id": "conj:ecd-capacity"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:c4c-derived-l09",
+      "note": "Conjecture 4 demoted by Ledger 08 and preserved as audit criterion by Ledger 09",
+      "relation_type": "derived_from",
+      "source_id": "conj:functorial-depth-criterion",
+      "target_id": "src:ledger-09"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p08-derived-l08",
+      "relation_type": "derived_from",
+      "source_id": "prob:compositional-property-material-category",
+      "target_id": "src:ledger-08"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p09-derived-l09",
+      "relation_type": "derived_from",
+      "source_id": "prob:functorial-depth-invariant",
+      "target_id": "src:ledger-09"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p07-derived-l07",
+      "relation_type": "derived_from",
+      "source_id": "prob:entropy-qualified-not-trainable",
+      "target_id": "src:ledger-07"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p10-derived-l10",
+      "relation_type": "derived_from",
+      "source_id": "prob:litao3-escape-resource",
+      "target_id": "src:ledger-10"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p10-addresses-p08",
+      "note": "Ledger 10 executes Ledger 08's pre-Conjecture-5 procedure: one material, one primitive set, one invariant",
+      "relation_type": "addresses",
+      "source_id": "prob:litao3-escape-resource",
+      "target_id": "prob:compositional-property-material-category"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltaff1-derived-l10",
+      "relation_type": "derived_from",
+      "source_id": "claim:lt-aff-1-linear-degree-obstruction",
+      "target_id": "src:ledger-10"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltaff1-addresses-p10",
+      "relation_type": "addresses",
+      "source_id": "claim:lt-aff-1-linear-degree-obstruction",
+      "target_id": "prob:litao3-escape-resource"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltaff1-depends-wang",
+      "relation_type": "depends_on",
+      "source_id": "claim:lt-aff-1-linear-degree-obstruction",
+      "target_id": "src:wang-2024-nature-tflt"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltaff1-depends-chen",
+      "relation_type": "depends_on",
+      "source_id": "claim:lt-aff-1-linear-degree-obstruction",
+      "target_id": "src:chen-2025-optlett-pptflt-shg"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltaff1-depends-shelton",
+      "relation_type": "depends_on",
+      "source_id": "claim:lt-aff-1-linear-degree-obstruction",
+      "target_id": "src:shelton-2025-cleo-pptflt"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltaff1-depends-yan",
+      "relation_type": "depends_on",
+      "source_id": "claim:lt-aff-1-linear-degree-obstruction",
+      "target_id": "src:yan-2020-optlett-ltoi-microdisk"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p11-derived-l11",
+      "relation_type": "derived_from",
+      "source_id": "prob:kerr-redistribution-utility",
+      "target_id": "src:ledger-11"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p11-depends-p10",
+      "note": "Ledger 11 takes up Ledger 10's next-study instruction for the driven Kerr/FWM process category",
+      "relation_type": "depends_on",
+      "source_id": "prob:kerr-redistribution-utility",
+      "target_id": "prob:litao3-escape-resource"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltkerr1-derived-l11",
+      "relation_type": "derived_from",
+      "source_id": "claim:lt-kerr-1-capacity-bound",
+      "target_id": "src:ledger-11"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltkerr1-depends-dambre",
+      "relation_type": "depends_on",
+      "source_id": "claim:lt-kerr-1-capacity-bound",
+      "target_id": "src:dambre-2012-scirep-ipc"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltkerr1-addresses-p11",
+      "relation_type": "addresses",
+      "source_id": "claim:lt-kerr-1-capacity-bound",
+      "target_id": "prob:kerr-redistribution-utility"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:ltkerr2-derived-l11",
+      "relation_type": "derived_from",
+      "source_id": "claim:lt-kerr-2-honest-readout",
+      "target_id": "src:ledger-11"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p5gate-derived-l11",
+      "relation_type": "derived_from",
+      "source_id": "prob:conjecture-5-gate",
+      "target_id": "src:ledger-11"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:p5gate-depends-p11",
+      "relation_type": "depends_on",
+      "source_id": "prob:conjecture-5-gate",
+      "target_id": "prob:kerr-redistribution-utility"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:clead-derived-l13",
+      "relation_type": "derived_from",
+      "source_id": "conj:kerr-quadrature-linear-memory-lead",
+      "target_id": "src:ledger-13"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:clead-addresses-p11",
+      "relation_type": "addresses",
+      "source_id": "conj:kerr-quadrature-linear-memory-lead",
+      "target_id": "prob:kerr-redistribution-utility"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:l13-supersedes-l12",
+      "note": "Ledger 13's joint FWER + replication estimator supersedes Ledger 12's pooled-null capacity values for inference; dynamics unchanged",
+      "relation_type": "supersedes",
+      "source_id": "src:ledger-13",
+      "target_id": "src:ledger-12"
+    }
+  ],
+  "digest": "21ea423dd121a9e90deb5a27c79ad92e0debc057fc768ebbe66ef2fc004bbc16"
+}

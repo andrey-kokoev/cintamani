@@ -15,6 +15,7 @@ node_modules/
 
 # Narada local runtime/materialized surfaces
 /.ai/
+/.sop/
 .narada/.ai/*
 !.narada/.ai/inbox-drop/
 !.narada/.ai/inbox-drop/.gitkeep

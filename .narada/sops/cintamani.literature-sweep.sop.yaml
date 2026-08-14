@@ -1,0 +1,67 @@
+sop_id: cintamani.literature-sweep
+title: Daily Literature Sweep and Epistemic Graph Update
+description: |
+  Once per day, sweep recent literature across cintamani's tracked research
+  fronts, evaluate materiality against the current epistemic graph, and admit
+  a capture_sources proposal for anything material. Runs are idempotent per
+  day via the scheduler-owned occurrence key; negative sweeps (nothing new)
+  are recorded the same way as positive ones.
+status: active
+trigger_kind: schedule
+steps:
+  - id: run_sweep
+    executor: agent
+    blocking: true
+    title: Run scoped literature sweep
+    depends_on: []
+    instructions: |
+      You are executing today's cintamani literature sweep occurrence.
+
+      1. Read the current epistemic graph posture (entities, open questions,
+         recent claims) via the epistemic-graph MCP surface to establish what
+         "material" means today.
+      2. Run fresh web searches (last ~7 days, prefer primary sources) across
+         the four tracked fronts:
+         - TFLT (thin-film lithium tantalate) Kerr and Raman frequency combs
+         - information-processing capacity (IPC) bounds for photonic
+           reservoir computers
+         - microring-resonator reservoir computing (new architectures,
+           benchmarks, training schemes)
+         - CsPbBr3 persistent photoconductivity / optical memory
+      3. For each candidate source, judge materiality: does it add a claim,
+         strengthen/weaken an existing claim, or open a question relevant to
+         the graph? Record negative results too.
+      4. If any source is material, draft a capture_sources proposal for the
+         epistemic graph containing each source with a concrete locator
+         (DOI/arXiv id/URL), a one-line claim, and the graph entities it
+         touches. No provenance-free claims.
+      5. Self-review the draft against the graph, then submit it through the
+         epistemic-graph proposal path with the current ledger head (CAS
+         check). If admission is rejected on head mismatch, re-read the head
+         and retry once.
+      6. Return as your step result: the sweep date, per-front source counts,
+         the admitted proposal id(s) (or an explicit "no material sources"
+         declaration), and the ledger head after admission.
+
+  - id: record_run
+    executor: agent
+    blocking: true
+    title: Record sweep outcome
+    depends_on: [run_sweep]
+    instructions: |
+      Record a sweep.record for this occurrence on the epistemic graph
+      (including the negative case), capturing: occurrence key, date, fronts
+      covered, proposal ids admitted or explicitly none, and any follow-up
+      questions opened. Return the record reference as the step result.
+
+acceptance_criteria:
+  - All four tracked fronts were searched with fresh queries
+  - Every material source has a concrete locator and declared graph linkage
+  - A capture_sources proposal was admitted, or "no material sources" was declared explicitly
+  - A sweep.record for this occurrence key exists on the graph
+  - No provenance-free claims were introduced
+
+evidence_requirements:
+  - Per-front search coverage summary
+  - Admitted proposal id(s) or explicit negative declaration
+  - sweep.record reference

@@ -1,0 +1,73 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 5,
+  "event_id": "ev-000000000005-302bd007-fc73-44e8-b484-de4604ecd8a4",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "7b815def9ae87a271e5d6b72e478620cfbb49915f701f4c954c993b776c2240f",
+  "proposal_id": "ep_34727c08-0c2a-4536-87a8-73c3826a830d",
+  "proposal_digest": "43a5d27e5d131ec008fb59f7a5487ae1e9e8e3b484e1ee6b38f33b6d543e3d4a",
+  "operations": [
+    {
+      "op": "entity.declare",
+      "entity_id": "src:arxiv-2607-11186-tflt-raman-kerr-comb",
+      "kind": "source",
+      "title": "Leveraging the Raman response of X-cut thin-film lithium tantalate: broadband Kerr and Raman-Kerr combs via coupling-engineered threshold control",
+      "version": "arXiv:2607.11186v1 (2026-07-13)",
+      "locator": "https://arxiv.org/abs/2607.11186"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:arxiv-2509-11721-mrr-network-rc",
+      "kind": "source",
+      "title": "Silicon microring resonator networks for reservoir computing: time-sequence image classification (MNIST/Fashion-MNIST)",
+      "version": "arXiv:2509.11721v2 (2026-06-26)",
+      "locator": "https://arxiv.org/abs/2509.11721"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:s41598-026-39410-w-mzi-mrr-prc",
+      "kind": "source",
+      "title": "A cascaded interferometer-microresonator structure for photonic reservoir computing",
+      "version": "Scientific Reports s41598-026-39410-w (2026)",
+      "locator": "https://www.nature.com/articles/s41598-026-39410-w"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:tflt-raman-comb-addresses-litao3-escape",
+      "relation_type": "addresses",
+      "source_id": "src:arxiv-2607-11186-tflt-raman-kerr-comb",
+      "target_id": "prob:litao3-escape-resource"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:mrr-network-rc-follows-bazzanella",
+      "relation_type": "cintamani:follows",
+      "source_id": "src:arxiv-2509-11721-mrr-network-rc",
+      "target_id": "src:bazzanella-2022-jlt-microring"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:mzi-mrr-prc-follows-bazzanella",
+      "relation_type": "cintamani:follows",
+      "source_id": "src:s41598-026-39410-w-mzi-mrr-prc",
+      "target_id": "src:bazzanella-2022-jlt-microring"
+    },
+    {
+      "op": "sweep.record",
+      "interval_end": "2026-08-14",
+      "interval_start": "2026-08-11",
+      "method": "Web search, 4 scoped queries: (1) thin-film lithium tantalate Kerr/Raman combs; (2) information-processing-capacity bounds for photonic reservoirs; (3) microring reservoir computing 2025-2026; (4) CsPbBr3 perovskite persistent optical memory. Candidate material items verified by fetching arXiv/Nature pages.",
+      "result": "MATERIAL: arXiv:2607.11186v1 demonstrates 450 nm Kerr and 650 nm Raman-Kerr combs on X-cut TFLT via coupling-engineered threshold control, recasting the strong Raman response from parasitic competitor into enabling mechanism; renews relevance of Raman handling that current kerr-capacity configs reject (ledger 11/14 scope). ACTIVE LINE: microring reservoir computing - arXiv:2509.11721v2 (MRR networks, time-sequence MNIST/Fashion-MNIST) and Sci. Rep. s41598-026-39410-w (linear-regime MZI-MRR time-delay PRC, NARMA-10 NMSE 0.024 with PM, 25 GHz-class speed) extend the Bazzanella 2022 protocol line; both declared as sources. NEGATIVE: no new IPC bounds beyond re-citations of Dambre 2012. NEGATIVE: CsPbBr3 items (oea.2026.250238 holographic display; Kharisova 2025 borogermanate-glass formation) show no persistent writable memory nodes; conj:on3-persistence problem state unchanged. No provenance-free claims introduced.",
+      "sweep_id": "sweep:2026-08-14-literature"
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "Operator ordered daily literature watcher with auto-draft and submit, no ceremony; admitting the reviewed first-run sweep proposal."
+  },
+  "idempotency_key": "cintamani-admit-sweep-20260814-v1",
+  "occurred_at": "2026-08-14T03:39:00.1629687Z",
+  "certifies_truth": false,
+  "event_hash": "119a0d509bc3485ae1e18f83f949514e19ab232885ffcac52c4739d6b8e5a376"
+}

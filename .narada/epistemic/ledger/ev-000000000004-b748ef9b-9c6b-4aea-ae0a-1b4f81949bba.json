@@ -1,0 +1,424 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 4,
+  "event_id": "ev-000000000004-b748ef9b-9c6b-4aea-ae0a-1b4f81949bba",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "1d80e4a6b9c768847fd2914956bc44f645fcd914ed762b717837f7c146bb1691",
+  "proposal_id": "ep_d736ab52-8b4b-4e3c-b506-082a47284a3d",
+  "proposal_digest": "eefd6f31c17042bf316b0abcffd41b46e0599ddb7f7bdaedde1e2aee7120bf51",
+  "operations": [
+    {
+      "entity_id": "src:readme-amplitudes-at-infinity",
+      "kind": "source",
+      "locator": "packages/amplitudes-at-infinity/README.md",
+      "op": "entity.declare",
+      "title": "amplitudes-at-infinity package README — Task #11 exact rational planar propagator slice",
+      "version": "1"
+    },
+    {
+      "entity_id": "test:entropy-calibration-regime-search",
+      "kind": "test",
+      "op": "entity.declare",
+      "title": "Entropy calibration and viable regime search: matrix-free spectral estimators validated on 8 known reference regimes, then 86 candidate residual-operator regimes x 3 seeds gated for bounded persistent high-dimensional recurrence"
+    },
+    {
+      "entity_id": "test:mnist-recurrence-falsification",
+      "kind": "test",
+      "op": "entity.declare",
+      "title": "Recursive MNIST: first task-level VRC test — frozen substrate, 36 shared parameters, T_train in {1,2,4,8}, T_eval 1..32, 13 corruption conditions, four mandatory controls"
+    },
+    {
+      "entity_id": "test:kerr-first-control",
+      "kind": "test",
+      "op": "entity.declare",
+      "title": "Rust Kerr capacity instrument first control: paired Kerr vs Kerr-disabled run at one frozen normalized noiseless point with bias-corrected capacity estimator"
+    },
+    {
+      "entity_id": "test:kerr-attribution-controls",
+      "kind": "test",
+      "op": "entity.declare",
+      "title": "Attribution controls and estimator recalibration: joint target-family FWER permutation gate plus cross-seed replication gate over an eight-case normalized suite"
+    },
+    {
+      "entity_id": "test:kerr-detector-noise-survival",
+      "kind": "test",
+      "op": "entity.declare",
+      "title": "Detector-noise survival: predeclared frozen protocol testing whether the quadrature lag-3/lag-4 linear-memory lead survives additive normalized detector noise, decision floor sigma_d = 1e-8"
+    },
+    {
+      "entity_id": "test:task11-exact-rational-propagator",
+      "kind": "test",
+      "op": "entity.declare",
+      "title": "Task #11 exact rational planar propagator slice: exact BigRational evaluation of A_n(z) over labelled planar triangulations, n = 4..8, oracle vs hash-consed DAG reducer"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t06-derived-l06",
+      "relation_type": "derived_from",
+      "source_id": "test:entropy-calibration-regime-search",
+      "target_id": "src:ledger-06"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t06-depends-l03",
+      "relation_type": "depends_on",
+      "source_id": "test:entropy-calibration-regime-search",
+      "target_id": "src:ledger-03"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t06-addresses-p03",
+      "relation_type": "addresses",
+      "source_id": "test:entropy-calibration-regime-search",
+      "target_id": "prob:controllable-computational-possibility"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t07-derived-l07",
+      "relation_type": "derived_from",
+      "source_id": "test:mnist-recurrence-falsification",
+      "target_id": "src:ledger-07"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t07-tests-c01",
+      "relation_type": "tests",
+      "source_id": "test:mnist-recurrence-falsification",
+      "target_id": "conj:vrc-recurrence-depth"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t07-tests-c02",
+      "relation_type": "tests",
+      "source_id": "test:mnist-recurrence-falsification",
+      "target_id": "conj:recurrence-difficulty-scaling"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t07-depends-t06",
+      "note": "Frozen substrate handed off unchanged from the Ledger 06 regime search",
+      "relation_type": "depends_on",
+      "source_id": "test:mnist-recurrence-falsification",
+      "target_id": "test:entropy-calibration-regime-search"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t07-depends-l02",
+      "relation_type": "depends_on",
+      "source_id": "test:mnist-recurrence-falsification",
+      "target_id": "src:ledger-02"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t12-derived-l12",
+      "relation_type": "derived_from",
+      "source_id": "test:kerr-first-control",
+      "target_id": "src:ledger-12"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t12-tests-p5gate",
+      "relation_type": "tests",
+      "source_id": "test:kerr-first-control",
+      "target_id": "prob:conjecture-5-gate"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t12-depends-l11",
+      "relation_type": "depends_on",
+      "source_id": "test:kerr-first-control",
+      "target_id": "src:ledger-11"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t12-depends-lle",
+      "relation_type": "depends_on",
+      "source_id": "test:kerr-first-control",
+      "target_id": "src:lugiato-lefever-1987-lle"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t12-depends-hansson",
+      "relation_type": "depends_on",
+      "source_id": "test:kerr-first-control",
+      "target_id": "src:hansson-2014-optcomm-cme-lle"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t13-derived-l13",
+      "relation_type": "derived_from",
+      "source_id": "test:kerr-attribution-controls",
+      "target_id": "src:ledger-13"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t13-tests-clead",
+      "relation_type": "tests",
+      "source_id": "test:kerr-attribution-controls",
+      "target_id": "conj:kerr-quadrature-linear-memory-lead"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t13-transforms-t12",
+      "note": "Same frozen dynamics and target family; pooled-null estimator replaced by joint FWER + replication gates",
+      "relation_type": "transforms",
+      "source_id": "test:kerr-attribution-controls",
+      "target_id": "test:kerr-first-control"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t14-derived-l14",
+      "relation_type": "derived_from",
+      "source_id": "test:kerr-detector-noise-survival",
+      "target_id": "src:ledger-14"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t14-tests-clead",
+      "relation_type": "tests",
+      "source_id": "test:kerr-detector-noise-survival",
+      "target_id": "conj:kerr-quadrature-linear-memory-lead"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t14-depends-t13",
+      "note": "Frozen protocol, replication gate, and weakest-feature measurement fixing the 1e-8 floor come from Ledger 13",
+      "relation_type": "depends_on",
+      "source_id": "test:kerr-detector-noise-survival",
+      "target_id": "test:kerr-attribution-controls"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t14-depends-bazzanella",
+      "note": "Microring reservoir precedent supports the measurement protocol only, not quantitative transfer to LiTaO3",
+      "relation_type": "depends_on",
+      "source_id": "test:kerr-detector-noise-survival",
+      "target_id": "src:bazzanella-2022-jlt-microring"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:t11-derived-readme",
+      "relation_type": "derived_from",
+      "source_id": "test:task11-exact-rational-propagator",
+      "target_id": "src:readme-amplitudes-at-infinity"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "evidence": [
+        {
+          "locator": "Regime selected",
+          "paraphrase": "All eight reference regimes passed; 78 of 86 candidate regimes passed all gates across three seeds; the selected regime was frozen for the task test without establishing trainability or classification utility.",
+          "source_id": "src:ledger-06"
+        }
+      ],
+      "op": "test_outcome.record",
+      "outcome": "Calibration established: estimators distinguish known reference dynamics (8/8 passed, 42 convergence records); 78 candidate regimes passed all gates; one regime frozen (gamma 0.03, coupling 2.0, nonlinear 0.5, transmission 0.98, injection 0.5, radius 1). Explicitly not evidence of trainability.",
+      "outcome_id": "to:entropy-calibration-outcome",
+      "test_id": "test:entropy-calibration-regime-search"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "evidence": [
+        {
+          "locator": "Primary result",
+          "paraphrase": "Verdict REJECT under criteria fixed in advance: clean gain T1 to T32 +0.0013, hard recoverable-input gain -0.0037, net corrections -129 against 1122893 confidence amplifications; feed-forward control substantially outperformed the recurrent model.",
+          "source_id": "src:ledger-07"
+        }
+      ],
+      "op": "test_outcome.record",
+      "outcome": "REJECT: recurrence produced negligible clean gain and negative hard-input gain; dominant effect was confidence amplification, not correction. Falsifies this substrate-and-training regime only, not every VRC substrate.",
+      "outcome_id": "to:mnist-reject",
+      "test_id": "test:mnist-recurrence-falsification"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "evidence": [
+        {
+          "locator": "Status and paired run results",
+          "paraphrase": "Corrected totals below numerical ranks without clipping (Kerr 0.979571 <= rank 5; control 0.985532 <= rank 2); Kerr-minus-disabled corrected total -0.005961; Kerr historical capacity 0.001576 below control 0.007263; dominant apparent nonlinear capacity shown to be square-law detector capacity.",
+          "source_id": "src:ledger-12"
+        }
+      ],
+      "op": "test_outcome.record",
+      "outcome": "Negative: capacity-bound check survives (consistent with C_total <= N, not a proof), but Kerr raises numerical rank 2 to 5 without increasing corrected total or delayed-input capacity; Conjecture 5 gate not passed.",
+      "outcome_id": "to:kerr-first-control-negative",
+      "test_id": "test:kerr-first-control"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "evidence": [
+        {
+          "locator": "Replication and status",
+          "paraphrase": "Quadrature readout shows replicated positive Kerr-minus-disabled deltas across 3 seeds, total range [0.015012, 0.020287]; replicating targets L1(u_t), L1(u_{t-3}), L1(u_{t-4}); no degree-2 or degree-3 target replicates under either readout; pump-only capacity zero.",
+          "source_id": "src:ledger-13"
+        }
+      ],
+      "op": "test_outcome.record",
+      "outcome": "Mixed: a small repeatable Kerr-associated increase in linear memory at lags 3-4 under coherent quadrature readout (normalized model, noiseless); intensity readout shows no Kerr advantage; no nonlinear target capacity survives all three seeds; Conjecture 5 gate remains closed.",
+      "outcome_id": "to:kerr-attribution-lead",
+      "test_id": "test:kerr-attribution-controls"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "evidence": [
+        {
+          "locator": "Status and per-target table",
+          "paraphrase": "At sigma_d = 1e-8 both L1(u_{t-3}) and L1(u_{t-4}) remain family-wise significant in the Kerr case across all three seeds with positive paired deltas (signed lower envelopes 0.003779 and 0.014251); noise-aware Kerr dimension falls 14 to 12; no degree-2/3 target replicates.",
+          "source_id": "src:ledger-14"
+        }
+      ],
+      "op": "test_outcome.record",
+      "outcome": "Survived the local declared gate: the quadrature lag-3/lag-4 linear-memory lead persists at the predeclared 1e-8 detector-noise floor across all three seeds. Local normalized-model result only; not detector calibration and not evidence of nonlinear computation; Conjecture 5 remains unformulated.",
+      "outcome_id": "to:kerr-noise-survival",
+      "test_id": "test:kerr-detector-noise-survival"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "evidence": [
+        {
+          "locator": "Intro and closing non-claims",
+          "paraphrase": "Exact rational propagator sum evaluated over all triangulations for n = 4..8 with reducer/oracle equality recorded; weights are declared integer channel weights, not sourced cluster-algebra g-vectors; no physical amplitude or canonical infinity limit is claimed.",
+          "source_id": "src:readme-amplitudes-at-infinity"
+        }
+      ],
+      "op": "test_outcome.record",
+      "outcome": "Completed as an experimental, unreviewed exact computation: declared rational propagator sums and asymptotic-window expansions computed exactly for the declared integer sample families; explicitly no physical amplitude, no g-vector sourcing, no HVM runtime result.",
+      "outcome_id": "to:task11-outcome",
+      "test_id": "test:task11-exact-rational-propagator"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "assessment_id": "as:c01-status",
+      "evidence": [
+        {
+          "locator": "Primary result and Decision",
+          "paraphrase": "REJECT under predeclared criteria; the result falsifies the selected substrate-and-training regime and does not prove that every possible VRC substrate or learning rule must fail.",
+          "source_id": "src:ledger-07"
+        },
+        {
+          "locator": "Conjecture status table",
+          "paraphrase": "Conjecture 1: selected regime rejected; falsifies that regime, not every conceivable recurrent substrate.",
+          "source_id": "src:ledger-08"
+        }
+      ],
+      "judgment": "Falsified for the selected substrate-and-training regime by the recursive MNIST test; the program-level question remains open under the categorical-siege strategy.",
+      "op": "assessment.record",
+      "reason": "Ledger 07's controlled variable-T experiment rejected the regime; Ledger 08 records the conjecture genealogy and demotion.",
+      "subject_id": "conj:vrc-recurrence-depth"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "assessment_id": "as:ecd-status",
+      "evidence": [
+        {
+          "locator": "Conjecture and Falsification sections",
+          "paraphrase": "ECD conjecture stated with explicit falsification and support conditions; estimation protocol prescribed for simulated and physical substrates.",
+          "source_id": "src:ledger-04"
+        },
+        {
+          "locator": "Interpretation",
+          "paraphrase": "Calibration established only that the characterization machinery distinguishes known regimes and locates bounded recurrent dynamics; it does not show dynamical richness becomes useful learned computation.",
+          "source_id": "src:ledger-06"
+        }
+      ],
+      "judgment": "Open. The estimation machinery was calibrated on known reference regimes, but ECD as a capacity law is untested; Ledger 07 shows entropy-qualified dynamics need not become useful computation.",
+      "op": "assessment.record",
+      "reason": "Conjecture stated in Ledger 04; instrument calibrated in Ledger 06; no capacity-law test has run.",
+      "subject_id": "conj:ecd-capacity"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "assessment_id": "as:on3-status",
+      "evidence": [
+        {
+          "locator": "Role of CsPbBr3",
+          "paraphrase": "CsPbBr3 should be treated only as a candidate material; existing demonstrations do not establish independently writable, persistent, high-density N^3 optical memory nodes.",
+          "source_id": "src:ledger-05"
+        }
+      ],
+      "judgment": "Open. The low-rank addressing obstruction supports the necessity of local persistence, but no material demonstrates the required persistent programmable nodes.",
+      "op": "assessment.record",
+      "reason": "Ledger 05 states the conjecture and its falsification conditions; the CsPbBr3 candidate is explicitly unestablished.",
+      "subject_id": "conj:on3-persistence"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "assessment_id": "as:c4c-status",
+      "evidence": [
+        {
+          "locator": "Conjecture status table",
+          "paraphrase": "Conjecture 4 not retained as an empirical conjecture; renamed as the Functorial Depth Criterion.",
+          "source_id": "src:ledger-08"
+        },
+        {
+          "locator": "Status and purpose",
+          "paraphrase": "The criterion is not itself an empirical conjecture and does not predict that any particular material can satisfy it.",
+          "source_id": "src:ledger-09"
+        }
+      ],
+      "judgment": "Not retained as an empirical conjecture; retained as a non-empirical audit criterion for future depth claims.",
+      "op": "assessment.record",
+      "reason": "Ledger 08 demotes Conjecture 4; Ledger 09 preserves its useful content as an audit criterion.",
+      "subject_id": "conj:functorial-depth-criterion"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "assessment_id": "as:ltaff1-status",
+      "evidence": [
+        {
+          "locator": "Accepted decision",
+          "paraphrase": "Fixed affine LiTaO3 optics with linear amplitude encoding and terminal square-law detection has a recurrence-invariant algebraic-degree ceiling; it cannot realize a logical family whose required degree grows with sequential composition.",
+          "source_id": "src:ledger-10"
+        }
+      ],
+      "judgment": "Proved within the declared affine model; accepted as a conditional obstruction, explicitly not Conjecture 5. Does not rule out nonlinear encodings, intrinsic chi(2)/chi(3), measurement feedback, or growing resources.",
+      "op": "assessment.record",
+      "reason": "Ledger 10 proves the degree obstruction deductively from the declared affine field model.",
+      "subject_id": "claim:lt-aff-1-linear-degree-obstruction"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "assessment_id": "as:ltkerr1-status",
+      "evidence": [
+        {
+          "locator": "Proposition LT-KERR-1",
+          "paraphrase": "This is an application of an existing theorem, not a new empirical conjecture; the bound applies to a reservoir-computing semantics under specific assumptions.",
+          "source_id": "src:ledger-11"
+        },
+        {
+          "locator": "Paired run results",
+          "paraphrase": "Corrected totals fall below effective ranks without post-hoc clipping; explicitly not an empirical proof of the theorem.",
+          "source_id": "src:ledger-12"
+        }
+      ],
+      "judgment": "Established as an application of Dambre et al. 2012 under stated assumptions; empirically consistent in the controlled normalized runs of Ledgers 12-14, which is not an empirical proof.",
+      "op": "assessment.record",
+      "reason": "Ledger 11 derives the bound from the IPC theorem; Ledgers 12-14 found no violation under the bias-corrected estimator.",
+      "subject_id": "claim:lt-kerr-1-capacity-bound"
+    },
+    {
+      "actor": "cintamani-ledger",
+      "assessment_id": "as:clead-status",
+      "evidence": [
+        {
+          "locator": "Status and decision",
+          "paraphrase": "The lead survived the local declared gate; local normalized-model survival only; not nonlinear computation, a connected region, detector calibration, material validation, or Conjecture 5; advance to bounded parameter siege.",
+          "source_id": "src:ledger-14"
+        }
+      ],
+      "judgment": "Survived the local declared detector-noise gate (sigma_d = 1e-8, three frozen seeds). Scope strictly local: not nonlinear computation, not detector calibration, not material validation, not a connected region, and not Conjecture 5.",
+      "op": "assessment.record",
+      "reason": "Ledger 13 posed the pre-test conjecture; Ledger 14 recorded survival under the predeclared frozen protocol.",
+      "subject_id": "conj:kerr-quadrature-linear-memory-lead"
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "Admit the reviewed evidence-layer proposal; admission is policy validity only, not truth certification."
+  },
+  "idempotency_key": "cintamani-admit-evidence-v1",
+  "occurred_at": "2026-08-14T03:19:09.6190213Z",
+  "certifies_truth": false,
+  "event_hash": "7b815def9ae87a271e5d6b72e478620cfbb49915f701f4c954c993b776c2240f"
+}

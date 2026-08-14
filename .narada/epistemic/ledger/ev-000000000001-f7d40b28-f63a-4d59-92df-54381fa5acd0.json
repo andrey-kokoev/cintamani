@@ -1,0 +1,218 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 1,
+  "event_id": "ev-000000000001-f7d40b28-f63a-4d59-92df-54381fa5acd0",
+  "event_kind": "proposal_admitted",
+  "previous_hash": null,
+  "proposal_id": "ep_e984a73a-b94b-4d86-88ce-ae40369fbfd9",
+  "proposal_digest": "89e42ac75f3e299b2c7d7ecd55912eb2b0cde9b768672e2125d0cd19a094ee81",
+  "operations": [
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-01",
+      "kind": "source",
+      "title": "Ledger 01 — VRC: Volumetric Recurrent Computing",
+      "version": "1",
+      "locator": "src/ledger/20260809-01 VRC.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-02",
+      "kind": "source",
+      "title": "Ledger 02 — Agent Brief: Recurrent Volumetric Photonic State Machine MNIST Falsification Experiment",
+      "version": "1",
+      "locator": "src/ledger/20260809-02 Agent brieft - MNIST.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-03",
+      "kind": "source",
+      "title": "Ledger 03 — Entropy Potential for Volumetric Recurrent Computing",
+      "version": "1",
+      "locator": "src/ledger/20260809-03 Entropy.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-04",
+      "kind": "source",
+      "title": "Ledger 04 — VRC Conjecture: Effective Controllable Dimension",
+      "version": "1",
+      "locator": "src/ledger/20260809-04 Effective Controllable Dimension.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-05",
+      "kind": "source",
+      "title": "Ledger 05 — VRC Conjecture: Persistent Volumetric State Enables O(N^3) Controllability",
+      "version": "1",
+      "locator": "src/ledger/20260809-05 O N3 Conjecture.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-06",
+      "kind": "source",
+      "title": "Ledger 06 — Entropy Calibration and Viable Regime Search",
+      "version": "1",
+      "locator": "src/ledger/20260810-06 Entropy Calibration and Viable Regime Search.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-07",
+      "kind": "source",
+      "title": "Ledger 07 — Recursive MNIST: First Task-Level VRC Test",
+      "version": "1",
+      "locator": "src/ledger/20260810-07 Recursive MNIST Results.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-08",
+      "kind": "source",
+      "title": "Ledger 08 — From Frontal Assault to Categorical Siege",
+      "version": "1",
+      "locator": "src/ledger/20260810-08 From Frontal Assault to Categorical Siege.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-09",
+      "kind": "source",
+      "title": "Ledger 09 — Functorial Depth Criterion",
+      "version": "1",
+      "locator": "src/ledger/20260810-09 Functorial Depth Criterion.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-10",
+      "kind": "source",
+      "title": "Ledger 10 — Thin-Film LiTaO3 Perimeter and Linear-Degree Obstruction",
+      "version": "1",
+      "locator": "src/ledger/20260810-10 Thin-Film LiTaO3 Perimeter and Linear-Degree Obstruction.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-11",
+      "kind": "source",
+      "title": "Ledger 11 — Driven LiTaO3 Kerr Category and Observable-Capacity Bound",
+      "version": "1",
+      "locator": "src/ledger/20260810-11 Driven LiTaO3 Kerr Category and Observable-Capacity Bound.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-12",
+      "kind": "source",
+      "title": "Ledger 12 — Rust Kerr Capacity Instrument and First Control",
+      "version": "1",
+      "locator": "src/ledger/20260810-12 Rust Kerr Capacity Instrument and First Control.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-13",
+      "kind": "source",
+      "title": "Ledger 13 — Attribution Controls and Capacity-Estimator Calibration",
+      "version": "1",
+      "locator": "src/ledger/20260810-13 Attribution Controls and Capacity-Estimator Calibration.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-14",
+      "kind": "source",
+      "title": "Ledger 14 — Detector-Noise Survival of Kerr Quadrature Memory",
+      "version": "1",
+      "locator": "src/ledger/20260810-14 Detector-Noise Survival of Kerr Quadrature Memory.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-15",
+      "kind": "source",
+      "title": "Ledger 15 — Cintamani Domain Siege Registry",
+      "version": "1",
+      "locator": "src/ledger/20260810-15 Cintamani Domain Siege Registry.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:ledger-16",
+      "kind": "source",
+      "title": "Ledger 16 — Public Proposal and Criticism Plane",
+      "version": "1",
+      "locator": "src/ledger/20260811-16 Public Proposal and Criticism Plane.md"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:wang-2024-nature-tflt",
+      "kind": "source",
+      "title": "Wang et al. — wafer-scale thin-film lithium tantalate photonics platform (Nature 2024)",
+      "version": "2024",
+      "locator": "Wang et al., Nature 629, 784-790 (2024)"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:chen-2025-optlett-pptflt-shg",
+      "kind": "source",
+      "title": "Chen et al. — periodically poled thin-film lithium tantalate SHG (Opt. Lett. 2025)",
+      "version": "2025",
+      "locator": "Chen et al., Optics Letters 50, 1125-1127 (2025)"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:shelton-2025-cleo-pptflt",
+      "kind": "source",
+      "title": "Shelton et al. — nonlinear wave mixing in periodically poled TFLT (CLEO 2025)",
+      "version": "2025",
+      "locator": "Shelton et al., CLEO 2025"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:yan-2020-optlett-ltoi-microdisk",
+      "kind": "source",
+      "title": "Yan et al. — high-Q lithium-tantalate-on-insulator microdisk, SHG and cascaded THG (Opt. Lett. 2020)",
+      "version": "2020",
+      "locator": "Yan et al., Optics Letters 45, 4100-4103 (2020)"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:lugiato-lefever-1987-lle",
+      "kind": "source",
+      "title": "Lugiato & Lefever — spatial dissipative structures in passive optical systems (LLE, PRL 1987)",
+      "version": "1987",
+      "locator": "Lugiato and Lefever, Physical Review Letters 58, 2209 (1987)"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:hansson-2014-optcomm-cme-lle",
+      "kind": "source",
+      "title": "Hansson, Modotto & Wabnitz — coupled-mode to Lugiato-Lefever connection (Opt. Commun. 2014)",
+      "version": "2014",
+      "locator": "Hansson, Modotto and Wabnitz, Optics Communications 312 (2014)"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:dambre-2012-scirep-ipc",
+      "kind": "source",
+      "title": "Dambre, Verstraeten, Schrauwen & Massar — information processing capacity of dynamical systems (Sci. Rep. 2012)",
+      "version": "2012",
+      "locator": "Dambre, Verstraeten, Schrauwen and Massar, Scientific Reports 2, 514 (2012)"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:bazzanella-2022-jlt-microring",
+      "kind": "source",
+      "title": "Bazzanella et al. — silicon microring reservoir computing with time-multiplexed observation (JLT 2022)",
+      "version": "2022",
+      "locator": "Bazzanella et al., Journal of Lightwave Technology 40 (2022)"
+    },
+    {
+      "entity_id": "conj:vrc-recurrence-depth",
+      "kind": "conjecture",
+      "op": "entity.declare",
+      "title": "Central VRC conjecture: a fixed configurable nonlinear physical operator with a fixed-size transient state can obtain greater effective problem-solving depth by evolving for longer"
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "Admit the reviewed source-capture proposal; admission is policy validity only, not truth certification."
+  },
+  "idempotency_key": "cintamani-admit-sources-v1",
+  "occurred_at": "2026-08-14T03:07:36.2447366Z",
+  "certifies_truth": false,
+  "event_hash": "8962849d86dacf740456f0116d95d9ee8474e8c1808b8d3c46db7803cbd25516"
+}
