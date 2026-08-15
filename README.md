@@ -54,6 +54,12 @@ the generic contributor/SIWX identity model, optional x402 publication lane, sec
 handoff, provisioning, recovery, and deployment boundaries. The x402 agent wrapper reads config and
 health only by default; paid mode is a real wallet mutation and requires separate authorization.
 
+The site consumes the centralized renderer-neutral design system from
+@narada-core/ui. Its Astro Markdown pipeline uses remark-math,
+remark-narada-math, and rehype-katex; inline TeX uses \(...\), while display
+TeX is a standalone \[...\] paragraph. The shared UI and release contract is
+documented in narada/docs/deployment/site-ui-and-wrangler.md.
+
 The public plane also supports problem-led `explanatory-conjecture` records. They expose an
 essential mechanism, failure condition, unresolved assumptions, exact-version criticism and
 relations, and optional generation-pinned framings of the derived four-dimensional frontier. A

@@ -8,6 +8,20 @@ This package serves two deliberately separate projections through one Cloudflare
 The public plane is not another canonical registry. A Worker route can write only `PROPOSALS_DB`.
 It has no filesystem, Git, domain-registry database, or canonical admission mutation binding.
 
+## Shared UI and mathematical notation
+
+The site consumes the canonical @narada-core/ui package during site:ship; it
+does not maintain a copied design-system stylesheet. Shared tokens and
+primitives remain owned by Narada proper.
+
+Markdown uses remark-math, remark-narada-math, and rehype-katex. Use \(...\)
+for inline TeX and a standalone \[...\] paragraph for display TeX. Keep
+commands such as \mathrm{NLSM} inside the delimiters so they reach KaTeX as
+TeX rather than ordinary text.
+
+See narada/docs/deployment/site-ui-and-wrangler.md for the cross-repository
+release contract and governed direct-Wrangler invocation.
+
 ## Authority and storage boundaries
 
 | Record | Authority | Persistence | Mutation path |
