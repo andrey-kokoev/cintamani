@@ -1,0 +1,25 @@
+{
+  "schema": "narada.epistemic.proposal.v1",
+  "proposal_id": "ep_2db74681-a057-48ae-830d-e436893364bc",
+  "status": "submitted",
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260815 (run sop_run_20260815T111701_fad0fa59), step record_run."
+  },
+  "idempotency_key": "litsweep-20260815-sweep-record",
+  "expected_ledger_head": "7671f40693b46c80fbb885760f6e347274ba52793baa44cd834706568ea4798b",
+  "created_at": "2026-08-15T19:11:06.0247881Z",
+  "content_fingerprint": "f3cd60d45d35cd1cc5e20c5bcf0ad41f82bb582103f4aab953b4d3f67896de09",
+  "operations": [
+    {
+      "op": "sweep.record",
+      "sweep_id": "sweep:literature-sweep:20260815",
+      "interval_start": "2026-08-09",
+      "interval_end": "2026-08-15",
+      "method": "Daily full sweep of all 7 fronts. Five fronts executed by delegated read-only research workers (delegated-task + worker-delegation MCP, NARS sessions, codex-subscription gpt-5.6-sol): TFLT, photonic reservoir computing, volumetric memory, recurrence-vs-depth, IPC/capacity theory. Two fronts (compositional/categorical, physical/analog) fell back to operator-direct scoped search after delegated workers failed to launch twice (no NARS turn submitted). Material candidates verified against primary arXiv abstract records and checked for duplication against graph head ev-13.",
+      "result": "MATERIAL (5 sources, admitted as ev-000000000014, proposal ep_f0eccd1e-d0c5-47c5-b8aa-8044b76e413b): arXiv:2608.06921 Sayem et al. TFLT charge dynamics (watch item, Aug 7, just outside window; >35 dB extinction distortion-free pulses, ~4 orders lower sheet conductivity than TFLN via higher charge-carrier activation energy; addresses prob:litao3-escape-resource); arXiv:2608.10382 Ehlers et al. atom-in-front-of-mirror universal reservoir (constructive fading-memory universality, modal scaling law, memory depth ~2-3 at theorem operating point; addresses prob:controllable-computational-possibility and prob:recurrence-vs-depth-substitution; independently flagged by IPC and photonic workers); arXiv:2608.09444 continuous depth batching (1.5-1.9x throughput serving variable recurrent depth on Ouro/Huginn looped LMs; addresses prob:recurrence-depth-scaling); arXiv:2608.09888 BDH-CQ (ARC-AGI-1 pass@2 21->27->29.5% with latent reasoning effort; addresses prob:recurrence-depth-scaling, conj:recurrence-difficulty-scaling); arXiv:2608.06727v2 bioMoR (biology-guided mixture-of-recursions, 75% fewer params; addresses prob:recurrence-vs-depth-substitution). NEGATIVE: IPC/capacity theory (nothing in-window beyond graph's Aug-14 admissions; 2608.08879 excluded as architecture-not-capacity); volumetric memory (0 material; near-hits 2608.09904, 2608.10820, 2608.12128, boundary exclusion 2608.08221); compositional/categorical (only Lean dilatations formalization 2608.09305, not computation models); physical/analog (nothing new in-window); TFLT proper in-window negative. Delegation defects observed: worker launch failure on 2 fronts (twice each), completion propagation broken (finished NARS turns leave runs status=running), intent.instructions not propagated into worker_prompt.txt."
+    }
+  ],
+  "digest": "d49b0d8219aff85dc7dae5e5c51faa500dddf1705b2b80a0e0bf09165512e815"
+}

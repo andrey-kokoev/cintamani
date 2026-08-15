@@ -1,0 +1,39 @@
+{
+  "schema": "narada.worker.cognition_defaults.v1",
+  "version": 3,
+  "provider_cognition_defaults": {
+    "codex-subscription": {
+      "low": {
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "low"
+      },
+      "medium": {
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "medium"
+      },
+      "high": {
+        "model": "gpt-5.6-sol",
+        "reasoning_effort": "high"
+      }
+    }
+  },
+  "effective_cognition_defaults": {
+    "low": {
+      "provider": "codex-subscription",
+      "model": "gpt-5.6-sol",
+      "reasoning_effort": "low"
+    },
+    "medium": {
+      "provider": "codex-subscription",
+      "model": "gpt-5.6-sol",
+      "reasoning_effort": "medium"
+    },
+    "high": {
+      "provider": "codex-subscription",
+      "model": "gpt-5.6-sol",
+      "reasoning_effort": "high"
+    }
+  },
+  "updated_at": "2026-08-15T17:45:26.0386526Z",
+  "updated_by": "kimi-cintamani-operator-session"
+}

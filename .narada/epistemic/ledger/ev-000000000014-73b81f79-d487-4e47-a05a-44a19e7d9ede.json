@@ -1,0 +1,201 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 14,
+  "event_id": "ev-000000000014-73b81f79-d487-4e47-a05a-44a19e7d9ede",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "1958e12332388f52e760565e7c9ce4627b2e4509444c233235a691a34042a2ed",
+  "proposal_id": "ep_f0eccd1e-d0c5-47c5-b8aa-8044b76e413b",
+  "proposal_digest": "cde7f8e208039054263dac27b69b3ca2b14569ff816a193d373b316e1e48d16c",
+  "operations": [
+    {
+      "op": "entity.declare",
+      "local_ref": "src_tflt",
+      "kind": "source",
+      "title": "Unveiling charge dynamics on the generation of high extinction wide pulse generation on thin-film lithium tantalate (Sayem et al. 2026)",
+      "version": "arXiv:2608.06921v1 (2026-08-07)",
+      "locator": "arxiv:2608.06921",
+      "entity_id": "source:96eafc72f7d9c41d4c81"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_tflt",
+      "kind": "claim",
+      "title": "TFLT modulators generate high-extinction (>35 dB) wide optical pulses without measurable distortion or long temporal tails, unlike TFLN under identical conditions; the distortion-free response is enabled by the substantially larger activation energy of defect-related charge carriers in TFLT, which suppresses leakage-current-induced charging dynamics",
+      "entity_id": "claim:56293839a1e7b00808d2"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_tflt",
+      "target_ref": "src_tflt",
+      "source_id": "claim:56293839a1e7b00808d2",
+      "target_id": "source:96eafc72f7d9c41d4c81",
+      "relation_id": "rel:derived_from-5cd281741445b147"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_tflt",
+      "target_id": "prob:litao3-escape-resource",
+      "source_id": "claim:56293839a1e7b00808d2",
+      "relation_id": "rel:addresses-3784c896b0287e14"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_atommirror",
+      "kind": "source",
+      "title": "A Single Atom in Front of a Mirror is a Universal Reservoir Computer (Ehlers et al. 2026)",
+      "version": "arXiv:2608.10382v1 (2026-08-11)",
+      "locator": "arxiv:2608.10382",
+      "entity_id": "source:aa7f6245e79155e4c22b"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_atommirror",
+      "kind": "claim",
+      "title": "One fixed atom-in-front-of-mirror reservoir with delayed optical feedback constructively approximates arbitrary fading-memory maps: increasing accessible standing-wave resonator modes strictly enlarges the matchable Volterra-kernel span, with atomic saturation supplying hardware nonlinearity; theoretical/simulation result, practical memory depth ~2-3 at the theorem's operating point, no quantum advantage claimed",
+      "entity_id": "claim:cc1aa0859b68a6b1f89a"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_atommirror",
+      "target_ref": "src_atommirror",
+      "source_id": "claim:cc1aa0859b68a6b1f89a",
+      "target_id": "source:aa7f6245e79155e4c22b",
+      "relation_id": "rel:derived_from-fd522f475f50e0aa"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_atommirror",
+      "target_id": "prob:controllable-computational-possibility",
+      "source_id": "claim:cc1aa0859b68a6b1f89a",
+      "relation_id": "rel:addresses-50047666d72efe07"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_atommirror",
+      "target_id": "prob:recurrence-vs-depth-substitution",
+      "source_id": "claim:cc1aa0859b68a6b1f89a",
+      "relation_id": "rel:addresses-cfa640fc5aa7ffc0"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_cdb",
+      "kind": "source",
+      "title": "Depth-adaptive Inference of Looped Language Models via Continuous Depth Batching",
+      "version": "arXiv:2608.09444 (2026-08-10)",
+      "locator": "arxiv:2608.09444",
+      "entity_id": "source:6fc8bb6d7e6d4f815255"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_cdb",
+      "kind": "claim",
+      "title": "Continuous depth batching serves variable per-token recurrent depth in looped language models efficiently, realizing up to 99% of theoretical adaptive-depth speedup on Ouro 1.4B and Huginn 3.5B (1.5-1.9x throughput, 45-90% lower normalized latency), making depth-adaptive recurrent inference operationally practical",
+      "entity_id": "claim:16b820a7e45ea31a64f1"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_cdb",
+      "target_ref": "src_cdb",
+      "source_id": "claim:16b820a7e45ea31a64f1",
+      "target_id": "source:6fc8bb6d7e6d4f815255",
+      "relation_id": "rel:derived_from-4a5917ccec36cb72"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_cdb",
+      "target_id": "prob:recurrence-depth-scaling",
+      "source_id": "claim:16b820a7e45ea31a64f1",
+      "relation_id": "rel:addresses-285f7e45ca377594"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_bdhcq",
+      "kind": "source",
+      "title": "BDH-CQ: In-Context Learning with Recurrent Latent Reasoning",
+      "version": "arXiv:2608.09888 (2026-08-10)",
+      "locator": "arxiv:2608.09888",
+      "entity_id": "source:0539a506b0ac98032fc1"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_bdhcq",
+      "kind": "claim",
+      "title": "A fixed 150M-parameter recurrent latent-reasoning system improves ARC-AGI-1 pass@2 monotonically with latent reasoning effort (21% to 27% to 29.5% from low to high), directional evidence that more test-time recurrence scales attainable reasoning difficulty; recurrence counts, update rules, and state dimensions undisclosed, no depth-matched feed-forward control reported",
+      "entity_id": "claim:8727cb63fe48013b0f53"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_bdhcq",
+      "target_ref": "src_bdhcq",
+      "source_id": "claim:8727cb63fe48013b0f53",
+      "target_id": "source:0539a506b0ac98032fc1",
+      "relation_id": "rel:derived_from-a88ca025b9dc5079"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_bdhcq",
+      "target_id": "prob:recurrence-depth-scaling",
+      "source_id": "claim:8727cb63fe48013b0f53",
+      "relation_id": "rel:addresses-658a0e2454c9c276"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_bdhcq",
+      "target_id": "conj:recurrence-difficulty-scaling",
+      "source_id": "claim:8727cb63fe48013b0f53",
+      "relation_id": "rel:addresses-1971aa48baedbc07"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_biomor",
+      "kind": "source",
+      "title": "bioMoR: Biology-Guided Mixture-of-Recursions for Effective Genomic Learning",
+      "version": "arXiv:2608.06727v2 (2026-08-10; v1 2026-08-07)",
+      "locator": "arxiv:2608.06727",
+      "entity_id": "source:319cc0b185a7fd386ef8"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_biomor",
+      "kind": "claim",
+      "title": "Biology-guided mixture-of-recursions outperforms biology-agnostic recursive baselines across eight omics benchmarks with 75% fewer parameters and up to 58% fewer FLOPs than a non-recursive Transformer; structured biological priors confound the recurrence-only contribution",
+      "entity_id": "claim:be50c0621c32d0b50fff"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_biomor",
+      "target_ref": "src_biomor",
+      "source_id": "claim:be50c0621c32d0b50fff",
+      "target_id": "source:319cc0b185a7fd386ef8",
+      "relation_id": "rel:derived_from-611538c96fdd535d"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_biomor",
+      "target_id": "prob:recurrence-vs-depth-substitution",
+      "source_id": "claim:be50c0621c32d0b50fff",
+      "relation_id": "rel:addresses-222fa2c9c57b6529"
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "SOP cintamani.literature-sweep occurrence literature-sweep:20260815 (run sop_run_20260815T111701_fad0fa59), step run_sweep: admit material sources reported by delegated front sweeps (TFLT watch item, photonic reservoir computing, recurrence-vs-depth)."
+  },
+  "idempotency_key": "auto-admission-bf1e4d8a25a0dbf3536356dd",
+  "occurred_at": "2026-08-15T19:08:31.2133434Z",
+  "certifies_truth": false,
+  "event_hash": "7671f40693b46c80fbb885760f6e347274ba52793baa44cd834706568ea4798b"
+}

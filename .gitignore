@@ -23,3 +23,6 @@ node_modules/
 !.narada/.ai/inbox-envelopes/**
 .narada/.pi/
 .narada/tools/**
+.narada/crew/
+.narada/runtime/
+/tasks/
