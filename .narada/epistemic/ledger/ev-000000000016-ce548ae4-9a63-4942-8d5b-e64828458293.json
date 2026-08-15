@@ -1,0 +1,2481 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 16,
+  "event_id": "ev-000000000016-ce548ae4-9a63-4942-8d5b-e64828458293",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "0e5e7ec26c5327cba7cc7f5df72143a3c848e1a5d6ebc3b4b58eb9a049f25001",
+  "proposal_id": "ep_8ae82b24-f509-4a7e-b29a-2f1fec53bbf6",
+  "proposal_digest": "43c0aedc6306707ad9c8c45c0ffb16dc6393c22305c2a33f9b92d997da19e51a",
+  "operations": [
+    {
+      "op": "entity.declare",
+      "entity_id": "equip:chiral-nematic-microscopy-cell",
+      "local_ref": "equip:chiral-nematic-microscopy-cell",
+      "kind": "cintamani:equipment_type",
+      "title": "Chiral-nematic sample cell with controlled drive",
+      "version": "1",
+      "payload": {
+        "title": "Chiral-nematic sample cell with controlled drive",
+        "description": "A capability type for a documented chiral-nematic cell, electric-drive interface, environmental control, and sample preparation record.",
+        "capabilities": [
+          {
+            "capability_id": "chiral-cell-drive",
+            "capability": "controlled electric pulse drive",
+            "units": "V/µm",
+            "specification": "declared pulse amplitude, duration, and spatial uniformity"
+          },
+          {
+            "capability_id": "chiral-cell-temperature",
+            "capability": "sample temperature control",
+            "units": "°C",
+            "specification": "temperature logging synchronized with pulse history"
+          }
+        ],
+        "operating_limits": [
+          {
+            "operating_limit_id": "chiral-cell-pulse-limit",
+            "parameter": "pulse amplitude",
+            "lower_bound": "0",
+            "upper_bound": "declared per sample",
+            "units": "V/µm",
+            "notes": "Use a sample-specific safety envelope."
+          }
+        ],
+        "calibrations": [
+          {
+            "equipment_calibration_id": "chiral-cell-field-calibration",
+            "quantity": "electric field",
+            "units": "V/µm",
+            "method": "fiducial load and probe calibration",
+            "traceability": "record calibration date and sample geometry"
+          }
+        ],
+        "safety_requirements": [
+          {
+            "safety_requirement_id": "chiral-cell-high-voltage",
+            "hazard": "high-voltage pulse",
+            "requirement": "interlocked enclosure and discharge path",
+            "mitigation": "operator training and logged interlock checks"
+          }
+        ],
+        "interface_requirements": [
+          {
+            "interface_requirement_id": "chiral-cell-trigger",
+            "interface_kind": "timing",
+            "specification": "common trigger with imaging system",
+            "units": "ns"
+          }
+        ],
+        "nonclaims": [
+          "No particular cell, vendor, or available instrument is implied.",
+          "This type does not establish that a sample supports an interaction-net rule."
+        ],
+        "citations": [
+          {
+            "source_id": "chiral-context",
+            "label": "Operator-supplied chiral-nematic context",
+            "url": "https://arxiv.org/abs/2410.19293"
+          }
+        ]
+      }
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "equip:calibrated-optical-detector-array",
+      "local_ref": "equip:calibrated-optical-detector-array",
+      "kind": "cintamani:equipment_type",
+      "title": "Calibrated phase-resolved optical detector array",
+      "version": "1",
+      "payload": {
+        "title": "Calibrated phase-resolved optical detector array",
+        "description": "A capability type for complex field, spectral, or multiview optical acquisition with raw artifact retention.",
+        "capabilities": [
+          {
+            "capability_id": "optical-complex-readout",
+            "capability": "phase-resolved multimode optical readout",
+            "units": "complex samples",
+            "specification": "declared spatial, temporal, and dynamic-range limits"
+          },
+          {
+            "capability_id": "optical-raw-retention",
+            "capability": "immutable raw acquisition retention",
+            "units": "artifact",
+            "specification": "raw frames, calibration, and synchronized metadata"
+          }
+        ],
+        "operating_limits": [
+          {
+            "operating_limit_id": "optical-detector-dynamic-range",
+            "parameter": "dynamic range",
+            "lower_bound": "declared",
+            "upper_bound": "declared",
+            "units": "dB",
+            "notes": "Saturation and clipping must be logged."
+          }
+        ],
+        "calibrations": [
+          {
+            "equipment_calibration_id": "optical-detector-linearity",
+            "quantity": "responsivity and linearity",
+            "units": "A/W",
+            "method": "traceable power sweep",
+            "traceability": "retain reference source certificate"
+          }
+        ],
+        "safety_requirements": [
+          {
+            "safety_requirement_id": "optical-laser-safety",
+            "hazard": "laser exposure",
+            "requirement": "wavelength-specific enclosure and interlock",
+            "mitigation": "controlled access and eyewear"
+          }
+        ],
+        "interface_requirements": [
+          {
+            "interface_requirement_id": "optical-detector-trigger",
+            "interface_kind": "synchronization",
+            "specification": "common clock or trigger with source and controller",
+            "units": "ns"
+          }
+        ],
+        "nonclaims": [
+          "This is a capability type, not a detector inventory or performance guarantee.",
+          "A calibrated detector does not validate a scientific interpretation."
+        ],
+        "citations": [
+          {
+            "source_id": "optical-detector-context",
+            "label": "Optical detector capability context",
+            "url": "https://www.rp-photonics.com/photodetectors.html"
+          }
+        ]
+      }
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "equip:oam-mode-sorter",
+      "local_ref": "equip:oam-mode-sorter",
+      "kind": "cintamani:equipment_type",
+      "title": "Phase-resolved OAM and multimode sorter",
+      "version": "1",
+      "payload": {
+        "title": "Phase-resolved OAM and multimode sorter",
+        "description": "A capability type for separating and measuring finite orbital-angular-momentum and transverse-mode bases.",
+        "capabilities": [
+          {
+            "capability_id": "oam-modal-decomposition",
+            "capability": "finite OAM/modal decomposition",
+            "units": "mode",
+            "specification": "declared basis size and cross-talk matrix"
+          },
+          {
+            "capability_id": "oam-phase-reference",
+            "capability": "phase-referenced complex field measurement",
+            "units": "rad",
+            "specification": "stable reference and timestamped phase calibration"
+          }
+        ],
+        "operating_limits": [
+          {
+            "operating_limit_id": "oam-basis-limit",
+            "parameter": "modal basis size",
+            "lower_bound": "1",
+            "upper_bound": "declared",
+            "units": "modes",
+            "notes": "Report truncation tails."
+          }
+        ],
+        "calibrations": [
+          {
+            "equipment_calibration_id": "oam-cross-talk",
+            "quantity": "modal cross-talk",
+            "units": "fraction",
+            "method": "single-mode sweep",
+            "traceability": "retain calibration matrix"
+          }
+        ],
+        "safety_requirements": [
+          {
+            "safety_requirement_id": "oam-beam-enclosure",
+            "hazard": "focused beam",
+            "requirement": "beam enclosure",
+            "mitigation": "interlocked path"
+          }
+        ],
+        "interface_requirements": [
+          {
+            "interface_requirement_id": "oam-data-interface",
+            "interface_kind": "data",
+            "specification": "complex modal amplitudes plus calibration metadata",
+            "units": "file"
+          }
+        ],
+        "nonclaims": [
+          "No OAM conservation or collision result follows from this capability type."
+        ],
+        "citations": [
+          {
+            "source_id": "oam-light-context",
+            "label": "Orbital angular momentum of light context",
+            "url": "https://arxiv.org/abs/1009.2675"
+          }
+        ]
+      }
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "equip:fs-writing-material-platform",
+      "local_ref": "equip:fs-writing-material-platform",
+      "kind": "cintamani:equipment_type",
+      "title": "Femtosecond 3-D writing and metrology platform",
+      "version": "1",
+      "payload": {
+        "title": "Femtosecond 3-D writing and metrology platform",
+        "description": "A capability type for writing and inspecting finite 3-D optical paths in a declared material volume.",
+        "capabilities": [
+          {
+            "capability_id": "fs-3d-placement",
+            "capability": "repeatable 3-D femtosecond placement",
+            "units": "µm",
+            "specification": "logged write coordinates and address pitch"
+          },
+          {
+            "capability_id": "fs-depth-metrology",
+            "capability": "depth-resolved optical metrology",
+            "units": "µm",
+            "specification": "fiducial grid and aberration calibration"
+          }
+        ],
+        "operating_limits": [
+          {
+            "operating_limit_id": "fs-pulse-energy",
+            "parameter": "pulse energy",
+            "lower_bound": "declared",
+            "upper_bound": "declared",
+            "units": "nJ",
+            "notes": "Material-specific damage limits required."
+          }
+        ],
+        "calibrations": [
+          {
+            "equipment_calibration_id": "fs-axis-calibration",
+            "quantity": "stage axes",
+            "units": "µm",
+            "method": "traceable 3-D fiducial",
+            "traceability": "retain fiducial map"
+          }
+        ],
+        "safety_requirements": [
+          {
+            "safety_requirement_id": "fs-laser-safety",
+            "hazard": "femtosecond laser",
+            "requirement": "enclosure and interlock",
+            "mitigation": "laser safety procedure"
+          }
+        ],
+        "interface_requirements": [
+          {
+            "interface_requirement_id": "fs-write-log",
+            "interface_kind": "control",
+            "specification": "machine-readable write log and material identifier",
+            "units": "record"
+          }
+        ],
+        "nonclaims": [
+          "Femtosecond writing does not imply exact or volumetric computing."
+        ],
+        "citations": [
+          {
+            "source_id": "direct-laser-writing-context",
+            "label": "Direct laser writing photonics context",
+            "url": "https://doi.org/10.1038/nphoton.2012.178"
+          }
+        ]
+      }
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "equip:rf-acoustic-modulation-controller",
+      "local_ref": "equip:rf-acoustic-modulation-controller",
+      "kind": "cintamani:equipment_type",
+      "title": "Independent RF/acoustic multimode controller",
+      "version": "1",
+      "payload": {
+        "title": "Independent RF/acoustic multimode controller",
+        "description": "A capability type for synchronized but independently logged RF and acoustic control of a multimode optical operator.",
+        "capabilities": [
+          {
+            "capability_id": "rf-phase-control",
+            "capability": "phase-controlled RF drive",
+            "units": "rad",
+            "specification": "phase noise and amplitude limits declared"
+          },
+          {
+            "capability_id": "acoustic-delay-control",
+            "capability": "logged acoustic delay and waveform control",
+            "units": "ns",
+            "specification": "independent pickup and trigger"
+          }
+        ],
+        "operating_limits": [
+          {
+            "operating_limit_id": "rf-acoustic-power",
+            "parameter": "drive power",
+            "lower_bound": "0",
+            "upper_bound": "declared",
+            "units": "dBm",
+            "notes": "Thermal and transducer limits required."
+          }
+        ],
+        "calibrations": [
+          {
+            "equipment_calibration_id": "rf-acoustic-delay",
+            "quantity": "relative delay",
+            "units": "ns",
+            "method": "loopback pickup",
+            "traceability": "common clock and cable characterization"
+          }
+        ],
+        "safety_requirements": [
+          {
+            "safety_requirement_id": "rf-acoustic-interlock",
+            "hazard": "RF power and acoustic transducer",
+            "requirement": "power and thermal interlocks",
+            "mitigation": "independent shutdown path"
+          }
+        ],
+        "interface_requirements": [
+          {
+            "interface_requirement_id": "rf-acoustic-log",
+            "interface_kind": "timing-data",
+            "specification": "drive waveform, phase, delay, and output timestamp",
+            "units": "record"
+          }
+        ],
+        "nonclaims": [
+          "The controller type does not claim a joint optical operator exists."
+        ],
+        "citations": [
+          {
+            "source_id": "acousto-optic-context",
+            "label": "Acousto-optic modulation context",
+            "url": "https://www.rp-photonics.com/acousto_optic_modulators.html"
+          }
+        ]
+      }
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "equip:coincidence-addressed-tensor-fpga",
+      "local_ref": "equip:coincidence-addressed-tensor-fpga",
+      "kind": "cintamani:equipment_type",
+      "title": "Deterministic coincidence-addressed tensor FPGA",
+      "version": "1",
+      "payload": {
+        "title": "Deterministic coincidence-addressed tensor FPGA",
+        "description": "A capability type for finite 3-D coincidence address logic with cycle-accurate event logs.",
+        "capabilities": [
+          {
+            "capability_id": "tensor-3d-address",
+            "capability": "3-D coincidence address routing",
+            "units": "events/cycle",
+            "specification": "declared address width and collision semantics"
+          },
+          {
+            "capability_id": "tensor-event-trace",
+            "capability": "deterministic raw event trace",
+            "units": "cycle",
+            "specification": "overflow-safe counters and bitstream hash"
+          }
+        ],
+        "operating_limits": [
+          {
+            "operating_limit_id": "tensor-clock",
+            "parameter": "clock frequency",
+            "lower_bound": "declared",
+            "upper_bound": "declared",
+            "units": "MHz",
+            "notes": "Report timing closure and counter width."
+          }
+        ],
+        "calibrations": [
+          {
+            "equipment_calibration_id": "tensor-loopback",
+            "quantity": "cycle offset",
+            "units": "cycle",
+            "method": "software/hardware loopback",
+            "traceability": "retain bitstream and toolchain"
+          }
+        ],
+        "safety_requirements": [
+          {
+            "safety_requirement_id": "tensor-board-power",
+            "hazard": "board power and thermal load",
+            "requirement": "current and temperature monitor",
+            "mitigation": "thermal shutdown"
+          }
+        ],
+        "interface_requirements": [
+          {
+            "interface_requirement_id": "tensor-seed-interface",
+            "interface_kind": "data",
+            "specification": "deterministic workload seed and exact event log",
+            "units": "record"
+          }
+        ],
+        "nonclaims": [
+          "This type does not imply a deployed FPGA or tensor benchmark."
+        ],
+        "citations": [
+          {
+            "source_id": "amd-fpga-context",
+            "label": "AMD FPGA acceleration documentation",
+            "url": "https://docs.amd.com/r/en-US/ug1186-fpga-acceleration"
+          }
+        ]
+      }
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "equip:rust-hvm-oracle-harness",
+      "local_ref": "equip:rust-hvm-oracle-harness",
+      "kind": "cintamani:equipment_type",
+      "title": "Reproducible Rust exact-oracle and HVM harness",
+      "version": "1",
+      "payload": {
+        "title": "Reproducible Rust exact-oracle and HVM harness",
+        "description": "A capability type for exact finite arithmetic, typed encoding, symbolic reduction, and trace retention.",
+        "capabilities": [
+          {
+            "capability_id": "rust-exact-arithmetic",
+            "capability": "reproducible exact arithmetic",
+            "units": "expression",
+            "specification": "locked compiler and dependency graph"
+          },
+          {
+            "capability_id": "hvm-reduction-trace",
+            "capability": "bounded HVM symbolic reduction trace",
+            "units": "steps",
+            "specification": "timeout, resource bound, and source hash"
+          }
+        ],
+        "operating_limits": [
+          {
+            "operating_limit_id": "hvm-resource-bound",
+            "parameter": "reduction resource bound",
+            "lower_bound": "1",
+            "upper_bound": "declared",
+            "units": "steps",
+            "notes": "Timeout is a reported outcome, not a silent omission."
+          }
+        ],
+        "calibrations": [
+          {
+            "equipment_calibration_id": "hvm-golden-corpus",
+            "quantity": "identity/zero oracle agreement",
+            "units": "exact",
+            "method": "golden corpus",
+            "traceability": "retain source and tool versions"
+          }
+        ],
+        "safety_requirements": [
+          {
+            "safety_requirement_id": "hvm-sandbox",
+            "hazard": "unbounded symbolic computation",
+            "requirement": "process and memory limits",
+            "mitigation": "isolated runner and timeout"
+          }
+        ],
+        "interface_requirements": [
+          {
+            "interface_requirement_id": "hvm-trace-interface",
+            "interface_kind": "artifact",
+            "specification": "exact AST, source, and reduction trace",
+            "units": "file"
+          }
+        ],
+        "nonclaims": [
+          "Tool agreement does not establish a physical amplitude or infinity result."
+        ],
+        "citations": [
+          {
+            "source_id": "rust-language",
+            "label": "Rust language project",
+            "url": "https://www.rust-lang.org/"
+          },
+          {
+            "source_id": "hvm-symbolic-runtime",
+            "label": "HVM symbolic runtime project",
+            "url": "https://github.com/HigherOrderCO/HVM"
+          }
+        ]
+      }
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:chiral-nematic-interaction-net-rewrite",
+      "local_ref": "exp:chiral-nematic-interaction-net-rewrite",
+      "kind": "cintamani:experiment",
+      "title": "Chiral-nematic typed-junction 2-to-2 interaction-net rewrite",
+      "version": "1",
+      "payload": {
+        "title": "Chiral-nematic typed-junction 2-to-2 interaction-net rewrite",
+        "experiment_kind": "physical",
+        "intent": "falsification",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "illustrative-q8-material-mechanism-experiment",
+            "target_kind": "research-topic-version",
+            "target_revision": 1,
+            "target_label": "Q8 junction local mechanism topic"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "chiral-nematic-minimal-decisive-protocol",
+            "name": "Blind matched-junction drive",
+            "minimal_decisive_test": "Prepare the same typed local pair and boundary repeatedly, blind the operator to remote graph context, apply the declared global drive, and test whether the output topology is invariant to remote context.",
+            "steps": [
+              "Prepare and image typed trivalent junctions with a distinguished principal arm.",
+              "Randomize remote graph context while holding local pair and boundary labels fixed.",
+              "Apply the same non-pair-selective pulse schedule.",
+              "Blindly classify the four-boundary output and retain raw image stacks."
+            ],
+            "decision_rule": "A local rewrite survives this test only if output class and boundary state meet the predeclared tolerance across matched local inputs and remote contexts.",
+            "boundary": "The result is limited to the named cell, preparation, pulse schedule, imaging pipeline, and tested finite graph contexts."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "chiral-negative-no-drive",
+            "control_kind": "negative",
+            "description": "Matched junctions without the drive.",
+            "controlled_variable": "pulse amplitude",
+            "expected_relation": "No drive should not create the declared rewrite signature."
+          },
+          {
+            "control_id": "chiral-remote-context",
+            "control_kind": "matched",
+            "description": "Remote graph context is randomized while local labels remain fixed.",
+            "controlled_variable": "remote topology",
+            "expected_relation": "A local mechanism predicts no systematic output dependence on remote context."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "chiral-output-topology",
+            "name": "output topology class",
+            "units": "categorical",
+            "measurement": "blinded multi-view defect reconstruction",
+            "aggregation": "per prepared junction and context",
+            "uncertainty_reporting": "annotate inter-rater and reconstruction uncertainty"
+          },
+          {
+            "observable_id": "chiral-boundary-invariant",
+            "name": "boundary invariant",
+            "units": "Q8 class",
+            "measurement": "predeclared algebraic label",
+            "aggregation": "per trial",
+            "uncertainty_reporting": "report classification ambiguity"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "chiral-imaging-calibration",
+            "quantity": "voxel-to-micrometre scale",
+            "units": "µm/pixel",
+            "method": "calibrated reference grid and independent focus check",
+            "acceptance": "scale drift below the predeclared reconstruction tolerance"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "independently prepared junction",
+          "minimum_repetitions": 30,
+          "independent_repetitions": 10,
+          "randomization": "remote context and trial order randomized",
+          "stopping_rule": "stop only after all matched blocks or a predeclared safety stop"
+        },
+        "uncertainty": {
+          "sources": "junction preparation, optical reconstruction, pulse history, and classifier disagreement",
+          "propagation": "carry label and scale uncertainty into output-class comparisons",
+          "reporting": "publish per-trial labels, excluded trials, and raw image hashes"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "chiral-success-invariance",
+            "statement": "Matched local inputs produce the same declared output class across randomized remote contexts.",
+            "metric": "context-conditioned output agreement",
+            "comparator": ">=",
+            "threshold_text": "predeclared tolerance with confidence interval reported descriptively",
+            "units": "fraction"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "chiral-falsifier-context",
+            "statement": "Output class changes systematically with remote context while local pair and boundary are held fixed.",
+            "metric": "remote-context effect",
+            "comparator": ">",
+            "threshold_text": "predeclared effect threshold",
+            "units": "effect size"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "chiral-hidden-guidance",
+            "confound": "unlogged spatial field or tweezer guidance selects reconnection",
+            "detection_control": "map fields and retain intervention logs",
+            "mitigation": "blind and randomize intervention schedule"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "chiral-raw-image-stack",
+            "artifact_kind": "multiview-image-stack",
+            "format": "lossless image plus metadata",
+            "retention": "retain immutable hash and original files"
+          }
+        ],
+        "nonclaims": [
+          "The cited chiral-nematic work does not establish interaction-net rewriting.",
+          "This proposal does not claim a universal local rule, confluence, computational completeness, or a device.",
+          "A passing finite test would not establish a production mechanism."
+        ],
+        "dependencies": [],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "chiral-topic-link",
+            "topic_version_id": "illustrative-q8-material-mechanism-experiment@1",
+            "relation_kind": "next-discriminating-test",
+            "rationale": "This is the smallest physical test of local sufficiency."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "wu-valenzuela-bowick-smalyukh-2024",
+              "label": "Topological Rigidity and Non-Abelian defect junctions",
+              "url": "https://arxiv.org/abs/2410.19293"
+            },
+            {
+              "source_id": "hall-tai-kauffman-smalyukh-2026",
+              "label": "Fusion and fission of particle-like chiral nematic vortex knots",
+              "url": "https://www.nature.com/articles/s41567-025-03107-0"
+            }
+          ],
+          "boundary": "The sources motivate material context only; they do not supply the proposed rewrite claim."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "chiral-cell",
+            "group_id": "sample-cell",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "chiral-nematic sample cell with controlled electric drive",
+            "units": "device",
+            "specification": "addressable cell, temperature control, and documented pulse limits",
+            "equipment_type_ids": [
+              "chiral-nematic-microscopy-cell"
+            ]
+          },
+          {
+            "requirement_id": "chiral-imaging",
+            "group_id": "imaging",
+            "group_order": 2,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "calibrated multiview polarized microscopy",
+            "units": "system",
+            "specification": "time-resolved 3-D reconstruction with raw frame retention",
+            "equipment_type_ids": [
+              "calibrated-optical-detector-array"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-chiral-nematic-interaction-net-rewrite-chiral-cell",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:chiral-nematic-interaction-net-rewrite",
+      "target_id": "equip:chiral-nematic-microscopy-cell",
+      "requirement_id": "chiral-cell",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "chiral-nematic sample cell with controlled electric drive"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-chiral-nematic-interaction-net-rewrite-chiral-imaging",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:chiral-nematic-interaction-net-rewrite",
+      "target_id": "equip:calibrated-optical-detector-array",
+      "requirement_id": "chiral-imaging",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "calibrated multiview polarized microscopy"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:graphene-complementary-frequency-dense-matmul",
+      "local_ref": "exp:graphene-complementary-frequency-dense-matmul",
+      "kind": "cintamani:experiment",
+      "title": "Graphene complementary-frequency dense matrix multiplication",
+      "version": "1",
+      "payload": {
+        "title": "Graphene complementary-frequency dense matrix multiplication",
+        "experiment_kind": "physical",
+        "intent": "discrimination",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "graphene-complementary-frequency-matmul",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "operator-supplied graphene frequency-domain calculation proposal"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "graphene-matmul-minimal-protocol",
+            "name": "Complementary-frequency identity test",
+            "minimal_decisive_test": "Encode two finite matrices into complementary optical frequencies, measure the nonlinear mixing output, and compare against an independently computed dense product under randomized phase and amplitude controls.",
+            "steps": [
+              "Calibrate frequency response and detector linearity.",
+              "Inject matrix-coded complementary-frequency fields.",
+              "Acquire raw complex spectra and decode the candidate product.",
+              "Repeat with shuffled, phase-scrambled, and zero-row controls."
+            ],
+            "decision_rule": "The candidate survives only if decoded entries track the exact reference product within the predeclared error budget and controls reject linear leakage explanations.",
+            "boundary": "The test covers only the declared matrix size, frequency band, material stack, and detector reconstruction."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "graphene-zero-row",
+            "control_kind": "negative",
+            "description": "One operand row is zeroed.",
+            "controlled_variable": "input row",
+            "expected_relation": "Corresponding product contribution should vanish."
+          },
+          {
+            "control_id": "graphene-linear-leakage",
+            "control_kind": "ablated",
+            "description": "Remove the nonlinear interaction region while preserving the readout path.",
+            "controlled_variable": "nonlinear interaction",
+            "expected_relation": "Dense product signature should disappear or fall below threshold."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "graphene-product-error",
+            "name": "relative matrix product error",
+            "units": "dimensionless",
+            "measurement": "normed decoded-versus-reference entries",
+            "aggregation": "per matrix and entry",
+            "uncertainty_reporting": "report detector noise and calibration propagation"
+          },
+          {
+            "observable_id": "graphene-frequency-crosstalk",
+            "name": "frequency crosstalk",
+            "units": "dB",
+            "measurement": "out-of-band and off-entry spectral power",
+            "aggregation": "per run",
+            "uncertainty_reporting": "report resolution and leakage floor"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "graphene-detector-linearity",
+            "quantity": "detector responsivity",
+            "units": "A/W",
+            "method": "traceable power sweep across the operating band",
+            "acceptance": "residual linearity error below the product error budget"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "independent matrix encoding",
+          "minimum_repetitions": 20,
+          "independent_repetitions": 5,
+          "randomization": "matrix entries, phases, and order randomized",
+          "stopping_rule": "complete all matrix blocks unless safety or detector saturation stop is reached"
+        },
+        "uncertainty": {
+          "sources": "laser phase noise, detector noise, frequency drift, nonlinear material variation",
+          "propagation": "Monte Carlo the calibrated input covariance through decode and norm",
+          "reporting": "publish matrices, raw spectra, calibration files, and exact oracle output"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "graphene-success-product",
+            "statement": "Decoded output agrees with the exact dense product within the predeclared error budget.",
+            "metric": "relative Frobenius error",
+            "comparator": "<=",
+            "threshold_text": "predeclared budget",
+            "units": "dimensionless"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "graphene-falsifier-ablation",
+            "statement": "The same product signature remains when the nonlinear interaction is ablated.",
+            "metric": "ablation-normalized product signal",
+            "comparator": ">=",
+            "threshold_text": "predeclared leakage threshold",
+            "units": "fraction"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "graphene-drift",
+            "confound": "frequency drift masquerades as complementary mixing",
+            "detection_control": "interleave reference tones",
+            "mitigation": "lock and remeasure frequency calibration"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "graphene-raw-spectra",
+            "artifact_kind": "complex-spectrum",
+            "format": "binary spectra plus JSON metadata",
+            "retention": "retain original acquisition and decode code hash"
+          }
+        ],
+        "nonclaims": [
+          "No graphene material performance or scaling is admitted by this fixture.",
+          "It does not claim a universal optical matrix processor or useful energy efficiency.",
+          "No measurement is a result; this record only specifies a decisive protocol."
+        ],
+        "dependencies": [],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "graphene-topic-link",
+            "topic_version_id": "illustrative-optical-defect-graph-measurement-validity@1",
+            "relation_kind": "candidate-protocol",
+            "rationale": "The topic supplies a bounded optical measurement boundary for the proposed frequency-domain test."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "graphene-flagship-context",
+              "label": "Graphene Flagship research context",
+              "url": "https://graphene-flagship.eu/"
+            }
+          ],
+          "boundary": "The citation supplies graphene context only; it does not support the proposed dense multiplication claim."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "graphene-frequency-source",
+            "group_id": "frequency-source",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "phase-stable complementary-frequency source",
+            "units": "system",
+            "specification": "declared bandwidth and phase noise",
+            "equipment_type_ids": [
+              "calibrated-optical-detector-array"
+            ]
+          },
+          {
+            "requirement_id": "graphene-spectral-readout",
+            "group_id": "spectral-readout",
+            "group_order": 2,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "complex spectral readout with calibrated dynamic range",
+            "units": "system",
+            "specification": "raw spectra and linearity calibration",
+            "equipment_type_ids": [
+              "calibrated-optical-detector-array"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-graphene-complementary-frequency-dense-matmul-graphene-frequency-source",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:graphene-complementary-frequency-dense-matmul",
+      "target_id": "equip:calibrated-optical-detector-array",
+      "requirement_id": "graphene-frequency-source",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "phase-stable complementary-frequency source"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-graphene-complementary-frequency-dense-matmul-graphene-spectral-readout",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:graphene-complementary-frequency-dense-matmul",
+      "target_id": "equip:calibrated-optical-detector-array",
+      "requirement_id": "graphene-spectral-readout",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "complex spectral readout with calibrated dynamic range"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:oam-multimode-conservation-test",
+      "local_ref": "exp:oam-multimode-conservation-test",
+      "kind": "cintamani:experiment",
+      "title": "OAM and multimode conservation under controlled interaction",
+      "version": "1",
+      "payload": {
+        "title": "OAM and multimode conservation under controlled interaction",
+        "experiment_kind": "physical",
+        "intent": "characterization",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "oam-multimode-conservation",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "operator-supplied OAM and multimode conservation proposal"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "oam-conservation-minimal-protocol",
+            "name": "Mode-resolved conservation balance",
+            "minimal_decisive_test": "Prepare known input OAM and transverse modes, apply a declared interaction, and compare input and output modal charge and energy balances with phase-resolved readout.",
+            "steps": [
+              "Calibrate mode sorter and phase reference.",
+              "Inject randomized known mode tuples.",
+              "Acquire complex modal amplitudes before and after interaction.",
+              "Compute conserved and leaked modal quantities."
+            ],
+            "decision_rule": "Conservation survives only if all declared balance residuals stay within the uncertainty interval and mode leakage controls are bounded.",
+            "boundary": "Finite mode basis and one interaction geometry only."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "oam-no-interaction",
+            "control_kind": "negative",
+            "description": "Bypass the interaction element.",
+            "controlled_variable": "interaction strength",
+            "expected_relation": "No interaction should preserve the calibrated baseline."
+          },
+          {
+            "control_id": "oam-mode-scramble",
+            "control_kind": "randomized",
+            "description": "Randomize input modal phases and tuple order.",
+            "controlled_variable": "input phase",
+            "expected_relation": "Balance should not depend on arbitrary ordering."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "oam-charge-residual",
+            "name": "OAM charge residual",
+            "units": "ℏ per photon",
+            "measurement": "phase-resolved modal decomposition",
+            "aggregation": "per tuple",
+            "uncertainty_reporting": "propagate sorter and phase-reference uncertainty"
+          },
+          {
+            "observable_id": "oam-mode-leakage",
+            "name": "mode leakage",
+            "units": "fraction",
+            "measurement": "power outside declared basis",
+            "aggregation": "per tuple",
+            "uncertainty_reporting": "report basis truncation"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "oam-mode-sorter",
+            "quantity": "modal cross-talk matrix",
+            "units": "fraction",
+            "method": "single-mode calibration sweep",
+            "acceptance": "cross-talk matrix stable over the acquisition block"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "independent mode tuple",
+          "minimum_repetitions": 40,
+          "independent_repetitions": 8,
+          "randomization": "tuple, phase, and interaction order randomized",
+          "stopping_rule": "predeclared block completion"
+        },
+        "uncertainty": {
+          "sources": "phase reference, mode sorter cross-talk, detector noise, basis truncation",
+          "propagation": "calibrated covariance and bootstrap over independent tuples",
+          "reporting": "publish residuals and leakage by tuple"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "oam-success-balance",
+            "statement": "Declared modal balance residuals remain within the calibration-aware tolerance.",
+            "metric": "balance residual",
+            "comparator": "<=",
+            "threshold_text": "predeclared tolerance",
+            "units": "fraction"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "oam-falsifier-leakage",
+            "statement": "Residual modal charge changes beyond uncertainty or leakage tracks an unmodeled interaction channel.",
+            "metric": "normalized residual",
+            "comparator": ">",
+            "threshold_text": "predeclared falsifier threshold",
+            "units": "fraction"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "oam-basis-truncation",
+            "confound": "unobserved modes carry the apparent imbalance",
+            "detection_control": "expand the basis and report tails",
+            "mitigation": "repeat with increasing basis size"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "oam-modal-amplitudes",
+            "artifact_kind": "complex-modal-trace",
+            "format": "HDF5 plus calibration JSON",
+            "retention": "retain all modes used in balance"
+          }
+        ],
+        "nonclaims": [
+          "Conservation in a finite optical basis does not establish a universal law.",
+          "This fixture does not claim a computation, collision rule, or physical admission."
+        ],
+        "dependencies": [],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "oam-conservation-topic-link",
+            "topic_version_id": "illustrative-optical-defect-graph-measurement-validity@1",
+            "relation_kind": "next-discriminating-test",
+            "rationale": "Mode-resolved conservation is a bounded next test for the optical observation topic."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "oam-light-context",
+              "label": "Orbital angular momentum of light context",
+              "url": "https://arxiv.org/abs/1009.2675"
+            }
+          ],
+          "boundary": "The citation supplies OAM context only; it does not support a conservation or computation result."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "oam-sorter",
+            "group_id": "mode-analysis",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "phase-resolved OAM and multimode sorter",
+            "units": "system",
+            "specification": "cross-talk calibration and complex readout",
+            "equipment_type_ids": [
+              "oam-mode-sorter"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-oam-multimode-conservation-test-oam-sorter",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:oam-multimode-conservation-test",
+      "target_id": "equip:oam-mode-sorter",
+      "requirement_id": "oam-sorter",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "phase-resolved OAM and multimode sorter"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:oam-angular-collision-interference-variant",
+      "local_ref": "exp:oam-angular-collision-interference-variant",
+      "kind": "cintamani:experiment",
+      "title": "OAM angular collision/interference and contraction variant",
+      "version": "1",
+      "payload": {
+        "title": "OAM angular collision/interference and contraction variant",
+        "experiment_kind": "physical",
+        "intent": "discrimination",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "oam-angular-collision-interference",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "operator-supplied OAM angular collision/interference variant"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "oam-angular-collision-minimal-protocol",
+            "name": "Two-mode angular collision and contraction test",
+            "minimal_decisive_test": "Collide two independently prepared OAM/multimode wave packets with controlled relative phase and angle, and discriminate a local angular-interference/contraction rule from linear superposition and detector artifacts.",
+            "steps": [
+              "Calibrate angular alignment and phase delay.",
+              "Prepare matched positive, negative, and zero-charge mode pairs.",
+              "Sweep collision angle and relative phase in blinded order.",
+              "Record full far-field and near-field complex readouts and test the declared angular contraction."
+            ],
+            "decision_rule": "The proposed nonlinear angular rule survives only if its predicted phase/angle dependence and contraction signature beat the linear and no-collision controls within uncertainty.",
+            "boundary": "Declared mode pair, geometry, phase range, contraction rule, and detector band."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "oam-angular-linear",
+            "control_kind": "ablated",
+            "description": "Replace interaction medium with a linear reference path.",
+            "controlled_variable": "nonlinearity",
+            "expected_relation": "Only linear interference should remain."
+          },
+          {
+            "control_id": "oam-angular-zero",
+            "control_kind": "negative",
+            "description": "Use zero-charge matched modes.",
+            "controlled_variable": "input OAM",
+            "expected_relation": "No charge-dependent signature should appear."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "oam-angular-fringe",
+            "name": "angular fringe phase",
+            "units": "rad",
+            "measurement": "phase-resolved far-field fringe fit",
+            "aggregation": "per angle and phase",
+            "uncertainty_reporting": "fit covariance and alignment error"
+          },
+          {
+            "observable_id": "oam-angular-output-charge",
+            "name": "output charge distribution",
+            "units": "ℏ per photon",
+            "measurement": "modal decomposition",
+            "aggregation": "per collision",
+            "uncertainty_reporting": "report mode cross-talk"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "oam-angular-angle",
+            "quantity": "collision angle",
+            "units": "rad",
+            "method": "fiducial angular grid",
+            "acceptance": "alignment residual below predeclared bound"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "independent collision",
+          "minimum_repetitions": 36,
+          "independent_repetitions": 6,
+          "randomization": "phase, angle, and charge-pair order randomized",
+          "stopping_rule": "complete factorial block"
+        },
+        "uncertainty": {
+          "sources": "angle, phase, detector, mode decomposition, and medium drift",
+          "propagation": "joint fit with calibration nuisance parameters",
+          "reporting": "report model comparison inputs, not a confidence ranking"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "oam-angular-success",
+            "statement": "The declared angular-interference signature is reproducible and absent from the linear reference.",
+            "metric": "model residual difference",
+            "comparator": "<",
+            "threshold_text": "predeclared difference",
+            "units": "normalized residual"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "oam-angular-falsifier",
+            "statement": "The signature is fully explained by linear interference, alignment, or detector cross-talk.",
+            "metric": "nonlinear model improvement",
+            "comparator": "<=",
+            "threshold_text": "predeclared minimum improvement",
+            "units": "normalized residual"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "oam-angular-alignment",
+            "confound": "angle-dependent clipping changes the mode basis",
+            "detection_control": "monitor aperture and power",
+            "mitigation": "repeat with oversized aperture"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "oam-angular-fields",
+            "artifact_kind": "near-and-far-field-trace",
+            "format": "HDF5",
+            "retention": "retain raw frames and phase logs"
+          }
+        ],
+        "nonclaims": [
+          "An interference or contraction signature does not establish a new conservation law.",
+          "No collision result, quantum claim, contraction law, or computation claim is admitted."
+        ],
+        "dependencies": [
+          {
+            "dependency_id": "oam-angular-depends-conservation",
+            "target_experiment_id": "oam-multimode-conservation-test",
+            "target_revision": 1,
+            "relation_kind": "depends-on",
+            "rationale": "The collision variant reuses the calibrated modal balance and sorter."
+          }
+        ],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "oam-angular-topic-link",
+            "topic_version_id": "illustrative-q8-material-mechanism-experiment@1",
+            "relation_kind": "strongest-falsifier",
+            "rationale": "The angular variant makes detector and interaction alternatives criticizable at the mechanism boundary."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "oam-light-context",
+              "label": "Orbital angular momentum of light context",
+              "url": "https://arxiv.org/abs/1009.2675"
+            }
+          ],
+          "boundary": "The citation supplies OAM context only; it does not support the proposed angular collision, interference, or contraction rule."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "oam-angular-sorter",
+            "group_id": "angular-analysis",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "phase-resolved multimode field analyzer",
+            "units": "system",
+            "specification": "near-field and far-field acquisition",
+            "equipment_type_ids": [
+              "oam-mode-sorter"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-oam-angular-collision-interference-variant-oam-angular-sorter",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:oam-angular-collision-interference-variant",
+      "target_id": "equip:oam-mode-sorter",
+      "requirement_id": "oam-angular-sorter",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "phase-resolved multimode field analyzer"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:fs-written-exact-optical-computing",
+      "local_ref": "exp:fs-written-exact-optical-computing",
+      "kind": "cintamani:experiment",
+      "title": "Femtosecond-written perovskite/LiNbO3/chalcogenide exact optical computing cell",
+      "version": "1",
+      "payload": {
+        "title": "Femtosecond-written perovskite/LiNbO3/chalcogenide exact optical computing cell",
+        "experiment_kind": "physical",
+        "intent": "calibration",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "fs-written-exact-computing",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "operator-supplied fs-written perovskite, LiNbO3, and chalcogenide exact computing proposal"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "fs-exact-minimal-protocol",
+            "name": "Finite-state exact operator readout across three material variants",
+            "minimal_decisive_test": "Write the same finite optical circuit separately in perovskite, LiNbO3, and chalcogenide variants, inject enumerated basis states, and compare decoded outputs against an exact symbolic oracle with calibrated phase and loss accounting.",
+            "steps": [
+              "Write and inspect matched finite circuits in the perovskite, LiNbO3, and chalcogenide variants.",
+              "Calibrate coupling, phase, and detector response for each material variant.",
+              "Run all basis states and selected superpositions.",
+              "Compare raw complex outputs with the exact oracle and retain variant-specific controls."
+            ],
+            "decision_rule": "The finite operator is supported only if every declared basis output in each material variant meets the exact oracle tolerance and controls isolate crosstalk."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "fs-exact-bypass",
+            "control_kind": "negative",
+            "description": "Bypass the written circuit.",
+            "controlled_variable": "written operator",
+            "expected_relation": "Output should match the bypass matrix, not the candidate operator."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "fs-exact-entry-error",
+            "name": "operator entry error",
+            "units": "dimensionless",
+            "measurement": "complex matrix difference to exact oracle",
+            "aggregation": "per basis entry",
+            "uncertainty_reporting": "include phase and loss covariance"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "fs-exact-phase",
+            "quantity": "written-path phase",
+            "units": "rad",
+            "method": "interferometric reference",
+            "acceptance": "phase drift below oracle comparison tolerance"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "basis-state injection",
+          "minimum_repetitions": 24,
+          "independent_repetitions": 6,
+          "randomization": "basis and circuit section order randomized",
+          "stopping_rule": "complete declared basis set"
+        },
+        "uncertainty": {
+          "sources": "writing variation, coupling, phase, detector noise, and loss",
+          "propagation": "complex covariance through oracle comparison",
+          "reporting": "retain raw traces and exact code commit"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "fs-exact-success",
+            "statement": "Decoded finite operator agrees with the exact symbolic oracle within tolerance.",
+            "metric": "maximum entry error",
+            "comparator": "<=",
+            "threshold_text": "predeclared tolerance",
+            "units": "dimensionless"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "fs-exact-falsifier",
+            "statement": "A basis-state output cannot be distinguished from a bypass or crosstalk model at the declared precision.",
+            "metric": "oracle residual",
+            "comparator": ">",
+            "threshold_text": "predeclared bound",
+            "units": "dimensionless"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "fs-exact-write-drift",
+            "confound": "writing changes material response during the run",
+            "detection_control": "interleave reference waveguides",
+            "mitigation": "blockwise recalibration"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "fs-exact-traces",
+            "artifact_kind": "complex-output-trace",
+            "format": "HDF5 and oracle JSON",
+            "retention": "retain raw output and write mask"
+          }
+        ],
+        "nonclaims": [
+          "Femtosecond writing alone does not establish exact computation in perovskite, LiNbO3, or chalcogenide.",
+          "No material, device, or scale claim is admitted; the three variants remain illustrative only."
+        ],
+        "dependencies": [],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "fs-exact-topic-link",
+            "topic_version_id": "illustrative-optical-defect-graph-measurement-validity@1",
+            "relation_kind": "candidate-protocol",
+            "rationale": "The exact-cell protocol separates a written operator from readout and fabrication claims."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "direct-laser-writing-context",
+              "label": "Direct laser writing photonics context",
+              "url": "https://doi.org/10.1038/nphoton.2012.178"
+            }
+          ],
+          "boundary": "The citation supplies direct-writing context only; it does not support exact computation, any named material variant, or a device claim."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "fs-writing-platform",
+            "group_id": "writing",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "femtosecond direct-write platform with metrology",
+            "units": "system",
+            "specification": "repeatable 3-D placement and write log",
+            "equipment_type_ids": [
+              "fs-writing-material-platform"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-fs-written-exact-optical-computing-fs-writing-platform",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:fs-written-exact-optical-computing",
+      "target_id": "equip:fs-writing-material-platform",
+      "requirement_id": "fs-writing-platform",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "femtosecond direct-write platform with metrology"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:fs-written-volumetric-computing",
+      "local_ref": "exp:fs-written-volumetric-computing",
+      "kind": "cintamani:experiment",
+      "title": "Femtosecond-written volumetric optical computing volume",
+      "version": "1",
+      "payload": {
+        "title": "Femtosecond-written volumetric optical computing volume",
+        "experiment_kind": "hybrid",
+        "intent": "falsification",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "illustrative-volumetric-recurrent-calculation-origin",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "conjectural volumetric recurrent calculation origin story"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "fs-volume-minimal-protocol",
+            "name": "Volume-addressed state and operator test",
+            "minimal_decisive_test": "Address separated written paths across a finite 3-D volume, apply a declared optical operator, and test whether state readout remains separable and repeatable across depth and recurrence passes.",
+            "steps": [
+              "Write a finite 3-D address grid.",
+              "Calibrate depth-dependent coupling and readout.",
+              "Run one pass and repeated feedback passes on basis states.",
+              "Compare address cross-talk and operator output with a volumetric simulation."
+            ],
+            "decision_rule": "Volumetric recurrence survives only if address separation, operator agreement, and pass-to-pass stability meet all predeclared bounds."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "fs-volume-planar",
+            "control_kind": "matched",
+            "description": "Use a planar subset with identical readout.",
+            "controlled_variable": "depth",
+            "expected_relation": "Depth-specific claim must exceed planar baseline."
+          },
+          {
+            "control_id": "fs-volume-feedback-off",
+            "control_kind": "ablated",
+            "description": "Break the recurrent feedback path.",
+            "controlled_variable": "feedback",
+            "expected_relation": "Recurrence-specific signature should disappear."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "fs-volume-address-crosstalk",
+            "name": "address crosstalk",
+            "units": "fraction",
+            "measurement": "decoded energy outside addressed voxel",
+            "aggregation": "per depth and address",
+            "uncertainty_reporting": "report depth calibration"
+          },
+          {
+            "observable_id": "fs-volume-pass-stability",
+            "name": "pass-to-pass state stability",
+            "units": "dimensionless",
+            "measurement": "complex state overlap",
+            "aggregation": "per recurrence pass",
+            "uncertainty_reporting": "include drift and detector uncertainty"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "fs-volume-depth",
+            "quantity": "3-D write/read address",
+            "units": "µm",
+            "method": "fiducial volumetric grid",
+            "acceptance": "depth error below address pitch fraction"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "independent written address volume",
+          "minimum_repetitions": 12,
+          "independent_repetitions": 4,
+          "randomization": "address and depth order randomized",
+          "stopping_rule": "complete finite grid unless write safety stop"
+        },
+        "uncertainty": {
+          "sources": "write placement, depth aberration, feedback loss, thermal drift",
+          "propagation": "depth-stratified covariance and repeatability intervals",
+          "reporting": "release address maps, raw stacks, and simulation input"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "fs-volume-success",
+            "statement": "Repeated passes preserve separable addressed states and match the declared finite operator.",
+            "metric": "state overlap and crosstalk",
+            "comparator": ">=",
+            "threshold_text": "predeclared bounds",
+            "units": "dimensionless"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "fs-volume-falsifier",
+            "statement": "Feedback-off or planar controls reproduce the proposed volumetric recurrence signature.",
+            "metric": "control-normalized stability",
+            "comparator": "<=",
+            "threshold_text": "predeclared discriminating margin",
+            "units": "dimensionless"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "fs-volume-aberration",
+            "confound": "depth aberration creates apparent volume dependence",
+            "detection_control": "depth-resolved calibration and planar control",
+            "mitigation": "correct or bound optical aberration"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "fs-volume-address-stacks",
+            "artifact_kind": "3-D-complex-state-stack",
+            "format": "HDF5",
+            "retention": "retain raw passes and write/read calibration"
+          }
+        ],
+        "nonclaims": [
+          "This is the prominent conjectural origin story's test, not confirmation of it.",
+          "It does not claim scalable volumetric memory, recurrent computing, or a useful device."
+        ],
+        "dependencies": [
+          {
+            "dependency_id": "fs-volume-depends-exact",
+            "target_experiment_id": "fs-written-exact-optical-computing",
+            "target_revision": 1,
+            "relation_kind": "depends-on",
+            "rationale": "The volumetric test reuses the exact finite-operator oracle boundary."
+          }
+        ],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "fs-volume-origin-link",
+            "topic_version_id": "illustrative-volumetric-recurrent-calculation-origin@1",
+            "relation_kind": "strongest-falsifier",
+            "rationale": "This tests whether volume and recurrence add a discriminating capability."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "direct-laser-writing-context",
+              "label": "Direct laser writing photonics context",
+              "url": "https://doi.org/10.1038/nphoton.2012.178"
+            }
+          ],
+          "boundary": "The citation supplies direct-writing context only; it does not support the conjectural volumetric recurrence claim."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "fs-volume-writer",
+            "group_id": "writer",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "3-D femtosecond writing and depth metrology",
+            "units": "system",
+            "specification": "address pitch and depth calibration documented",
+            "equipment_type_ids": [
+              "fs-writing-material-platform"
+            ]
+          },
+          {
+            "requirement_id": "fs-volume-readout-detector",
+            "group_id": "readout",
+            "group_order": 2,
+            "group_kind": "alternative",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "depth-resolved complex optical readout",
+            "units": "system",
+            "specification": "raw depth-resolved stacks and calibration retention",
+            "equipment_type_ids": [
+              "calibrated-optical-detector-array"
+            ]
+          },
+          {
+            "requirement_id": "fs-volume-readout-modal",
+            "group_id": "readout",
+            "group_order": 2,
+            "group_kind": "alternative",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "phase-resolved modal volume readout",
+            "units": "system",
+            "specification": "declared modal basis and depth cross-talk matrix",
+            "equipment_type_ids": [
+              "oam-mode-sorter"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-fs-written-volumetric-computing-fs-volume-writer",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:fs-written-volumetric-computing",
+      "target_id": "equip:fs-writing-material-platform",
+      "requirement_id": "fs-volume-writer",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "3-D femtosecond writing and depth metrology"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-fs-written-volumetric-computing-fs-volume-readout-detector",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:fs-written-volumetric-computing",
+      "target_id": "equip:calibrated-optical-detector-array",
+      "requirement_id": "fs-volume-readout-detector",
+      "group_kind": "alternative",
+      "selection_rule": "any-one",
+      "capability": "depth-resolved complex optical readout"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-fs-written-volumetric-computing-fs-volume-readout-modal",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:fs-written-volumetric-computing",
+      "target_id": "equip:oam-mode-sorter",
+      "requirement_id": "fs-volume-readout-modal",
+      "group_kind": "alternative",
+      "selection_rule": "any-one",
+      "capability": "phase-resolved modal volume readout"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:adaptive-recurrent-mixed-halide-perovskite",
+      "local_ref": "exp:adaptive-recurrent-mixed-halide-perovskite",
+      "kind": "cintamani:experiment",
+      "title": "Adaptive recurrent mixed-halide perovskite operator",
+      "version": "1",
+      "payload": {
+        "title": "Adaptive recurrent mixed-halide perovskite operator",
+        "experiment_kind": "hybrid",
+        "intent": "characterization",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "adaptive-recurrent-mixed-halide-perovskite",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "operator-supplied adaptive recurrent mixed-halide perovskite proposal"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "perovskite-recurrent-minimal-protocol",
+            "name": "Closed-loop adaptive operator test",
+            "minimal_decisive_test": "Apply a fixed sequence of optical inputs to a mixed-halide perovskite loop while an explicit controller adapts one declared parameter, then distinguish recurrent state adaptation from photochemical drift.",
+            "steps": [
+              "Measure baseline response and halide-state proxy.",
+              "Run fixed-input feedback blocks with controller logs.",
+              "Repeat with adaptation disabled and randomized input order.",
+              "Fit a bounded state-space model to raw traces."
+            ],
+            "decision_rule": "An adaptive recurrent operator survives only if held-out sequence prediction and state reset tests distinguish it from drift and memoryless controls."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "perovskite-adaptation-off",
+            "control_kind": "ablated",
+            "description": "Disable the adaptive controller.",
+            "controlled_variable": "controller update",
+            "expected_relation": "Adaptive improvement should disappear."
+          },
+          {
+            "control_id": "perovskite-reset",
+            "control_kind": "matched",
+            "description": "Reset optical and thermal state between blocks.",
+            "controlled_variable": "state history",
+            "expected_relation": "Persistent history dependence must follow the declared state variable."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "perovskite-sequence-error",
+            "name": "held-out sequence prediction error",
+            "units": "normalized",
+            "measurement": "state-space prediction of output trace",
+            "aggregation": "per sequence",
+            "uncertainty_reporting": "block bootstrap across independent sequences"
+          },
+          {
+            "observable_id": "perovskite-halide-proxy",
+            "name": "halide-state proxy",
+            "units": "spectral nm",
+            "measurement": "spectral response and imaging proxy",
+            "aggregation": "per feedback pass",
+            "uncertainty_reporting": "calibration-aware interval"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "perovskite-spectral-calibration",
+            "quantity": "spectrometer wavelength",
+            "units": "nm",
+            "method": "reference lamp and fixed spectral lines",
+            "acceptance": "wavelength residual below declared threshold"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "independent feedback sequence",
+          "minimum_repetitions": 24,
+          "independent_repetitions": 6,
+          "randomization": "sequence and adaptation schedule randomized",
+          "stopping_rule": "complete held-out blocks"
+        },
+        "uncertainty": {
+          "sources": "photochemical drift, thermal drift, spectral calibration, controller latency",
+          "propagation": "hierarchical block model with reset and adaptation controls",
+          "reporting": "retain controller logs and raw spectra"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "perovskite-success-adaptation",
+            "statement": "The adaptive loop improves held-out sequence prediction beyond disabled and reset controls.",
+            "metric": "prediction-error reduction",
+            "comparator": ">=",
+            "threshold_text": "predeclared margin",
+            "units": "fraction"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "perovskite-falsifier-drift",
+            "statement": "A drift-only model explains the same sequence and state dependence without adaptive updates.",
+            "metric": "model residual difference",
+            "comparator": "<=",
+            "threshold_text": "predeclared margin",
+            "units": "normalized residual"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "perovskite-thermal",
+            "confound": "thermal history is mistaken for adaptive state",
+            "detection_control": "thermal sensor and reset blocks",
+            "mitigation": "include temperature as a measured nuisance variable"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "perovskite-loop-log",
+            "artifact_kind": "closed-loop-trace",
+            "format": "CSV and spectral stack",
+            "retention": "retain raw sensor, controller, and input streams"
+          }
+        ],
+        "nonclaims": [
+          "No recurrent computing result is claimed.",
+          "The fixture does not claim perovskite stability, adaptation mechanism, or useful scale."
+        ],
+        "dependencies": [],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "perovskite-origin-link",
+            "topic_version_id": "illustrative-volumetric-recurrent-calculation-origin@1",
+            "relation_kind": "candidate-protocol",
+            "rationale": "This is one material-specific route for testing recurrent state."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "mixed-halide-perovskite-context",
+              "label": "Mixed-halide perovskite phase-segregation context",
+              "url": "https://doi.org/10.1038/nature14432"
+            }
+          ],
+          "boundary": "The citation supplies mixed-halide material context only; it does not support adaptive recurrence or computation."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "perovskite-spectral",
+            "group_id": "spectral",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "time-resolved calibrated spectral readout",
+            "units": "system",
+            "specification": "controller-synchronized raw spectra",
+            "equipment_type_ids": [
+              "calibrated-optical-detector-array"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-adaptive-recurrent-mixed-halide-perovskite-perovskite-spectral",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:adaptive-recurrent-mixed-halide-perovskite",
+      "target_id": "equip:calibrated-optical-detector-array",
+      "requirement_id": "perovskite-spectral",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "time-resolved calibrated spectral readout"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:rf-acoustic-multimode-optical-operator",
+      "local_ref": "exp:rf-acoustic-multimode-optical-operator",
+      "kind": "cintamani:experiment",
+      "title": "RF/acoustic-controlled multimode optical operator",
+      "version": "1",
+      "payload": {
+        "title": "RF/acoustic-controlled multimode optical operator",
+        "experiment_kind": "physical",
+        "intent": "discrimination",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "rf-acoustic-multimode-optical-operator",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "operator-supplied RF/acoustic optical operator proposal"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "rf-acoustic-operator-minimal-protocol",
+            "name": "RF/acoustic operator matrix test",
+            "minimal_decisive_test": "Drive a multimode optical medium with independently logged RF and acoustic controls, reconstruct the complex mode-to-mode operator, and compare it with a field-off and single-control model.",
+            "steps": [
+              "Calibrate RF phase, acoustic delay, and modal readout.",
+              "Run randomized control waveforms and basis-mode inputs.",
+              "Acquire complex output modes and synchronized drive logs.",
+              "Compare full, RF-only, acoustic-only, and field-off operators."
+            ],
+            "decision_rule": "The joint operator claim survives only if full-control outputs require the joint drive model beyond each ablation."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "rf-acoustic-rf-only",
+            "control_kind": "ablated",
+            "description": "RF drive only.",
+            "controlled_variable": "acoustic drive",
+            "expected_relation": "Joint operator contribution should be absent."
+          },
+          {
+            "control_id": "rf-acoustic-acoustic-only",
+            "control_kind": "ablated",
+            "description": "Acoustic drive only.",
+            "controlled_variable": "RF drive",
+            "expected_relation": "Joint operator contribution should be absent."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "rf-acoustic-operator",
+            "name": "complex mode operator",
+            "units": "dimensionless",
+            "measurement": "basis-resolved complex transfer matrix",
+            "aggregation": "per control waveform",
+            "uncertainty_reporting": "report phase, delay, and detector covariance"
+          },
+          {
+            "observable_id": "rf-acoustic-latency",
+            "name": "control-to-output latency",
+            "units": "ns",
+            "measurement": "cross-correlation of logged drive and output",
+            "aggregation": "per mode",
+            "uncertainty_reporting": "timestamp and sampling uncertainty"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "rf-acoustic-delay",
+            "quantity": "RF/acoustic relative delay",
+            "units": "ns",
+            "method": "common trigger and reference pickup",
+            "acceptance": "delay residual below phase-equivalent tolerance"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "independent control waveform",
+          "minimum_repetitions": 30,
+          "independent_repetitions": 6,
+          "randomization": "waveform, basis mode, and control order randomized",
+          "stopping_rule": "complete balanced control blocks"
+        },
+        "uncertainty": {
+          "sources": "drive phase noise, acoustic delay, modal cross-talk, medium drift",
+          "propagation": "complex transfer covariance with synchronized nuisance traces",
+          "reporting": "publish all control waveforms and raw outputs"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "rf-acoustic-success-joint",
+            "statement": "The jointly driven operator is not explained by the RF-only, acoustic-only, or field-off controls.",
+            "metric": "held-out model residual",
+            "comparator": "<",
+            "threshold_text": "predeclared margin",
+            "units": "normalized residual"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "rf-acoustic-falsifier-ablation",
+            "statement": "An ablated or linear model predicts the joint output within the same tolerance.",
+            "metric": "residual improvement",
+            "comparator": "<=",
+            "threshold_text": "predeclared threshold",
+            "units": "fraction"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "rf-acoustic-common-driver",
+            "confound": "a shared electrical driver creates an unlogged joint channel",
+            "detection_control": "independent pickups and timing audit",
+            "mitigation": "separate source and shield paths"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "rf-acoustic-drive-output",
+            "artifact_kind": "synchronized-drive-and-mode-trace",
+            "format": "binary acquisition plus JSON",
+            "retention": "retain raw timestamps and waveform hashes"
+          }
+        ],
+        "nonclaims": [
+          "A measured operator is not evidence of a new physical law.",
+          "No optical processor performance or deployment is claimed."
+        ],
+        "dependencies": [],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "rf-acoustic-topic-link",
+            "topic_version_id": "illustrative-recurring-actuation-fifth-axis@1",
+            "relation_kind": "next-discriminating-test",
+            "rationale": "The control modality is a concrete next test of recurrent actuation and multimode readout."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "acousto-optic-context",
+              "label": "Acousto-optic modulator context",
+              "url": "https://www.rp-photonics.com/acousto_optic_modulators.html"
+            }
+          ],
+          "boundary": "The citation supplies acousto-optic context only; it does not support a joint RF/acoustic operator claim."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "rf-acoustic-controller",
+            "group_id": "control",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "independently phase-logged RF and acoustic controller",
+            "units": "system",
+            "specification": "synchronized drive logs and safety interlocks",
+            "equipment_type_ids": [
+              "rf-acoustic-modulation-controller"
+            ]
+          },
+          {
+            "requirement_id": "rf-acoustic-rf-pickup",
+            "group_id": "independent-pickups",
+            "group_order": 2,
+            "group_kind": "optional",
+            "selection_rule": "at-least-n",
+            "quantity": 2,
+            "capability": "independent RF phase pickup",
+            "units": "channel",
+            "specification": "independent source and pickup trace",
+            "equipment_type_ids": [
+              "rf-acoustic-modulation-controller"
+            ]
+          },
+          {
+            "requirement_id": "rf-acoustic-acoustic-pickup",
+            "group_id": "independent-pickups",
+            "group_order": 2,
+            "group_kind": "optional",
+            "selection_rule": "at-least-n",
+            "quantity": 2,
+            "capability": "independent acoustic delay pickup",
+            "units": "channel",
+            "specification": "independent transducer pickup and timestamp",
+            "equipment_type_ids": [
+              "rf-acoustic-modulation-controller"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-rf-acoustic-multimode-optical-operator-rf-acoustic-controller",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:rf-acoustic-multimode-optical-operator",
+      "target_id": "equip:rf-acoustic-modulation-controller",
+      "requirement_id": "rf-acoustic-controller",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "independently phase-logged RF and acoustic controller"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-rf-acoustic-multimode-optical-operator-rf-acoustic-rf-pickup",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:rf-acoustic-multimode-optical-operator",
+      "target_id": "equip:rf-acoustic-modulation-controller",
+      "requirement_id": "rf-acoustic-rf-pickup",
+      "group_kind": "optional",
+      "selection_rule": "at-least-n",
+      "capability": "independent RF phase pickup"
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-rf-acoustic-multimode-optical-operator-rf-acoustic-acoustic-pickup",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:rf-acoustic-multimode-optical-operator",
+      "target_id": "equip:rf-acoustic-modulation-controller",
+      "requirement_id": "rf-acoustic-acoustic-pickup",
+      "group_kind": "optional",
+      "selection_rule": "at-least-n",
+      "capability": "independent acoustic delay pickup"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:three-dimensional-coincidence-addressed-tensor-fpga",
+      "local_ref": "exp:three-dimensional-coincidence-addressed-tensor-fpga",
+      "kind": "cintamani:experiment",
+      "title": "3-D coincidence-addressed tensor FPGA",
+      "version": "1",
+      "payload": {
+        "title": "3-D coincidence-addressed tensor FPGA",
+        "experiment_kind": "simulation",
+        "intent": "replication",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "three-dimensional-coincidence-addressed-tensor-fpga",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "operator-supplied 3-D coincidence-addressed tensor FPGA proposal"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "tensor-fpga-minimal-protocol",
+            "name": "Exact coincidence address oracle",
+            "minimal_decisive_test": "Generate a finite tensor workload, route operands through the declared 3-D coincidence address, and compare FPGA outputs and resource traces with an exact software oracle and a randomized address control.",
+            "steps": [
+              "Generate deterministic tensor and address fixtures.",
+              "Run exact software oracle.",
+              "Run FPGA design with collision and address logs.",
+              "Compare output tensors, missed coincidences, and resource counters."
+            ],
+            "decision_rule": "The architecture survives only if output and address semantics match the oracle and randomized-address control fails as predicted."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "tensor-fpga-random-address",
+            "control_kind": "randomized",
+            "description": "Randomize addresses without changing operand multiset.",
+            "controlled_variable": "coincidence address",
+            "expected_relation": "Output should change only according to the exact address oracle."
+          },
+          {
+            "control_id": "tensor-fpga-software",
+            "control_kind": "positive",
+            "description": "Run the exact software reference.",
+            "controlled_variable": "execution substrate",
+            "expected_relation": "Software output defines the declared comparison target."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "tensor-fpga-output-error",
+            "name": "tensor output error",
+            "units": "integer exact",
+            "measurement": "bitwise comparison to oracle",
+            "aggregation": "per tensor element",
+            "uncertainty_reporting": "none for exact integer output; report hardware nondeterminism separately"
+          },
+          {
+            "observable_id": "tensor-fpga-collision-rate",
+            "name": "coincidence collision rate",
+            "units": "fraction",
+            "measurement": "address-event log",
+            "aggregation": "per workload",
+            "uncertainty_reporting": "report counter width and dropped events"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "tensor-fpga-clock",
+            "quantity": "clock and event timestamp",
+            "units": "cycle",
+            "method": "hardware/software timestamp loopback",
+            "acceptance": "cycle offset known and stable"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "deterministic tensor workload",
+          "minimum_repetitions": 50,
+          "independent_repetitions": 10,
+          "randomization": "seeded workload and address permutations",
+          "stopping_rule": "complete fixed seed set"
+        },
+        "uncertainty": {
+          "sources": "clock counter overflow, event drops, simulator/hardware scheduling",
+          "propagation": "exact mismatch classification rather than statistical averaging",
+          "reporting": "retain bitstreams, seeds, logs, and oracle source hash"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "tensor-fpga-success-exact",
+            "statement": "FPGA tensor outputs and address events match the exact oracle for all declared seeds.",
+            "metric": "mismatching elements",
+            "comparator": "=",
+            "threshold_text": "0",
+            "units": "elements"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "tensor-fpga-falsifier-collision",
+            "statement": "A declared coincidence address produces a dropped, duplicated, or order-dependent tensor contribution.",
+            "metric": "address semantic mismatch",
+            "comparator": ">",
+            "threshold_text": "0",
+            "units": "events"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "tensor-fpga-counter-overflow",
+            "confound": "counter width hides dropped events",
+            "detection_control": "overflow sentinel and software count",
+            "mitigation": "widen counters and include overflow artifact"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "tensor-fpga-bitstream-log",
+            "artifact_kind": "bitstream-and-event-log",
+            "format": "verilog/VHDL, binary log, oracle JSON",
+            "retention": "retain source, tool version, bitstream, and exact seeds"
+          }
+        ],
+        "nonclaims": [
+          "This fixture does not claim a fabricated FPGA implementation or benchmark result.",
+          "Exact simulated behavior does not establish physical tensor hardware performance."
+        ],
+        "dependencies": [],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "tensor-fpga-topic-link",
+            "topic_version_id": "illustrative-minimal-conservative-formal-fragment@1",
+            "relation_kind": "candidate-protocol",
+            "rationale": "The bounded tensor address and exact comparison are a formal-fragment implementation prompt, not a result."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "amd-fpga-context",
+              "label": "AMD FPGA acceleration documentation",
+              "url": "https://docs.amd.com/r/en-US/ug1186-fpga-acceleration"
+            }
+          ],
+          "boundary": "The citation supplies FPGA tooling context only; it does not support the proposed tensor address semantics or benchmark."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "tensor-fpga-board",
+            "group_id": "fpga",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "FPGA with deterministic cycle/event trace",
+            "units": "board",
+            "specification": "3-D address logic and raw event counters",
+            "equipment_type_ids": [
+              "coincidence-addressed-tensor-fpga"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-three-dimensional-coincidence-addressed-tensor-fpga-tensor-fpga-board",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:three-dimensional-coincidence-addressed-tensor-fpga",
+      "target_id": "equip:coincidence-addressed-tensor-fpga",
+      "requirement_id": "tensor-fpga-board",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "FPGA with deterministic cycle/event trace"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "exp:rust-exact-oracle-hvm-amplitudes-infinity",
+      "local_ref": "exp:rust-exact-oracle-hvm-amplitudes-infinity",
+      "kind": "cintamani:experiment",
+      "title": "Rust exact oracle and HVM symbolic reduction for amplitudes at infinity",
+      "version": "1",
+      "payload": {
+        "title": "Rust exact oracle and HVM symbolic reduction for amplitudes at infinity",
+        "experiment_kind": "analytical",
+        "intent": "discrimination",
+        "status": "illustrative-unadmitted",
+        "targets": [
+          {
+            "target_id": "rust-exact-oracle-hvm-amplitudes-infinity",
+            "target_kind": "external-reference",
+            "target_revision": null,
+            "target_label": "operator-supplied exact oracle plus HVM symbolic reduction proposal"
+          }
+        ],
+        "protocols": [
+          {
+            "protocol_id": "rust-hvm-infinity-minimal-protocol",
+            "name": "Finite truncation versus symbolic infinity",
+            "minimal_decisive_test": "Enumerate finite amplitude expressions in a Rust exact oracle, reduce the corresponding HVM symbolic terms, and compare normalized limits and failure cases without treating a rewrite trace as a physical result.",
+            "steps": [
+              "Generate typed finite expressions and truncation bounds.",
+              "Evaluate exact rational/complex oracle outputs.",
+              "Run HVM symbolic reduction with trace retention.",
+              "Compare amplitude limits, nontermination, and truncation error classifications."
+            ],
+            "decision_rule": "The symbolic encoding is adequate only where it agrees with the exact oracle under declared normalization and exposes, rather than hides, divergent or undefined cases."
+          }
+        ],
+        "controls": [
+          {
+            "control_id": "hvm-identity",
+            "control_kind": "positive",
+            "description": "Identity and zero-amplitude terms.",
+            "controlled_variable": "term family",
+            "expected_relation": "Both systems agree exactly."
+          },
+          {
+            "control_id": "hvm-divergent",
+            "control_kind": "negative",
+            "description": "Known divergent truncation family.",
+            "controlled_variable": "limit family",
+            "expected_relation": "Both systems expose non-finite or undefined status rather than a finite result."
+          }
+        ],
+        "observables": [
+          {
+            "observable_id": "hvm-oracle-delta",
+            "name": "oracle-symbolic delta",
+            "units": "exact expression",
+            "measurement": "normalized symbolic and exact comparison",
+            "aggregation": "per term and truncation",
+            "uncertainty_reporting": "report truncation bounds, not statistical confidence"
+          },
+          {
+            "observable_id": "hvm-reduction-steps",
+            "name": "symbolic reduction steps",
+            "units": "steps",
+            "measurement": "HVM trace length and termination status",
+            "aggregation": "per term",
+            "uncertainty_reporting": "report resource bound and timeout"
+          }
+        ],
+        "calibration": [
+          {
+            "calibration_id": "hvm-normalization",
+            "quantity": "amplitude normalization convention",
+            "units": "declared convention",
+            "method": "golden identity and zero tests",
+            "acceptance": "normalization is identical in oracle and symbolic encoder"
+          }
+        ],
+        "repetitions": {
+          "replicate_unit": "generated typed expression",
+          "minimum_repetitions": 100,
+          "independent_repetitions": 10,
+          "randomization": "seeded expression and reduction order permutations",
+          "stopping_rule": "complete finite expression corpus and declared resource bound"
+        },
+        "uncertainty": {
+          "sources": "truncation, symbolic timeout, normalization convention, parser/encoder mismatch",
+          "propagation": "classify exact disagreement by source rather than averaging",
+          "reporting": "retain source, traces, compiler/tool versions, and all failures"
+        },
+        "success_criteria": [
+          {
+            "criterion_id": "hvm-success-agreement",
+            "statement": "HVM reductions agree with the exact oracle for all terminating declared terms and classify non-finite terms consistently.",
+            "metric": "classification mismatch",
+            "comparator": "=",
+            "threshold_text": "0 on the terminating corpus",
+            "units": "terms"
+          }
+        ],
+        "falsifiers": [
+          {
+            "criterion_id": "hvm-falsifier-hidden-limit",
+            "statement": "The symbolic system returns a finite amplitude where the exact oracle proves divergence or undefined normalization.",
+            "metric": "finite-versus-nonfinite mismatch",
+            "comparator": ">",
+            "threshold_text": "0",
+            "units": "terms"
+          }
+        ],
+        "confounds": [
+          {
+            "confound_id": "hvm-encoder",
+            "confound": "encoder silently changes variable binding or normalization",
+            "detection_control": "typed round-trip and identity corpus",
+            "mitigation": "publish encoder and exact AST hashes"
+          }
+        ],
+        "raw_artifacts": [
+          {
+            "raw_artifact_id": "hvm-exact-traces",
+            "artifact_kind": "oracle-source-and-reduction-trace",
+            "format": "Rust source, HVM source, JSON trace",
+            "retention": "retain compiler versions and timeout logs"
+          }
+        ],
+        "nonclaims": [
+          "Symbolic agreement is not evidence for amplitudes at infinity in nature.",
+          "This fixture does not claim HVM semantics, physical realizability, or a canonical oracle admission."
+        ],
+        "dependencies": [],
+        "relations": [],
+        "topic_links": [
+          {
+            "link_id": "rust-oracle-topic-link",
+            "topic_version_id": "illustrative-minimal-conservative-formal-fragment@1",
+            "relation_kind": "next-discriminating-test",
+            "rationale": "The exact oracle and symbolic reduction provide a reproducible next test for the formal fragment."
+          }
+        ],
+        "provenance": {
+          "citation_availability": "available",
+          "citations": [
+            {
+              "source_id": "rust-language",
+              "label": "Rust language project",
+              "url": "https://www.rust-lang.org/"
+            },
+            {
+              "source_id": "hvm-symbolic-runtime",
+              "label": "HVM symbolic runtime project",
+              "url": "https://github.com/HigherOrderCO/HVM"
+            }
+          ],
+          "boundary": "Citations identify tools only; they do not support the proposed amplitude claim."
+        },
+        "equipment_requirements": [
+          {
+            "requirement_id": "hvm-rust-toolchain",
+            "group_id": "exact-software",
+            "group_order": 1,
+            "group_kind": "required",
+            "selection_rule": "any-one",
+            "quantity": 1,
+            "capability": "reproducible Rust exact arithmetic toolchain",
+            "units": "toolchain",
+            "specification": "locked compiler and dependency graph",
+            "equipment_type_ids": [
+              "rust-hvm-oracle-harness"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "relation.declare",
+      "relation_id": "rel:cintamani:requires_equipment-rust-exact-oracle-hvm-amplitudes-infinity-hvm-rust-toolchain",
+      "relation_type": "cintamani:requires_equipment",
+      "source_id": "exp:rust-exact-oracle-hvm-amplitudes-infinity",
+      "target_id": "equip:rust-hvm-oracle-harness",
+      "requirement_id": "hvm-rust-toolchain",
+      "group_kind": "required",
+      "selection_rule": "any-one",
+      "capability": "reproducible Rust exact arithmetic toolchain"
+    }
+  ],
+  "actor": "kimi-code-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "Migrate cintamani-site proposal-layer experiment/equipment fixtures into the epistemic ledger as namespaced extension kinds (domain-in-ledger vertical slice). Fixtures remain illustrative-unadmitted scientifically; this records their structure only."
+  },
+  "idempotency_key": "auto-admission-22101cebcd1e0b5bd79d83d9",
+  "occurred_at": "2026-08-15T21:31:00.0393991Z",
+  "certifies_truth": false,
+  "event_hash": "580fae34f4f47e1551efc96587be929472d1a2a8d717d0ed520e6b4f77a4d75e"
+}
