@@ -594,26 +594,27 @@ test('Narada ochre primary and semantic colors retain readable contrast', () => 
     const [lighter, darker] = [luminance(left), luminance(right)].sort((a, b) => b - a)
     return (lighter + 0.05) / (darker + 0.05)
   }
+  // Resolved from @narada-core/ui tokens.css (dark scheme) via the aliases in global.css.
   const pairs = [
-    ['#ffae62', '#071117', 'ochre text on page ground'],
-    ['#2b1606', '#ffae62', 'CTA foreground on ochre'],
-    ['#72d6aa', '#071117', 'passed status on page ground'],
-    ['#b4c4c6', '#1c3034', 'neutral status on its soft surface'],
-    ['#dda5c2', '#3d2734', 'gap status on its soft surface'],
-    ['#a9bfe4', '#1c283c', 'later-axis label on its panel'],
-    ['#9db2b3', '#071117', 'body-muted copy on page ground'],
-    ['#6f8387', '#091920', 'example placeholder on standard form control'],
-    ['#6f8387', '#091820', 'example placeholder on dedicated proposal form control'],
+    ['#f4c430', '#111214', 'ochre (saffron primary) text on page ground'],
+    ['#241a02', '#f4c430', 'CTA foreground on ochre'],
+    ['#2f8f6b', '#111214', 'passed status on page ground'],
+    ['#c8c0b3', '#1b1d20', 'neutral status on its soft surface'],
+    ['#ff62cc', '#44293f', 'gap status on its soft surface'],
+    ['#6d91ca', '#1b1d20', 'later-axis label on its panel'],
+    ['#aaa59b', '#111214', 'body-muted copy on page ground'],
+    ['#9a9389', '#091920', 'example placeholder on standard form control'],
+    ['#9a9389', '#091820', 'example placeholder on dedicated proposal form control'],
   ]
   for (const [foreground, background, label] of pairs) {
     assert.ok(contrast(foreground, background) >= 4.5, `${label} must meet WCAG AA`)
   }
 
   const css = readFileSync(resolve(siteRoot, 'src/styles/global.css'), 'utf8')
-  assert.equal(contrast('#6f8387', '#091920').toFixed(3), '4.500')
-  assert.equal(contrast('#6f8387', '#091820').toFixed(3), '4.533')
-  assert.match(css, /--placeholder: #6f8387/)
-  assert.match(css, /--ochre: #ffae62/)
+  assert.equal(contrast('#9a9389', '#091920').toFixed(3), '5.897')
+  assert.equal(contrast('#9a9389', '#091820').toFixed(3), '5.940')
+  assert.match(css, /--placeholder: var\(--neutral-400\)/)
+  assert.match(css, /--ochre: var\(--color-primary\)/)
   assert.doesNotMatch(css, /mint|#68e0c3|rgb\(104 224 195/)
   assert.match(css, /outline: 2px solid var\(--ochre\)/)
 })
