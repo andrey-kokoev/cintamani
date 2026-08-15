@@ -1,6 +1,29 @@
-import experimentCatalog from '../data/experiment-fixtures.json' with { type: 'json' }
-import equipmentCatalog from '../data/equipment-fixtures.json' with { type: 'json' }
+import experimentCatalogMeta from '../data/experiment-fixtures.json' with { type: 'json' }
+import equipmentCatalogMeta from '../data/equipment-fixtures.json' with { type: 'json' }
+import ledgerDomain from '../data/ledger-domain.json' with { type: 'json' }
 import topicFixture from '../data/research-topic-fixture.json' with { type: 'json' }
+
+// Catalog items are read from the epistemic-ledger projection (ledger-domain.json),
+// which the roundtrip test proves lossless against the fixtures. Fixture files remain
+// the source of catalog-level metadata (authority, origin story, boundary statements).
+function ledgerItems(kind, idPrefix, idField) {
+  return ledgerDomain.entities
+    .filter((entity) => entity.kind === kind)
+    .map((entity) => ({
+      [idField]: entity.entity_id.slice(idPrefix.length),
+      revision: Number(entity.version ?? 1),
+      ...entity.domain,
+    }))
+}
+
+const experimentCatalog = Object.freeze({
+  ...experimentCatalogMeta,
+  items: ledgerItems('cintamani:experiment', 'exp:', 'experiment_id'),
+})
+const equipmentCatalog = Object.freeze({
+  ...equipmentCatalogMeta,
+  items: ledgerItems('cintamani:equipment_type', 'equip:', 'equipment_type_id'),
+})
 
 export const illustrativeExperimentCatalog = Object.freeze(experimentCatalog)
 export const illustrativeEquipmentCatalog = Object.freeze(equipmentCatalog)
