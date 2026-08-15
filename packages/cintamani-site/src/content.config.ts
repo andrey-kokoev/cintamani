@@ -4,7 +4,7 @@ import { z } from 'astro/zod'
 
 const ledger = defineCollection({
   loader: glob({
-    base: '../../../src/ledger',
+    base: '../../src/ledger',
     pattern: '**/*.md',
   }),
   schema: z.object({
