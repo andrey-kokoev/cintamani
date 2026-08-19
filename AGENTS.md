@@ -51,6 +51,7 @@ pnpm site:test
 pnpm site:build
 pnpm site:worker-check   # wrangler deploy --dry-run
 pnpm site:test:visual    # Playwright
+pnpm site:preview        # full local Worker preview
 ```
 
 `pnpm site:ship` builds, migrates the remote public D1, and runs
@@ -109,7 +110,15 @@ export, independent validation and preview, and a governed admission decision.
   idempotent occurrence per day (occurrence key `literature-sweep:<YYYYMMDD>` UTC)
   via the loader with `--standalone-ambient-attachment`. Manual run:
   `node scripts/literature-sweep-daily.mjs` (add `--dry-run` to import only).
-- The pinned Node for the scheduled task is
+- Daily documentation drift sweep: SOP template `cintamani.doc-sweep`
+  (`.narada/sops/cintamani.doc-sweep.sop.yaml`, imported into the `sop` MCP
+  surface). The Windows scheduled task `\Narada\CintamaniDocSweepDaily` (daily
+  06:27 local, `IgnoreNew`, 10-minute limit) runs `scripts/doc-sweep-daily.mjs`,
+  which imports the template and admits one idempotent occurrence per day
+  (occurrence key `doc-sweep:<YYYYMMDD>` UTC) via the loader with
+  `--standalone-ambient-attachment`. Manual run:
+  `node scripts/doc-sweep-daily.mjs` (add `--dry-run` to import only).
+- The pinned Node for the scheduled tasks is
   `C:\Users\andrey\AppData\Roaming\fnm\node-versions\v24.19.0\installation\node.exe`;
   do not point it at an `fnm_multishells` path (per-shell shim, unstable).
 

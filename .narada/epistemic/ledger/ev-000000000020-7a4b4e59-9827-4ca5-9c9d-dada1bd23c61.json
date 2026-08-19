@@ -1,0 +1,28 @@
+{
+  "schema": "narada.epistemic.event.v1",
+  "sequence": 20,
+  "event_id": "ev-000000000020-7a4b4e59-9827-4ca5-9c9d-dada1bd23c61",
+  "event_kind": "proposal_admitted",
+  "previous_hash": "492562fa9134a644aa9c66e227dbda6be2b71a332a00db5dfdc9192f7e92bdff",
+  "proposal_id": "ep_137fd8b1-fc7e-4a05-836f-737635f20809",
+  "proposal_digest": "221175d81898d0f86bedef7fb5a948897b155d9c86d21c1e1d570ddcfc2413d4",
+  "operations": [
+    {
+      "op": "sweep.record",
+      "sweep_id": "doc-sweep:20260819",
+      "interval_start": "2026-08-19T00:00:00Z",
+      "interval_end": "2026-08-19T23:59:59Z",
+      "method": "manual scan of tracked documentation surfaces against repository layout and package scripts",
+      "result": "scanned 9 surfaces; found 2 material drift items; opened task-lifecycle tasks 2530 and 2531"
+    }
+  ],
+  "actor": "kimi-code-cintamani",
+  "authority_basis": {
+    "kind": "operator_directed_sop_execution",
+    "summary": "Executing cintamani.doc-sweep SOP occurrence 2026-08-19, step run_sweep, on behalf of the cintamani project operator."
+  },
+  "idempotency_key": "auto-admission-daef7952355a7bfcb544c63d",
+  "occurred_at": "2026-08-19T18:33:33.5450164Z",
+  "certifies_truth": false,
+  "event_hash": "827809d87a2037680afd153c6118fdd882f9b998e919e0c72a9c704405370849"
+}

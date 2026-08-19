@@ -1,0 +1,165 @@
+{
+  "schema": "narada.epistemic.proposal.v1",
+  "proposal_id": "ep_e6f5a4fa-5726-4701-8191-9f4429260ca2",
+  "status": "submitted",
+  "actor": "kimi-agent",
+  "authority_basis": {
+    "kind": "operator_request",
+    "summary": "Execute scheduled cintamani literature-sweep SOP for 2026-08-16, capturing material sources and recording sweep coverage."
+  },
+  "idempotency_key": "auto-proposal-07529cc2be12e1f67154f69e",
+  "expected_ledger_head": "580fae34f4f47e1551efc96587be929472d1a2a8d717d0ed520e6b4f77a4d75e",
+  "created_at": "2026-08-16T13:25:33.3652975Z",
+  "content_fingerprint": "07529cc2be12e1f67154f69effd2b813cb67487f4be90e630b1af12706ae3d64",
+  "operations": [
+    {
+      "op": "entity.declare",
+      "local_ref": "src_ignition",
+      "kind": "source",
+      "title": "The Ignition Is Real, and It Lives at the Readout: Latent composition, difficulty-clocked ignition, and the interface-constituted commit in a recurrent-depth reasoner",
+      "version": "arXiv:2608.03263v1",
+      "locator": "https://arxiv.org/abs/2608.03263",
+      "entity_id": "source:bae20fefdfd9e67b5e47"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_fixedpoint",
+      "kind": "source",
+      "title": "Per-Token Fixed-Point Convergence in Depth-Recurrent Transformers",
+      "version": "arXiv:2607.14427v1",
+      "locator": "https://arxiv.org/abs/2607.14427",
+      "entity_id": "source:85b8b830b26fc018a46c"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_readout",
+      "kind": "source",
+      "title": "Dense Supervision Is Not Enough: The Readout Blind Spot in Looped Language Models",
+      "version": "arXiv:2606.24898v1",
+      "locator": "https://arxiv.org/abs/2606.24898",
+      "entity_id": "source:c734128e7c766a7b24f9"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "src_loopedwm",
+      "kind": "source",
+      "title": "Looped World Models",
+      "version": "arXiv:2606.18208v1",
+      "locator": "https://arxiv.org/abs/2606.18208",
+      "entity_id": "source:670fcab07621b5cc637a"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_ignition",
+      "kind": "claim",
+      "title": "A recurrent-depth reasoner exhibits difficulty-clocked ignition at the readout: latent composition and interface-constituted commit govern when recurrence becomes productive, tying test-time compute scaling to task difficulty rather than uniform depth",
+      "entity_id": "claim:804690c2c6ac6c33e401"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_fixedpoint",
+      "kind": "claim",
+      "title": "Depth-recurrent transformers can be analyzed as per-token fixed-point iterators, and convergence-rate theory bounds or predicts the marginal utility of additional recurrence steps",
+      "entity_id": "claim:a5034a9ce7c1b5c3685a"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_readout",
+      "kind": "claim",
+      "title": "Dense intermediate supervision is insufficient to eliminate the readout blind spot in looped language models, so final-readout optimization remains a distinct bottleneck for recurrent depth substitution",
+      "entity_id": "claim:54caacefcadb6fe4030b"
+    },
+    {
+      "op": "entity.declare",
+      "local_ref": "claim_loopedwm",
+      "kind": "claim",
+      "title": "World models implemented as looped networks reuse a single block for transition dynamics, suggesting recurrence can substitute for depth in model-based prediction under parameter budgets",
+      "entity_id": "claim:af963495cb3e2cc483a9"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_ignition",
+      "target_ref": "src_ignition",
+      "source_id": "claim:804690c2c6ac6c33e401",
+      "target_id": "source:bae20fefdfd9e67b5e47",
+      "relation_id": "rel:derived_from-cb822db36e7c82c8"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_fixedpoint",
+      "target_ref": "src_fixedpoint",
+      "source_id": "claim:a5034a9ce7c1b5c3685a",
+      "target_id": "source:85b8b830b26fc018a46c",
+      "relation_id": "rel:derived_from-2c41a2e910433550"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_readout",
+      "target_ref": "src_readout",
+      "source_id": "claim:54caacefcadb6fe4030b",
+      "target_id": "source:c734128e7c766a7b24f9",
+      "relation_id": "rel:derived_from-933503cc8aaa1c66"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_ref": "claim_loopedwm",
+      "target_ref": "src_loopedwm",
+      "source_id": "claim:af963495cb3e2cc483a9",
+      "target_id": "source:670fcab07621b5cc637a",
+      "relation_id": "rel:derived_from-505f0bea3593a449"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_ignition",
+      "target_id": "prob:recurrence-depth-scaling",
+      "source_id": "claim:804690c2c6ac6c33e401",
+      "relation_id": "rel:addresses-a7aab5ac9decc764"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_ignition",
+      "target_id": "prob:recurrence-vs-depth-substitution",
+      "source_id": "claim:804690c2c6ac6c33e401",
+      "relation_id": "rel:addresses-b3fcf690d401803f"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_fixedpoint",
+      "target_id": "prob:recurrence-depth-scaling",
+      "source_id": "claim:a5034a9ce7c1b5c3685a",
+      "relation_id": "rel:addresses-230607deb4ea1dcd"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_readout",
+      "target_id": "prob:recurrence-vs-depth-substitution",
+      "source_id": "claim:54caacefcadb6fe4030b",
+      "relation_id": "rel:addresses-1b63a24f8e9e3c6e"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_ref": "claim_loopedwm",
+      "target_id": "prob:recurrence-depth-scaling",
+      "source_id": "claim:af963495cb3e2cc483a9",
+      "relation_id": "rel:addresses-20058ebe0cd8c2c3"
+    },
+    {
+      "op": "sweep.record",
+      "sweep_id": "literature-sweep:20260816",
+      "interval_start": "2026-08-01",
+      "interval_end": "2026-08-15",
+      "method": "Web search across 7 tracked fronts (recurrence vs depth in ML, TFLT platform, IPC/capacity theory, photonic reservoir computing, volumetric memory materials, physical/analog computation theory, categorical models); recent arXiv/rss/crossref surfaces queried.",
+      "result": "Material sources found: 4 in recurrence-vs-depth ML front; 0 in TFLT platform; 0 in IPC/capacity theory; 0 in photonic reservoir computing; 0 in volumetric memory materials; 0 in physical/analog computation theory; 0 in categorical models. Fronts with zero hits were inspected for recent work but nothing directly addressed current cintamani claims or problems."
+    }
+  ],
+  "digest": "9469d8ef5847f4a0d12c9da74262d8ef7b1313ed35bcd311e665343277013859"
+}

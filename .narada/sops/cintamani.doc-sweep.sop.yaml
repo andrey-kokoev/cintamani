@@ -1,0 +1,65 @@
+sop_id: cintamani.doc-sweep
+title: Daily Documentation Drift Sweep
+description: |
+  Once per day, scan cintamani's tracked documentation surfaces
+  (root and package READMEs, AGENTS.md files, src/ledger entries) for
+  drift against the actual repository layout, commands, and conventions.
+  Record findings, open task-lifecycle items for material drift, and
+  emit a sweep.record for the occurrence. Negative sweeps are recorded
+  the same way as positive ones.
+status: active
+trigger_kind: schedule
+steps:
+  - id: run_sweep
+    executor: agent
+    blocking: true
+    title: Scan docs for drift
+    depends_on: []
+    instructions: |
+      You are executing today's cintamani doc-sweep occurrence.
+
+      1. Enumerate the tracked documentation surfaces:
+         - Root README.md and AGENTS.md
+         - .narada/AGENTS.md
+         - Package READMEs under packages/*/README.md
+         - src/ledger/ entries (YYYYMMDD-NN Title.md convention)
+      2. For each surface, compare claims against current reality:
+         - Root AGENTS.md package list and command wrappers match
+           the actual packages/ directory and package.json scripts.
+         - Each package README mentions build/check/test commands
+           that exist in its package.json or Cargo.toml.
+         - README paths and file names match the current layout.
+         - src/ledger entries follow the YYYYMMDD-NN Title.md convention
+           and have no obvious naming collisions.
+      3. Judge materiality: does a drift item risk misleading a builder
+         or invalidating a command? Record negative results too.
+      4. If material drift is found, create one task-lifecycle task per
+         distinct drift item with tags ["docs", "drift"] and a concise
+         title/body naming the file and the mismatch.
+      5. Return as your step result: the sweep date, surfaces scanned,
+         drift count, task ids created (or an explicit "no material drift"
+         declaration), and the list of files checked.
+
+  - id: record_run
+    executor: agent
+    blocking: true
+    title: Record sweep outcome
+    depends_on: [run_sweep]
+    instructions: |
+      Record a sweep.record for this occurrence on the epistemic graph
+      (including the negative case), capturing: occurrence key, date,
+      surfaces checked, drift count, task ids created or explicitly none,
+      and any follow-up questions. Return the record reference as the
+      step result.
+
+acceptance_criteria:
+  - All tracked documentation surfaces were checked
+  - Every material drift item has a concrete file reference and an opened task
+  - A sweep.record for this occurrence key exists
+  - No speculative fixes were applied without a task
+
+evidence_requirements:
+  - List of scanned surfaces
+  - Drift count and per-item file references
+  - Task ids created or explicit negative declaration
+  - sweep.record reference

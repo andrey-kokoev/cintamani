@@ -1,0 +1,180 @@
+{
+  "schema": "narada.epistemic.proposal.v1",
+  "proposal_id": "ep_31ba7ea1-26f8-452c-8e2e-171d41b9b463",
+  "status": "submitted",
+  "actor": "kimi-code-cintamani",
+  "authority_basis": {
+    "kind": "operator_directed_sop_execution",
+    "summary": "Executing cintamani.literature-sweep SOP occurrence 2026-08-18, step run_sweep, on behalf of the cintamani project operator."
+  },
+  "idempotency_key": "auto-proposal-d9aa40ed7fd1ec9a67197ef2",
+  "expected_ledger_head": "7f36811bfc2a2f571b9a45656ce464c339c00d978c8eb9fcb5b1a9ee7878de3e",
+  "created_at": "2026-08-18T15:29:51.7829216Z",
+  "content_fingerprint": "d9aa40ed7fd1ec9a67197ef2667e5b42e5cfa6b1775927c380b9b37a664feb19",
+  "operations": [
+    {
+      "op": "entity.declare",
+      "entity_id": "src:arxiv:2608.08888v1",
+      "kind": "source",
+      "title": "Full-bandwidth Transformers: Recurrent Augmentation via Latent Feedback",
+      "version": "arXiv:2608.08888v1",
+      "locator": "https://arxiv.org/abs/2608.08888v1",
+      "local_ref": "src:08888"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:arxiv:2608.08113v1",
+      "kind": "source",
+      "title": "ReLIT: A Recursive Latent Implicit Transformer Framework",
+      "version": "arXiv:2608.08113v1",
+      "locator": "https://arxiv.org/abs/2608.08113v1",
+      "local_ref": "src:08113"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:arxiv:2608.03624v1",
+      "kind": "source",
+      "title": "A Looped Transformer Guided by Latent Multi-Token Prediction",
+      "version": "arXiv:2608.03624v1",
+      "locator": "https://arxiv.org/abs/2608.03624v1",
+      "local_ref": "src:03624"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:arxiv:2608.07677v2",
+      "kind": "source",
+      "title": "Storage, Scrambling, and Loss of Information in the Quantum Reservoir Computing Paradigm",
+      "version": "arXiv:2608.07677v2",
+      "locator": "https://arxiv.org/abs/2608.07677v2",
+      "local_ref": "src:07677"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "src:arxiv:2608.09743v1",
+      "kind": "source",
+      "title": "Theoretical Analysis of Thermodynamic Matrix Inversion",
+      "version": "arXiv:2608.09743v1",
+      "locator": "https://arxiv.org/abs/2608.09743v1",
+      "local_ref": "src:09743"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "claim:arxiv:2608.08888v1:recurrence-substitutes-depth",
+      "kind": "claim",
+      "title": "Latent feedback from the top-layer hidden state renews depth budget per decoding step, letting recurrence substitute for architectural depth.",
+      "local_ref": "claim:08888"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "claim:arxiv:2608.08113v1:recursive-reasoning-scales",
+      "kind": "claim",
+      "title": "A lightweight recursive latent block added to a frozen LLM backbone can scale reasoning through recurrent depth rather than parameter width.",
+      "local_ref": "claim:08113"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "claim:arxiv:2608.03624v1:mtp-loops-stabilize",
+      "kind": "claim",
+      "title": "Aligning loop-t hidden state with the token t steps ahead via latent multi-token prediction stabilizes deep loops and improves accuracy.",
+      "local_ref": "claim:03624"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "claim:arxiv:2608.07677v2:quantum-reservoir-information-loss",
+      "kind": "claim",
+      "title": "Process-tensor and Holevo-quantity analysis quantifies information saturation, fading memory, and nonlocal scrambling/loss in quantum reservoirs.",
+      "local_ref": "claim:07677"
+    },
+    {
+      "op": "entity.declare",
+      "entity_id": "claim:arxiv:2608.09743v1:thermodynamic-inversion-redundant-noise",
+      "kind": "claim",
+      "title": "Thermodynamic SPD matrix-inversion covariance dynamics are first-order equivalent to preconditioned gradient descent; thermal fluctuations are algorithmically redundant for convex problems with a unique global minimum.",
+      "local_ref": "claim:09743"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_id": "claim:arxiv:2608.08888v1:recurrence-substitutes-depth",
+      "target_ref": "src:08888",
+      "target_id": "src:arxiv:2608.08888v1",
+      "relation_id": "rel:derived_from-5b357556fa99dd2c"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_id": "claim:arxiv:2608.08113v1:recursive-reasoning-scales",
+      "target_ref": "src:08113",
+      "target_id": "src:arxiv:2608.08113v1",
+      "relation_id": "rel:derived_from-b3efe8f2b1422135"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_id": "claim:arxiv:2608.03624v1:mtp-loops-stabilize",
+      "target_ref": "src:03624",
+      "target_id": "src:arxiv:2608.03624v1",
+      "relation_id": "rel:derived_from-992e6850aceb5ec3"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_id": "claim:arxiv:2608.07677v2:quantum-reservoir-information-loss",
+      "target_ref": "src:07677",
+      "target_id": "src:arxiv:2608.07677v2",
+      "relation_id": "rel:derived_from-bf22c5e5f2ef2cb7"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "derived_from",
+      "source_id": "claim:arxiv:2608.09743v1:thermodynamic-inversion-redundant-noise",
+      "target_ref": "src:09743",
+      "target_id": "src:arxiv:2608.09743v1",
+      "relation_id": "rel:derived_from-3dd46487a7523b95"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_id": "claim:arxiv:2608.08888v1:recurrence-substitutes-depth",
+      "target_id": "prob:recurrence-vs-depth-substitution",
+      "relation_id": "rel:addresses-120392499af98042"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_id": "claim:arxiv:2608.08113v1:recursive-reasoning-scales",
+      "target_id": "prob:recurrence-depth-scaling",
+      "relation_id": "rel:addresses-9879e76e5c32fc3b"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_id": "claim:arxiv:2608.03624v1:mtp-loops-stabilize",
+      "target_id": "prob:recurrence-depth-scaling",
+      "relation_id": "rel:addresses-a0509be57f9b4fbc"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_id": "claim:arxiv:2608.07677v2:quantum-reservoir-information-loss",
+      "target_id": "prob:controllable-computational-possibility",
+      "relation_id": "rel:addresses-326d872dc165e569"
+    },
+    {
+      "op": "relation.declare",
+      "relation_type": "addresses",
+      "source_id": "claim:arxiv:2608.09743v1:thermodynamic-inversion-redundant-noise",
+      "target_id": "prob:controllable-computational-possibility",
+      "relation_id": "rel:addresses-b38fcdc78e0e3e5d"
+    },
+    {
+      "op": "sweep.record",
+      "sweep_id": "literature-sweep:20260818",
+      "interval_start": "2026-08-11T00:00:00Z",
+      "interval_end": "2026-08-18T23:59:59Z",
+      "method": "web search across tracked fronts + arXiv abstract review",
+      "result": "captured 5 sources: arXiv:2608.08888v1, arXiv:2608.08113v1, arXiv:2608.03624v1, arXiv:2608.07677v2, arXiv:2608.09743v1"
+    }
+  ],
+  "digest": "ed369cae909483334b579b4943ba6bc677ddcc83112d07a9511c01f88d0c3095"
+}
